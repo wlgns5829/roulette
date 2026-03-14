@@ -24,6 +24,9 @@ import { parseName, shuffle } from './utils/utils';
 import { VideoRecorder } from './utils/videoRecorder';
 
 const defaultGravity = { x: 0, y: 10 };
+const roundEventWeights: Partial<Record<LunchEventId, number>> = {
+  'shark-rush': 4,
+};
 
 export type StageSummary = {
   index: number;
@@ -450,7 +453,7 @@ export class Roulette extends EventTarget {
   }
 
   private _scheduleRoundEvents() {
-    const totalEvents = Math.max(2, Math.min(4, Math.ceil(this._totalMarbleCount / 6)));
+    const totalEvents = Math.max(3, Math.min(5, Math.ceil(this._totalMarbleCount / 4)));
     const schedule: number[] = [];
     let nextAt = 2400 + Math.random() * 1200;
     for (let i = 0; i < totalEvents; i++) {
@@ -467,7 +470,13 @@ export class Roulette extends EventTarget {
     const pool =
       this._stage.eventPool && this._stage.eventPool.length > 0 ? this._stage.eventPool : defaultLunchEventPool;
     const candidates = pool.filter((id) => id !== this._lastRoundEventId);
-    const eventId = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : pool[0];
+    const source = candidates.length > 0 ? candidates : pool;
+    const weightedPool = source.flatMap((id) => Array.from({ length: roundEventWeights[id] ?? 1 }, () => id));
+    const eventId =
+      weightedPool.length > 0
+        ? weightedPool[Math.floor(Math.random() * weightedPool.length)]
+        : source[Math.floor(Math.random() * source.length)];
+    if (!eventId) return;
     this._lastRoundEventId = eventId;
     this._executeRoundEvent(eventId);
   }
