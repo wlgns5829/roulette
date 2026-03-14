@@ -10,7 +10,11 @@ const storageKey = 'lunch_roulette_names_v3';
 const audioStorageKey = 'lunch_roulette_audio';
 const marbleStyleStorageKey = 'lunch_roulette_marble_style_v1';
 const fixedRoster = ['Dominic', 'Martin'];
-const sampleRoster = ['Alex', 'Mina', 'Chris', 'Jae', 'Sora', 'Yuna', 'Noah', 'Hana'];
+const sampleRoster = ['도미닉', '회의지박령', '커피예산파괴자', '야근예약센터장', '퇴근눈치챔피언'];
+const rosterAliases: Record<string, string> = {
+  도미닉: 'dominic',
+  마틴: 'martin',
+};
 const winnerLines = [
   '오늘 커피는 당신이 책임진다.',
   '점심의 신탁이 내려왔다. 이제 계산할 시간이다.',
@@ -28,7 +32,8 @@ winnerLines.splice(
 );
 
 function normalizeNameKey(value: string) {
-  return value.trim().toLowerCase();
+  const normalized = value.trim().toLowerCase();
+  return rosterAliases[normalized] ?? normalized;
 }
 
 function query<T extends Element>(selector: string): T {
@@ -385,7 +390,7 @@ export function attachApp(roulette: Roulette) {
     shuffleButton.addEventListener('click', refreshBoard);
     demoButton.addEventListener('click', () => {
       audio.playUiClick();
-      rosterInput.value = [...fixedRoster, ...sampleRoster].join('\n');
+      rosterInput.value = sampleRoster.join('\n');
       refreshBoard();
       showToast('샘플 명단을 불러왔습니다.', '#38bdf8');
     });
