@@ -180,6 +180,7 @@ export class AudioEngine {
   private _nextStepTime = 0;
   private _step = 0;
   private _bar = 0;
+  private _completedBars = 0;
   private _bgmTrackIndex = -1;
   private _isEnabled = true;
   private _hasStartedBgm = false;
@@ -212,13 +213,16 @@ export class AudioEngine {
 
   public startBgm() {
     const ctx = this._ensureContext();
-    if (!ctx || !this._isEnabled || ctx.state === 'suspended') return;
+    if (!ctx || !this._isEnabled || ctx.state === 'suspended' || !this._bgmGain) return;
 
     this._hasStartedBgm = true;
     this._selectRandomBgmTrack();
+    this._bgmGain.gain.cancelScheduledValues(ctx.currentTime);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain, ctx.currentTime, 0.08);
     this._nextStepTime = ctx.currentTime + 0.06;
     this._step = 0;
     this._bar = 0;
+    this._completedBars = 0;
     if (this._schedulerId !== null) {
       return;
     }
@@ -226,10 +230,15 @@ export class AudioEngine {
   }
 
   public stopBgm() {
+    if (this._ctx && this._bgmGain) {
+      this._bgmGain.gain.cancelScheduledValues(this._ctx.currentTime);
+      this._bgmGain.gain.setTargetAtTime(0.0001, this._ctx.currentTime, 0.08);
+    }
     if (this._schedulerId !== null) {
       window.clearInterval(this._schedulerId);
       this._schedulerId = null;
     }
+    this._completedBars = 0;
   }
 
   public playUiClick() {
@@ -498,7 +507,11 @@ export class AudioEngine {
       this._step += 1;
       if (this._step >= 16) {
         this._step = 0;
+        this._completedBars += 1;
         this._bar = (this._bar + 1) % 4;
+        if (this._completedBars % 2 === 0) {
+          this._selectRandomBgmTrack();
+        }
       }
     }
   }

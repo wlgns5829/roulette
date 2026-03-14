@@ -1,8 +1,16 @@
 import Box2DFactory from 'box2d-wasm';
 import type { StageDef } from './data/maps';
 import type { IPhysics } from './IPhysics';
-import type { MapEntity, MapEntityState } from './types/MapEntity.type';
+import type { EntityMotion, MapEntity, MapEntityState } from './types/MapEntity.type';
 import type { VectorLike } from './types/VectorLike';
+
+type PhysicsEntityState = {
+  body: Box2D.b2Body;
+  originX: number;
+  originY: number;
+  motion?: EntityMotion;
+  motionTime: number;
+} & MapEntityState;
 
 export class Box2dPhysics implements IPhysics {
   private Box2D!: typeof Box2D & EmscriptenModule;
@@ -10,7 +18,7 @@ export class Box2dPhysics implements IPhysics {
   private world!: Box2D.b2World;
 
   private marbleMap: { [id: number]: Box2D.b2Body } = {};
-  private entities: ({ body: Box2D.b2Body } & MapEntityState)[] = [];
+  private entities: PhysicsEntityState[] = [];
 
   private deleteCandidates: Box2D.b2Body[] = [];
 
@@ -85,11 +93,15 @@ export class Box2dPhysics implements IPhysics {
       body.SetTransform(new this.Box2D.b2Vec2(entity.position.x, entity.position.y), 0);
       this.entities.push({
         body,
+        originX: entity.position.x,
+        originY: entity.position.y,
         x: entity.position.x,
         y: entity.position.y,
         angle: 0,
         shape: entity.shape,
         life: entity.props.life ?? -1,
+        motion: entity.motion,
+        motionTime: 0,
       });
     });
   }
@@ -150,9 +162,13 @@ export class Box2dPhysics implements IPhysics {
 
   getEntities(): MapEntityState[] {
     return this.entities.map((entity) => {
+      const pos = entity.body.GetPosition();
       return {
-        ...entity,
+        x: pos.x,
+        y: pos.y,
         angle: entity.body.GetAngle(),
+        shape: entity.shape,
+        life: entity.life,
       };
     });
   }
@@ -194,6 +210,22 @@ export class Box2dPhysics implements IPhysics {
       this.world.DestroyBody(body);
     });
     this.deleteCandidates = [];
+
+    this.entities.forEach((entity) => {
+      if (!entity.motion) return;
+
+      entity.motionTime += deltaSeconds;
+      const phase = entity.motion.phase ?? 0;
+      const wave = entity.motionTime * entity.motion.speed + phase;
+      const offset = Math.sin(wave) * entity.motion.amplitude;
+      const velocity = Math.cos(wave) * entity.motion.amplitude * entity.motion.speed;
+      const nextX = entity.originX + (entity.motion.axis === 'x' ? offset : 0);
+      const nextY = entity.originY + (entity.motion.axis === 'y' ? offset : 0);
+      entity.body.SetLinearVelocity(
+        new this.Box2D.b2Vec2(entity.motion.axis === 'x' ? velocity : 0, entity.motion.axis === 'y' ? velocity : 0)
+      );
+      entity.body.SetTransform(new this.Box2D.b2Vec2(nextX, nextY), entity.body.GetAngle());
+    });
 
     this.world.Step(deltaSeconds, 6, 2);
 

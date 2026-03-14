@@ -95,6 +95,7 @@ export function attachApp(roulette: Roulette) {
     let resetTimer = 0;
     let goalOverlayTimer = 0;
     let winnerShowcaseTimer = 0;
+    let bgmStopTimer = 0;
     let roundRunning = false;
 
     const getRosterTokens = () => {
@@ -311,6 +312,11 @@ export function attachApp(roulette: Roulette) {
         resetTimer = 0;
       }
 
+      if (bgmStopTimer) {
+        window.clearTimeout(bgmStopTimer);
+        bgmStopTimer = 0;
+      }
+
       hideWinnerShowcase();
 
       resultPanel.hidden = true;
@@ -471,6 +477,13 @@ export function attachApp(roulette: Roulette) {
       );
       triggerGoalOverlay(detail.accent);
       audio.playGoal();
+      if (bgmStopTimer) {
+        window.clearTimeout(bgmStopTimer);
+      }
+      bgmStopTimer = window.setTimeout(() => {
+        audio.stopBgm();
+        bgmStopTimer = 0;
+      }, 1800);
 
       resetTimer = window.setTimeout(() => {
         refreshBoard();

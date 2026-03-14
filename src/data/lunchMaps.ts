@@ -1,4 +1,4 @@
-import type { MapEntity } from '../types/MapEntity.type';
+import type { EntityMotion, MapEntity } from '../types/MapEntity.type';
 import type { LunchEventId } from '../types/RoundEvent.type';
 import type { StageDef } from './maps';
 
@@ -40,6 +40,26 @@ function box(
 
 function spinner(x: number, y: number, width: number, angularVelocity: number, color: string): MapEntity {
   return box(x, y, width, 0.13, 0, color, 0, 'kinematic', angularVelocity);
+}
+
+function movingBox(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  rotation: number,
+  color: string,
+  motion: EntityMotion,
+  restitution = 0,
+  angularVelocity = 0
+): MapEntity {
+  return {
+    position: { x, y },
+    type: 'kinematic',
+    shape: { type: 'box', width, height, rotation, color, bloomColor: color },
+    props: { density: 1, angularVelocity, restitution },
+    motion,
+  };
 }
 
 function bumper(x: number, y: number, radius: number, color: string, restitution = 1.2, life = -1): MapEntity {
@@ -133,6 +153,9 @@ const coffeeRunEntities: MapEntity[] = [
   box(14.9, 58.6, 1.2, 0.1, -0.52, '#e2e8f0'),
   box(10.6, 78.2, 1.15, 0.1, 0.5, '#fdba74'),
   box(15.6, 99.8, 1.1, 0.1, -0.48, '#fdba74'),
+  movingBox(13, 36.6, 1.9, 0.11, 0.1, '#fff7ed', { axis: 'x', amplitude: 1.05, speed: 0.95, phase: 0.3 }),
+  movingBox(11.7, 87.4, 1.6, 0.11, -0.18, '#fdba74', { axis: 'y', amplitude: 1.2, speed: 1.2, phase: 1.4 }),
+  movingBox(14.6, 117.8, 1.7, 0.11, 0.16, '#fb923c', { axis: 'x', amplitude: 0.9, speed: 1.35, phase: 2.2 }),
   spinner(8.5, 54, 2.9, 3.1, '#f97316'),
   spinner(17.4, 75, 3.2, -3.6, '#fb7185'),
   spinner(12.9, 108.5, 4.1, 2.5, '#38bdf8'),
@@ -210,6 +233,9 @@ const snackAttackEntities: MapEntity[] = [
   box(17.6, 79.2, 1.2, 0.1, 0.48, '#fda4af'),
   box(9.1, 106.5, 1.25, 0.1, 0.58, '#fdba74'),
   box(17.1, 132.8, 1.15, 0.1, -0.5, '#f3f4f6'),
+  movingBox(13.2, 50.5, 2, 0.11, -0.08, '#ffe4e6', { axis: 'x', amplitude: 1.15, speed: 1.05, phase: 0.7 }),
+  movingBox(10.7, 97.8, 1.7, 0.11, 0.18, '#fff1f2', { axis: 'y', amplitude: 1.1, speed: 1.25, phase: 1.8 }),
+  movingBox(15.2, 123.8, 1.9, 0.11, -0.12, '#fda4af', { axis: 'x', amplitude: 0.95, speed: 1.45, phase: 2.6 }),
   spinner(13, 58, 3.8, 2.8, '#f43f5e'),
   spinner(9.2, 95, 3.1, -3.8, '#fb7185'),
   spinner(16.8, 118, 3.6, 3.3, '#f59e0b'),
@@ -308,6 +334,9 @@ const elevatorChaosEntities: MapEntity[] = [
   box(17.1, 91.4, 1.15, 0.1, -0.52, '#7dd3fc'),
   box(8.8, 118.8, 1.05, 0.1, 0.54, '#67e8f9'),
   box(17.2, 145.1, 1.05, 0.1, -0.54, '#67e8f9'),
+  movingBox(13, 53.8, 1.85, 0.11, 0, '#e0f2fe', { axis: 'y', amplitude: 1.25, speed: 1, phase: 0.5 }),
+  movingBox(13, 81.6, 1.7, 0.11, 0, '#f8fafc', { axis: 'x', amplitude: 1.05, speed: 1.2, phase: 1.3 }),
+  movingBox(13, 136.8, 1.95, 0.11, 0, '#bae6fd', { axis: 'y', amplitude: 1.35, speed: 1.4, phase: 2.2 }),
   spinner(9.4, 56.6, 2.6, 3.8, '#22d3ee'),
   spinner(16.6, 84.6, 2.6, -3.8, '#06b6d4'),
   spinner(9.6, 112.4, 2.6, 3.9, '#0ea5e9'),

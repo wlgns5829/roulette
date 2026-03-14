@@ -25,7 +25,7 @@ import { VideoRecorder } from './utils/videoRecorder';
 
 const defaultGravity = { x: 0, y: 10 };
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
-  'shark-rush': 4,
+  'shark-rush': 7,
 };
 
 export type StageSummary = {
@@ -453,12 +453,12 @@ export class Roulette extends EventTarget {
   }
 
   private _scheduleRoundEvents() {
-    const totalEvents = Math.max(3, Math.min(5, Math.ceil(this._totalMarbleCount / 4)));
+    const totalEvents = Math.max(4, Math.min(7, Math.ceil(this._totalMarbleCount / 3)));
     const schedule: number[] = [];
-    let nextAt = 2400 + Math.random() * 1200;
+    let nextAt = 1900 + Math.random() * 900;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += 3200 + Math.random() * 2200;
+      nextAt += 2300 + Math.random() * 1600;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -469,13 +469,26 @@ export class Roulette extends EventTarget {
 
     const pool =
       this._stage.eventPool && this._stage.eventPool.length > 0 ? this._stage.eventPool : defaultLunchEventPool;
-    const candidates = pool.filter((id) => id !== this._lastRoundEventId);
-    const source = candidates.length > 0 ? candidates : pool;
-    const weightedPool = source.flatMap((id) => Array.from({ length: roundEventWeights[id] ?? 1 }, () => id));
-    const eventId =
-      weightedPool.length > 0
-        ? weightedPool[Math.floor(Math.random() * weightedPool.length)]
-        : source[Math.floor(Math.random() * source.length)];
+    const weights = pool.map((id) => {
+      const baseWeight = roundEventWeights[id] ?? 1;
+      if (id !== this._lastRoundEventId) {
+        return baseWeight;
+      }
+      return id === 'shark-rush' ? baseWeight * 0.75 : baseWeight * 0.2;
+    });
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    if (totalWeight <= 0) return;
+
+    let draw = Math.random() * totalWeight;
+    let eventId: LunchEventId | undefined;
+    for (let i = 0; i < pool.length; i++) {
+      draw -= weights[i];
+      if (draw <= 0) {
+        eventId = pool[i];
+        break;
+      }
+    }
+    eventId ??= pool[pool.length - 1];
     if (!eventId) return;
     this._lastRoundEventId = eventId;
     this._executeRoundEvent(eventId);

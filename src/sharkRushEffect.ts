@@ -45,6 +45,39 @@ export class SharkRushEffect implements GameObject {
     ctx.shadowBlur = 16 / zoom;
     ctx.shadowColor = this._accent;
 
+    // Little fish companions
+    for (let i = 0; i < 3; i++) {
+      const fishX = -2.35 - i * 0.55;
+      const fishY = -0.7 + i * 0.52 + Math.sin(rate * Math.PI * (2.4 + i * 0.3)) * 0.08;
+      ctx.save();
+      ctx.translate(fishX, fishY);
+      ctx.scale(0.42 + i * 0.06, 0.42 + i * 0.06);
+      ctx.globalAlpha = alpha * (0.55 - i * 0.1);
+
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.95)' : 'rgba(191,219,254,0.95)';
+      ctx.beginPath();
+      ctx.moveTo(-0.55, 0);
+      ctx.bezierCurveTo(-0.18, -0.28, 0.36, -0.2, 0.58, 0);
+      ctx.bezierCurveTo(0.36, 0.22, -0.18, 0.28, -0.55, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(96,165,250,0.92)';
+      ctx.beginPath();
+      ctx.moveTo(-0.5, 0);
+      ctx.lineTo(-0.9, -0.28);
+      ctx.lineTo(-0.82, 0);
+      ctx.lineTo(-0.9, 0.28);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(0.28, -0.05, 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     // Body
     ctx.fillStyle = bodyColor;
     ctx.beginPath();

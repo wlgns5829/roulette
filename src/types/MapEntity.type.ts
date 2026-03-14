@@ -28,6 +28,15 @@ export interface EntityPolylineShape extends EntityShapeBase {
 
 export type EntityShape = EntityBoxShape | EntityCircleShape | EntityPolylineShape;
 
+export type EntityMotionAxis = 'x' | 'y';
+
+export interface EntityMotion {
+  axis: EntityMotionAxis;
+  amplitude: number;
+  speed: number;
+  phase?: number;
+}
+
 export type EntityPhysicalProps = {
   density: number;
   restitution: number;
@@ -40,6 +49,7 @@ export interface MapEntity {
   type: 'static' | 'kinematic';
   shape: EntityShape;
   props: EntityPhysicalProps;
+  motion?: EntityMotion;
 }
 
 export interface MapEntityState {
