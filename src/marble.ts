@@ -112,6 +112,18 @@ export class Marble {
     this._coolTime = initial ? this._maxCoolTime * (0.35 + Math.random() * 0.4) : this._maxCoolTime;
   }
 
+  private _getVisualScale() {
+    if (typeof window === 'undefined') {
+      return 1;
+    }
+
+    if (window.innerWidth <= 980) {
+      return 1.18;
+    }
+
+    return 1;
+  }
+
   render(
     ctx: CanvasRenderingContext2D,
     zoom: number,
@@ -158,12 +170,13 @@ export class Marble {
     const hs = this.size / 2;
     const impactRatio = Math.min(1, this.impact / 500);
     const style = options.marbleStyle;
+    const visualScale = this._getVisualScale();
 
     if (style === 'sprite' && skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-        ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
+        ctx.drawImage(skin, -hs * visualScale, -hs * visualScale, hs * 2 * visualScale, hs * 2 * visualScale);
       });
     } else {
       drawMarbleLook(
@@ -171,7 +184,7 @@ export class Marble {
         {
           x: this.x,
           y: this.y,
-          size: this.size * 1.4,
+          size: this.size * 1.4 * visualScale,
           hue: this.hue,
           seed: this.id,
           rotation: this.angle,
@@ -203,7 +216,7 @@ export class Marble {
       ctx.lineWidth = 3;
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.54);
+      ctx.translate(this.x, this.y + 0.54 * this._getVisualScale());
       ctx.scale(1 / zoom, 1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);
@@ -211,7 +224,7 @@ export class Marble {
   }
 
   private _drawOutline(ctx: CanvasRenderingContext2D, lineWidth: number) {
-    const visualRadius = this.size * 0.66;
+    const visualRadius = this.size * 0.66 * this._getVisualScale();
     ctx.beginPath();
     ctx.strokeStyle = this.theme.marbleWinningBorder;
     ctx.lineWidth = lineWidth;
@@ -220,7 +233,7 @@ export class Marble {
   }
 
   private _renderCoolTime(ctx: CanvasRenderingContext2D, zoom: number) {
-    const visualRadius = this.size * 0.66;
+    const visualRadius = this.size * 0.66 * this._getVisualScale();
     ctx.strokeStyle = this.theme.coolTimeIndicator;
     ctx.lineWidth = 1 / zoom;
     ctx.beginPath();
