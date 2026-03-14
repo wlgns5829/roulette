@@ -3,14 +3,12 @@ import { generateSW } from 'workbox-build';
 generateSW({
   swDest: 'dist/service-worker.js',
   globDirectory: 'dist',
-  globPatterns: [
-    '**/*.{html,js,css,png,svg}',
-  ],
+  globPatterns: ['**/*.{html,js,css,png,svg,ico,webmanifest,wasm}'],
   skipWaiting: true,
   clientsClaim: true,
   runtimeCaching: [
     {
-      urlPattern: /\/.(?:png|jpg|svg)$/,
+      urlPattern: /\.(?:png|jpg|svg|webp|ico)$/,
       handler: 'CacheFirst',
       options: {
         cacheName: 'images',
@@ -21,7 +19,7 @@ generateSW({
       },
     },
     {
-      urlPattern: /\.(?:js|css|html)$/,
+      urlPattern: /\.(?:js|css|html|webmanifest|wasm)$/,
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'static-resources',

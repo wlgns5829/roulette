@@ -2,6 +2,7 @@ import Box2DFactory from 'box2d-wasm';
 import type { StageDef } from './data/maps';
 import type { IPhysics } from './IPhysics';
 import type { MapEntity, MapEntityState } from './types/MapEntity.type';
+import type { VectorLike } from './types/VectorLike';
 
 export class Box2dPhysics implements IPhysics {
   private Box2D!: typeof Box2D & EmscriptenModule;
@@ -122,6 +123,13 @@ export class Box2dPhysics implements IPhysics {
     }
   }
 
+  nudgeMarble(id: number, impulse: VectorLike): void {
+    const body = this.marbleMap[id];
+    if (body) {
+      body.ApplyLinearImpulseToCenter(new this.Box2D.b2Vec2(impulse.x, impulse.y), true);
+    }
+  }
+
   removeMarble(id: number): void {
     const marble = this.marbleMap[id];
     if (marble) {
@@ -167,6 +175,10 @@ export class Box2dPhysics implements IPhysics {
         body.ApplyLinearImpulseToCenter(distVector, true);
       }
     });
+  }
+
+  setGravity(gravity: VectorLike): void {
+    this.world.SetGravity(new this.Box2D.b2Vec2(gravity.x, gravity.y));
   }
 
   start(): void {

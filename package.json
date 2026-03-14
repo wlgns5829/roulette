@@ -1,6 +1,7 @@
 {
   "name": "roulette",
   "version": "1.0.0",
+  "type": "module",
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
@@ -19,7 +20,7 @@
   "scripts": {
     "lint": "biome check --fix src/",
     "dev": "parcel index.html --port 1235",
-    "build": "parcel build index.html --public-url /roulette/ && node scripts/build-sw.js"
+    "build": "node scripts/build-site.mjs"
   },
   "dependencies": {
     "box2d-wasm": "^7.0.0"

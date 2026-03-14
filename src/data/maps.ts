@@ -1,13 +1,19 @@
 import type { MapEntity } from '../types/MapEntity.type';
+import type { LunchEventId } from '../types/RoundEvent.type';
+import { lunchStages } from './lunchMaps';
 
 export type StageDef = {
   title: string;
+  description?: string;
+  flavor?: string;
+  accent?: string;
+  eventPool?: LunchEventId[];
   entities?: MapEntity[];
   goalY: number;
   zoomY: number;
 };
 
-export const stages: StageDef[] = [
+const baseStages: StageDef[] = [
   {
     title: 'Wheel of fortune',
     goalY: 111,
@@ -2980,3 +2986,5 @@ export const stages: StageDef[] = [
     ],
   },
 ];
+
+export const stages: StageDef[] = [...lunchStages, ...baseStages];

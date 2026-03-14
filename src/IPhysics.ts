@@ -1,5 +1,6 @@
 import type { StageDef } from './data/maps';
 import type { MapEntityState } from './types/MapEntity.type';
+import type { VectorLike } from './types/VectorLike';
 
 export interface IPhysics {
   init(): Promise<void>;
@@ -14,6 +15,8 @@ export interface IPhysics {
 
   shakeMarble(id: number): void;
 
+  nudgeMarble(id: number, impulse: VectorLike): void;
+
   removeMarble(id: number): void;
 
   getMarblePosition(id: number): { x: number; y: number; angle: number };
@@ -21,6 +24,8 @@ export interface IPhysics {
   getEntities(): MapEntityState[];
 
   impact(id: number): void;
+
+  setGravity(gravity: VectorLike): void;
 
   start(): void;
 

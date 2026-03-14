@@ -1,0 +1,14 @@
+export type LunchEventId =
+  | 'coffee-spill'
+  | 'espresso-shot'
+  | 'meeting-call'
+  | 'ac-draft'
+  | 'bean-burst'
+  | 'sugar-crash';
+
+export type LunchEventNotice = {
+  id: LunchEventId;
+  title: string;
+  description: string;
+  accent: string;
+};

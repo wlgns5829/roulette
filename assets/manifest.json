@@ -1,7 +1,12 @@
 {
-  "name": "Marble roulette",
-  "short_name": "MR",
-  "id": "lazygyu.marble-roulette",
+  "name": "Lunch Break Marble Roulette",
+  "short_name": "Lunch Roulette",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "description": "Office-chaos marble roulette for picking today's coffee sponsor.",
+  "background_color": "#120d0b",
+  "theme_color": "#f97316",
   "icons": [
     {
       "src": "android-icon-36x36.png",
@@ -40,7 +45,6 @@
       "density": "4.0"
     }
   ],
-  "start_url": "https://lazygyu.github.io/roulette",
   "display_override": [
     "fullscreen",
     "minimal-ui"
