@@ -13,6 +13,7 @@ import { ParticleManager } from './particleManager';
 import { Box2dPhysics } from './physics-box2d';
 import { RankRenderer } from './rankRenderer';
 import { RouletteRenderer } from './rouletteRenderer';
+import { SharkRushEffect } from './sharkRushEffect';
 import { SkillEffect } from './skillEffect';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MouseEventHandlerName, MouseEventName } from './types/mouseEvents.type';
@@ -533,6 +534,45 @@ export class Roulette extends EventTarget {
       case 'sugar-crash': {
         this._roundSpeedMultiplier = 0.72;
         this._speedEffectRemaining = 3200;
+        break;
+      }
+      case 'shark-rush': {
+        const ranked = activeMarbles.slice().sort((a, b) => b.y - a.y);
+        const candidate = ranked[Math.floor(Math.random() * Math.max(1, Math.ceil(ranked.length * 0.6)))];
+        if (!candidate) return;
+
+        const direction = Math.random() < 0.5 ? 1 : -1;
+        const sweepY = Math.max(
+          24,
+          Math.min((this._stage?.goalY ?? candidate.y + 8) - 8, candidate.y + (Math.random() - 0.5) * 3)
+        );
+        const band = 5.5;
+        const startX = direction > 0 ? -2.8 : 28.4;
+        const endX = direction > 0 ? 28.4 : -2.8;
+        const impacted = ranked.filter((marble) => Math.abs(marble.y - sweepY) < band);
+        const primary = impacted[0] ?? candidate;
+
+        this._effects.push(new SharkRushEffect(startX, endX, sweepY, direction > 0 ? 1 : -1, notice.accent));
+
+        impacted.forEach((marble, index) => {
+          const distanceWeight = 1 - Math.min(1, Math.abs(marble.y - sweepY) / band);
+          const spread = (Math.random() - 0.5) * 0.9;
+          const sideImpulse = direction * (1.4 + distanceWeight * 1.7 + Math.random() * 0.45);
+          const verticalImpulse = (Math.random() - 0.15) * 1.1 + (index === 0 ? 0.3 : 0);
+          this.physics.nudgeMarble(marble.id, {
+            x: sideImpulse + spread,
+            y: verticalImpulse,
+          });
+          marble.impact = Math.max(marble.impact, 220 + distanceWeight * 180);
+        });
+
+        if (primary) {
+          this._effects.push(new SkillEffect(primary.x, primary.y));
+          notice = {
+            ...notice,
+            description: `${direction > 0 ? '왼쪽' : '오른쪽'}에서 상어가 난입해 ${primary.name}님 주변 순위를 뒤흔들었습니다.`,
+          };
+        }
         break;
       }
     }

@@ -31,6 +31,11 @@ const eventCatalog: Record<LunchEventId, Omit<LunchEventNotice, 'id'>> = {
     description: '순간적으로 힘이 빠지며 전체 라운드가 느려집니다.',
     accent: '#a78bfa',
   },
+  'shark-rush': {
+    title: '상어 난입',
+    description: '귀여운 상어가 옆 라인에서 튀어나와 구슬 흐름을 휘저어 놓습니다.',
+    accent: '#60a5fa',
+  },
 };
 
 export const defaultLunchEventPool: LunchEventId[] = [
@@ -40,6 +45,7 @@ export const defaultLunchEventPool: LunchEventId[] = [
   'ac-draft',
   'bean-burst',
   'sugar-crash',
+  'shark-rush',
 ];
 
 export function getLunchEventNotice(id: LunchEventId): LunchEventNotice {

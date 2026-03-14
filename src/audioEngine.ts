@@ -41,7 +41,7 @@ export class AudioEngine {
 
     if (value) {
       this._ctx.resume();
-      this._masterGain.gain.setTargetAtTime(1, this._ctx.currentTime, 0.04);
+      this._masterGain.gain.setTargetAtTime(1.15, this._ctx.currentTime, 0.04);
       if (this._hasStartedBgm) {
         this.startBgm();
       }
@@ -57,7 +57,7 @@ export class AudioEngine {
     if (!ctx) return;
     await ctx.resume();
     if (this._masterGain) {
-      this._masterGain.gain.setTargetAtTime(this._isEnabled ? 1 : 0.0001, ctx.currentTime, 0.04);
+      this._masterGain.gain.setTargetAtTime(this._isEnabled ? 1.15 : 0.0001, ctx.currentTime, 0.04);
     }
   }
 
@@ -191,6 +191,25 @@ export class AudioEngine {
           filter: 500,
         });
         break;
+      case 'shark-rush':
+        this._playNoise(time, 0.16, 0.06, 1400, 1.4, 'bandpass');
+        [64, 69, 73].forEach((note, index) => {
+          this._playTone(midiToFreq(note), time + index * 0.045, 0.1, {
+            type: 'triangle',
+            gain: 0.09,
+            release: 0.08,
+            filter: 1600 + index * 240,
+            pan: -0.22 + index * 0.22,
+          });
+        });
+        this._playTone(midiToFreq(57), time + 0.14, 0.22, {
+          type: 'sawtooth',
+          gain: 0.08,
+          attack: 0.01,
+          release: 0.14,
+          filter: 900,
+        });
+        break;
     }
   }
 
@@ -202,7 +221,7 @@ export class AudioEngine {
     const start = ctx.currentTime + 0.02;
     this._bgmGain.gain.cancelScheduledValues(start);
     this._bgmGain.gain.setTargetAtTime(0.035, start, 0.03);
-    this._bgmGain.gain.setTargetAtTime(0.16, start + 2.2, 0.18);
+    this._bgmGain.gain.setTargetAtTime(0.24, start + 2.2, 0.18);
 
     this._playKick(start, 0.18, 180, 38);
     this._playNoise(start + 0.02, 0.32, 0.1, 3800, 0.9, 'highpass');
@@ -265,14 +284,21 @@ export class AudioEngine {
     const master = ctx.createGain();
     const bgm = ctx.createGain();
     const sfx = ctx.createGain();
+    const compressor = ctx.createDynamicsCompressor();
 
     master.gain.value = 0.0001;
-    bgm.gain.value = 0.16;
+    bgm.gain.value = 0.24;
     sfx.gain.value = 0.18;
+    compressor.threshold.setValueAtTime(-16, ctx.currentTime);
+    compressor.knee.setValueAtTime(18, ctx.currentTime);
+    compressor.ratio.setValueAtTime(3, ctx.currentTime);
+    compressor.attack.setValueAtTime(0.003, ctx.currentTime);
+    compressor.release.setValueAtTime(0.2, ctx.currentTime);
 
     bgm.connect(master);
     sfx.connect(master);
-    master.connect(ctx.destination);
+    master.connect(compressor);
+    compressor.connect(ctx.destination);
 
     this._ctx = ctx;
     this._masterGain = master;

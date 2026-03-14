@@ -133,7 +133,7 @@ export function attachApp(roulette: Roulette) {
     };
 
     const syncMobileHudState = () => {
-      const showToggle = mobileLayout.matches && roundRunning;
+      const showToggle = roundRunning;
       mobileHudToggle.hidden = !showToggle;
 
       if (!showToggle) {
@@ -151,7 +151,7 @@ export function attachApp(roulette: Roulette) {
 
       if (!running) {
         document.body.classList.remove('mobile-hud-open');
-      } else if (mobileLayout.matches) {
+      } else {
         setMobileHudOpen(false);
       }
 
@@ -408,7 +408,7 @@ export function attachApp(roulette: Roulette) {
     themeToggle.addEventListener('change', syncTheme);
 
     const onViewportChange = () => {
-      if (mobileLayout.matches && roundRunning) {
+      if (roundRunning) {
         setMobileHudOpen(false);
       }
       syncMobileHudState();

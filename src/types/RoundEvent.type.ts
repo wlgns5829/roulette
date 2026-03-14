@@ -4,7 +4,8 @@ export type LunchEventId =
   | 'meeting-call'
   | 'ac-draft'
   | 'bean-burst'
-  | 'sugar-crash';
+  | 'sugar-crash'
+  | 'shark-rush';
 
 export type LunchEventNotice = {
   id: LunchEventId;

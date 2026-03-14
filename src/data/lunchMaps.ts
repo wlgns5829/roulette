@@ -341,7 +341,7 @@ export const lunchStages: StageDef[] = [
     accent: '#f59e0b',
     goalY: 138,
     zoomY: 132,
-    eventPool: pool('coffee-spill', 'espresso-shot', 'meeting-call', 'bean-burst'),
+    eventPool: pool('coffee-spill', 'espresso-shot', 'meeting-call', 'bean-burst', 'shark-rush'),
     entities: coffeeRunEntities,
   },
   {
@@ -351,7 +351,7 @@ export const lunchStages: StageDef[] = [
     accent: '#fb7185',
     goalY: 148,
     zoomY: 142,
-    eventPool: pool('coffee-spill', 'meeting-call', 'bean-burst', 'sugar-crash'),
+    eventPool: pool('coffee-spill', 'meeting-call', 'bean-burst', 'sugar-crash', 'shark-rush'),
     entities: snackAttackEntities,
   },
   {
@@ -361,7 +361,7 @@ export const lunchStages: StageDef[] = [
     accent: '#38bdf8',
     goalY: 156,
     zoomY: 149,
-    eventPool: pool('ac-draft', 'meeting-call', 'espresso-shot', 'sugar-crash'),
+    eventPool: pool('ac-draft', 'meeting-call', 'espresso-shot', 'sugar-crash', 'shark-rush'),
     entities: elevatorChaosEntities,
   },
 ];
