@@ -131,16 +131,27 @@ export class RouletteRenderer {
   private renderSummerBackdrop(stage: StageDef) {
     const { width, height } = this._canvas;
     const accent = stage.accent ?? '#22d3ee';
-    const horizonY = height * 0.56;
-    const waterTop = height * 0.58;
+    const horizonY = height * 0.57;
+    const waterTop = height * 0.61;
     const now = performance.now() * 0.001;
 
-    const sky = this.ctx.createLinearGradient(0, 0, 0, horizonY);
-    sky.addColorStop(0, '#4a7ca8');
-    sky.addColorStop(0.45, '#6fb6cf');
-    sky.addColorStop(1, '#d8e8d9');
-    this.ctx.fillStyle = sky;
-    this.ctx.fillRect(0, 0, width, horizonY);
+    const backdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    backdrop.addColorStop(0, '#4d80ab');
+    backdrop.addColorStop(0.36, '#6db9d4');
+    backdrop.addColorStop(0.56, '#d9efe6');
+    backdrop.addColorStop(0.68, '#79c4da');
+    backdrop.addColorStop(0.84, '#4f9bbd');
+    backdrop.addColorStop(1, '#bcccb5');
+    this.ctx.fillStyle = backdrop;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const seaMist = this.ctx.createLinearGradient(0, horizonY - height * 0.1, 0, waterTop + height * 0.08);
+    seaMist.addColorStop(0, 'rgba(255, 255, 245, 0)');
+    seaMist.addColorStop(0.34, 'rgba(248, 250, 240, 0.46)');
+    seaMist.addColorStop(0.66, 'rgba(208, 241, 247, 0.32)');
+    seaMist.addColorStop(1, 'rgba(79, 155, 189, 0)');
+    this.ctx.fillStyle = seaMist;
+    this.ctx.fillRect(0, horizonY - height * 0.1, width, height * 0.22);
 
     const sun = this.ctx.createRadialGradient(
       width * 0.82,
@@ -156,25 +167,35 @@ export class RouletteRenderer {
     this.ctx.fillStyle = sun;
     this.ctx.fillRect(0, 0, width, height);
 
-    const water = this.ctx.createLinearGradient(0, waterTop, 0, height);
-    water.addColorStop(0, '#4ca2c7');
-    water.addColorStop(0.52, '#277f9e');
-    water.addColorStop(1, '#1c4e69');
+    const water = this.ctx.createLinearGradient(0, horizonY - height * 0.02, 0, height);
+    water.addColorStop(0, 'rgba(123, 208, 226, 0.48)');
+    water.addColorStop(0.22, 'rgba(102, 187, 214, 0.82)');
+    water.addColorStop(0.58, '#2e8daf');
+    water.addColorStop(1, '#245b73');
     this.ctx.fillStyle = water;
-    this.ctx.fillRect(0, waterTop, width, height - waterTop);
+    this.ctx.fillRect(0, horizonY - height * 0.02, width, height - horizonY + height * 0.02);
 
-    const sand = this.ctx.createLinearGradient(0, height * 0.8, 0, height);
-    sand.addColorStop(0, 'rgba(225, 206, 154, 0.74)');
-    sand.addColorStop(1, 'rgba(185, 158, 111, 0.92)');
+    const foam = this.ctx.createLinearGradient(0, waterTop - height * 0.04, 0, waterTop + height * 0.045);
+    foam.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    foam.addColorStop(0.46, 'rgba(244, 250, 242, 0.34)');
+    foam.addColorStop(0.62, 'rgba(223, 245, 249, 0.2)');
+    foam.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = foam;
+    this.ctx.fillRect(0, waterTop - height * 0.04, width, height * 0.09);
+
+    const sand = this.ctx.createLinearGradient(0, height * 0.84, 0, height);
+    sand.addColorStop(0, 'rgba(229, 215, 168, 0.22)');
+    sand.addColorStop(0.4, 'rgba(210, 188, 135, 0.52)');
+    sand.addColorStop(1, 'rgba(170, 150, 103, 0.9)');
     this.ctx.fillStyle = sand;
-    this.ctx.fillRect(0, height * 0.82, width, height * 0.18);
+    this.ctx.fillRect(0, height * 0.84, width, height * 0.16);
 
-    this.drawWaveBand(height * 0.6, height * 0.045, 'rgba(232, 250, 255, 0.28)', now * 0.9);
-    this.drawWaveBand(height * 0.68, height * 0.05, 'rgba(176, 232, 245, 0.24)', now * 0.7 + 1.6);
-    this.drawWaveBand(height * 0.77, height * 0.055, 'rgba(239, 245, 214, 0.18)', now * 0.55 + 2.1);
+    this.drawWaveBand(height * 0.66, height * 0.038, 'rgba(236, 250, 255, 0.2)', now * 0.92);
+    this.drawWaveBand(height * 0.75, height * 0.047, 'rgba(195, 239, 247, 0.22)', now * 0.72 + 1.6);
+    this.drawWaveBand(height * 0.84, height * 0.05, 'rgba(239, 245, 214, 0.14)', now * 0.55 + 2.1);
 
-    this.drawSummerTube(width * 0.86, height * 0.26, Math.min(width, height) * 0.07, accent, now);
-    this.drawIcedDrink(width * 0.13, height * 0.72, Math.min(width, height) * 0.11, now);
+    this.drawSummerTube(width * 0.87, height * 0.25, Math.min(width, height) * 0.068, accent, now);
+    this.drawIcedDrink(width * 0.14, height * 0.79, Math.min(width, height) * 0.106, now);
   }
 
   private drawWaveBand(y: number, amplitude: number, color: string, phase: number) {

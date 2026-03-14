@@ -771,13 +771,25 @@ body.winner-showcase .toast-root {
   max-width: 18rem;
   padding: 0.85rem 1rem;
   border-radius: 1rem;
-  color: var(--text-main);
+  color: #fffaf0;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(14, 22, 32, 0.32);
   background:
     linear-gradient(120deg, color-mix(in srgb, var(--accent, var(--stage-accent)) 20%, transparent), transparent 70%),
-    rgba(18, 21, 28, 0.92);
+    linear-gradient(180deg, rgba(34, 43, 57, 0.94), rgba(21, 28, 38, 0.9));
   border: 1px solid color-mix(in srgb, var(--accent, var(--stage-accent)) 32%, transparent);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.38);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.32);
   animation: toast-in 0.2s ease;
+}
+
+:root.light .toast {
+  color: #593820;
+  text-shadow: none;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--accent, var(--stage-accent)) 18%, transparent), transparent 72%),
+    linear-gradient(180deg, rgba(255, 251, 241, 0.96), rgba(244, 231, 210, 0.94));
+  border-color: color-mix(in srgb, var(--accent, var(--stage-accent)) 22%, rgba(150, 108, 63, 0.18));
+  box-shadow: 0 18px 34px rgba(176, 133, 86, 0.2);
 }
 
 .toast.leave {

@@ -25,7 +25,7 @@ import { VideoRecorder } from './utils/videoRecorder';
 
 const defaultGravity = { x: 0, y: 10 };
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
-  'shark-rush': 7,
+  'shark-rush': 12,
   'bomb-burst': 3,
 };
 
@@ -460,12 +460,12 @@ export class Roulette extends EventTarget {
   }
 
   private _scheduleRoundEvents() {
-    const totalEvents = Math.max(4, Math.min(7, Math.ceil(this._totalMarbleCount / 3)));
+    const totalEvents = Math.max(6, Math.min(10, Math.ceil(this._totalMarbleCount / 2)));
     const schedule: number[] = [];
-    let nextAt = 1900 + Math.random() * 900;
+    let nextAt = 1450 + Math.random() * 650;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += 2300 + Math.random() * 1600;
+      nextAt += 1650 + Math.random() * 1050;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -481,7 +481,7 @@ export class Roulette extends EventTarget {
       if (id !== this._lastRoundEventId) {
         return baseWeight;
       }
-      return id === 'shark-rush' ? baseWeight * 0.75 : baseWeight * 0.2;
+      return id === 'shark-rush' ? baseWeight * 0.92 : baseWeight * 0.2;
     });
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     if (totalWeight <= 0) return;

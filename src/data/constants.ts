@@ -33,19 +33,19 @@ export const Themes: Record<string, ColorTheme> = {
     entity: {
       box: {
         fill: '#66adb8',
-        outline: '#2c647b',
+        outline: '#75afbf',
         bloom: '#66adb8',
         bloomRadius: 0,
       },
       circle: {
         fill: '#e8c982',
-        outline: '#d68f22',
+        outline: '#dcb35b',
         bloom: '#ddaf53',
         bloomRadius: 0,
       },
       polyline: {
         fill: '#e6d9c6',
-        outline: '#714722',
+        outline: '#d3bb90',
         bloom: '#ddb774',
         bloomRadius: 0,
       },
