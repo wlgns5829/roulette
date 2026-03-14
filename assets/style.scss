@@ -3,16 +3,16 @@
   --font-display: 'Jua', 'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif;
   --stage-accent: #f59e0b;
   --goal-accent: #f59e0b;
-  --panel-bg: rgba(45, 31, 48, 0.72);
+  --panel-bg: rgba(39, 28, 43, 0.74);
   --panel-border: rgba(255, 250, 239, 0.2);
   --panel-shadow: 0 24px 72px rgba(64, 34, 22, 0.28);
-  --panel-glow: rgba(255, 190, 92, 0.24);
+  --panel-glow: rgba(255, 190, 92, 0.18);
   --text-main: #fff8ef;
   --text-muted: rgba(255, 244, 228, 0.8);
   --field-bg: rgba(255, 255, 255, 0.16);
   --field-border: rgba(255, 245, 231, 0.2);
-  --surface-soft: rgba(255, 255, 255, 0.1);
-  --surface-strong: rgba(255, 255, 255, 0.16);
+  --surface-soft: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(255, 255, 255, 0.13);
   --button-soft: rgba(255, 255, 255, 0.1);
   --button-strong: linear-gradient(135deg, #ff9f68 0%, #ffd36e 52%, #f9a8d4 100%);
   --shadow-accent: rgba(255, 180, 84, 0.28);
@@ -21,16 +21,16 @@
 }
 
 :root.light {
-  --panel-bg: rgba(255, 252, 246, 0.82);
+  --panel-bg: rgba(245, 235, 220, 0.78);
   --panel-border: rgba(171, 126, 77, 0.18);
   --panel-shadow: 0 24px 60px rgba(184, 136, 90, 0.18);
-  --panel-glow: rgba(255, 193, 122, 0.2);
+  --panel-glow: rgba(255, 193, 122, 0.14);
   --text-main: #3b2416;
   --text-muted: rgba(82, 54, 34, 0.72);
-  --field-bg: rgba(255, 255, 255, 0.9);
+  --field-bg: rgba(255, 250, 242, 0.82);
   --field-border: rgba(183, 139, 92, 0.22);
-  --surface-soft: rgba(255, 255, 255, 0.86);
-  --surface-strong: rgba(255, 255, 255, 0.96);
+  --surface-soft: rgba(255, 249, 239, 0.76);
+  --surface-strong: rgba(255, 252, 246, 0.88);
   --button-soft: rgba(115, 83, 45, 0.08);
   --button-strong: linear-gradient(135deg, #ffb97a 0%, #ffd36e 48%, #f9b7d2 100%);
   --shadow-accent: rgba(255, 184, 102, 0.24);
@@ -48,10 +48,10 @@ body {
   min-height: 100dvh;
   font-family: var(--font-ui);
   background:
-    radial-gradient(circle at top left, rgba(255, 183, 120, 0.28), transparent 32%),
-    radial-gradient(circle at top right, rgba(117, 213, 255, 0.22), transparent 26%),
-    radial-gradient(circle at 50% 78%, rgba(255, 170, 214, 0.16), transparent 34%),
-    linear-gradient(180deg, #392238 0%, #251a35 46%, #1b1728 100%);
+    radial-gradient(circle at top left, rgba(255, 183, 120, 0.18), transparent 32%),
+    radial-gradient(circle at top right, rgba(117, 213, 255, 0.14), transparent 26%),
+    radial-gradient(circle at 50% 78%, rgba(255, 170, 214, 0.1), transparent 34%),
+    linear-gradient(180deg, #2e1d31 0%, #21182d 46%, #181522 100%);
   color: var(--text-main);
   overflow-x: hidden;
   overflow-y: auto;
@@ -81,7 +81,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.28;
+  opacity: 0.16;
   background-image:
     radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.1) 0 0.3rem, transparent 0.34rem),
     radial-gradient(circle at 82% 24%, rgba(255, 255, 255, 0.08) 0 0.36rem, transparent 0.4rem),
@@ -107,7 +107,7 @@ canvas {
   position: fixed;
   border-radius: 999px;
   filter: blur(60px);
-  opacity: 0.42;
+  opacity: 0.26;
   pointer-events: none;
   z-index: 1;
 }

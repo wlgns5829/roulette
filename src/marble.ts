@@ -19,7 +19,6 @@ export class Marble {
   skill: Skills = Skills.None;
   isActive: boolean = false;
 
-  private _skillRate = 0.0005;
   private _coolTime = 5000;
   private _maxCoolTime = 5000;
   private _stuckTime = 0;
@@ -59,9 +58,7 @@ export class Marble {
     this.weight = weight;
     this.physics = physics;
 
-    this._maxCoolTime = 1000 + (1 - this.weight) * 4000;
-    this._coolTime = this._maxCoolTime * Math.random();
-    this._skillRate = 0.2 * this.weight;
+    this._setNextCoolTime(true);
 
     const maxLine = Math.ceil(max / 10);
     const line = Math.floor(order / 10);
@@ -98,13 +95,20 @@ export class Marble {
 
   private _updateSkillInformation(deltaTime: number) {
     if (this._coolTime > 0) {
-      this._coolTime -= deltaTime;
+      this._coolTime = Math.max(0, this._coolTime - deltaTime);
     }
 
     if (this._coolTime <= 0) {
-      this.skill = Math.random() < this._skillRate ? Skills.Impact : Skills.None;
-      this._coolTime = this._maxCoolTime;
+      this.skill = Skills.Impact;
+      this._setNextCoolTime();
     }
+  }
+
+  private _setNextCoolTime(initial: boolean = false) {
+    const weightedBase = 4800 + (1 - this.weight) * 1800;
+    const weightedVariance = 2200 + (1 - this.weight) * 2200;
+    this._maxCoolTime = weightedBase + Math.random() * weightedVariance;
+    this._coolTime = initial ? this._maxCoolTime * (0.35 + Math.random() * 0.4) : this._maxCoolTime;
   }
 
   render(
@@ -163,7 +167,7 @@ export class Marble {
       drawCuteLunchMonster(ctx, {
         x: this.x,
         y: this.y,
-        size: this.size,
+        size: this.size * 1.28,
         hue: this.hue,
         seed: this.id,
         rotation: this.angle,
@@ -193,7 +197,7 @@ export class Marble {
       ctx.lineWidth = 3;
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.42);
+      ctx.translate(this.x, this.y + 0.48);
       ctx.scale(1 / zoom, 1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);

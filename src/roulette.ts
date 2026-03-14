@@ -209,8 +209,14 @@ export class Roulette extends EventTarget {
       const marble = this._marbles[i];
       marble.update(deltaTime);
       if (marble.skill === Skills.Impact) {
+        marble.impact = 720;
         this._effects.push(new SkillEffect(marble.x, marble.y));
         this.physics.impact(marble.id);
+        this.dispatchEvent(
+          new CustomEvent('skill-trigger', {
+            detail: { name: marble.name, accent: this._stage?.accent ?? '#f59e0b' },
+          })
+        );
       }
       if (marble.y > this._stage.goalY) {
         this._winners.push(marble);

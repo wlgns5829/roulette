@@ -177,18 +177,21 @@ export class Box2dPhysics implements IPhysics {
     const src = this.marbleMap[id];
     if (!src) return;
 
+    src.ApplyLinearImpulseToCenter(new this.Box2D.b2Vec2((Math.random() - 0.5) * 2.2, -1.6), true);
+
     Object.values(this.marbleMap).forEach((body) => {
       if (body === src) return;
 
-      const distVector = new this.Box2D.b2Vec2(body.GetPosition().x, body.GetPosition().y);
-      distVector.op_sub(src.GetPosition());
-      const distSq = distVector.LengthSquared();
+      const dx = body.GetPosition().x - src.GetPosition().x;
+      const dy = body.GetPosition().y - src.GetPosition().y;
+      const distSq = dx * dx + dy * dy;
 
-      if (distSq < 100) {
-        distVector.Normalize();
-        const power = 1 - distVector.Length() / 10;
-        distVector.op_mul(power * power * 5);
-        body.ApplyLinearImpulseToCenter(distVector, true);
+      if (distSq > 0 && distSq < 81) {
+        const dist = Math.sqrt(distSq);
+        const falloff = 1 - dist / 9;
+        const power = 2.8 + falloff * falloff * 10.5;
+        const impulse = new this.Box2D.b2Vec2((dx / dist) * power, (dy / dist) * power - falloff * 1.2);
+        body.ApplyLinearImpulseToCenter(impulse, true);
       }
     });
   }

@@ -461,6 +461,10 @@ export function attachApp(roulette: Roulette) {
       audio.playRoundEvent(detail.id);
     });
 
+    roulette.addEventListener('skill-trigger', () => {
+      audio.playSkillImpact();
+    });
+
     roulette.addEventListener('final-approach', (event) => {
       const detail = (event as CustomEvent<{ contender: string; stageTitle: string; accent: string }>).detail;
       appendFeedItem(

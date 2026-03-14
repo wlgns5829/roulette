@@ -282,6 +282,26 @@ export class AudioEngine {
     this._playNoise(start + 0.18, 0.12, 0.05, 3200, 0.7);
   }
 
+  public playSkillImpact() {
+    if (!this._isEnabled) return;
+    const ctx = this._ensureContext();
+    if (!ctx) return;
+
+    const start = ctx.currentTime + 0.01;
+    this._playKick(start, 0.08, 164, 52);
+    this._playNoise(start + 0.01, 0.09, 0.05, 2400, 1.1, 'bandpass');
+    [74, 79, 86].forEach((note, index) => {
+      this._playTone(midiToFreq(note), start + index * 0.035, 0.12, {
+        type: 'triangle',
+        gain: 0.085,
+        attack: 0.01,
+        release: 0.1,
+        filter: 1700 + index * 180,
+        pan: -0.2 + index * 0.2,
+      });
+    });
+  }
+
   public playRoundEvent(eventId: LunchEventId) {
     if (!this._isEnabled) return;
     const ctx = this._ensureContext();
