@@ -16,6 +16,15 @@ const winnerLines = [
   '오늘의 스폰서는 이미 정해져 있었다.',
 ];
 
+winnerLines.splice(
+  0,
+  winnerLines.length,
+  '오늘 커피는 이 친구가 책임진다.',
+  '점심의 신이 미소 지었습니다. 이제 계산할 시간입니다.',
+  '룰렛은 정직했습니다. 커피만 준비하면 됩니다.',
+  '오늘의 커피 운명은 방금 결정됐습니다.'
+);
+
 function normalizeNameKey(value: string) {
   return value.trim().toLowerCase();
 }
@@ -56,6 +65,11 @@ function randomOf<T>(items: T[]): T {
 export function attachApp(roulette: Roulette) {
   const audio = new AudioEngine();
   const setup = async () => {
+    document.title = '점심 커피 룰렛';
+    document
+      .querySelector<HTMLMetaElement>('meta[name="description"]')
+      ?.setAttribute('content', '점심시간 커피 내기를 위한 귀엽고 산뜻한 마블 룰렛 게임');
+
     await waitForRoulette(roulette);
 
     const rosterInput = query<HTMLTextAreaElement>('#rosterInput');

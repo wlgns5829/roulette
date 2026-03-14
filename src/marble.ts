@@ -1,3 +1,4 @@
+import { drawCuteLunchMonster, getCuteMonsterPalette } from './cuteMonster';
 import { Skills, STUCK_DELAY, Themes } from './data/constants';
 import type { IPhysics } from './IPhysics';
 import options from './options';
@@ -66,7 +67,7 @@ export class Marble {
     const line = Math.floor(order / 10);
     const lineDelta = -Math.max(0, Math.ceil(maxLine - 5));
     this.hue = (360 / max) * order;
-    this.color = `hsl(${this.hue} 100% 70%)`;
+    this.color = getCuteMonsterPalette(order, this.hue).label;
     this.id = order;
 
     physics.createMarble(order, 10.25 + (order % 10) * 0.6, maxLine - line + lineDelta);
@@ -150,11 +151,8 @@ export class Marble {
 
   private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
     const hs = this.size / 2;
+    const impactRatio = Math.min(1, this.impact / 500);
 
-    ctx.fillStyle = `hsl(${this.hue} 100% ${this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500)}%`;
-
-    // ctx.shadowColor = this.color;
-    // ctx.shadowBlur = zoom / 2;
     if (skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
@@ -162,7 +160,16 @@ export class Marble {
         ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
       });
     } else {
-      this._drawMarbleBody(ctx, false);
+      drawCuteLunchMonster(ctx, {
+        x: this.x,
+        y: this.y,
+        size: this.size,
+        hue: this.hue,
+        seed: this.id,
+        rotation: this.angle,
+        bounce: impactRatio,
+        glow: this.theme.marbleWinningBorder,
+      });
     }
 
     ctx.shadowColor = '';
@@ -180,12 +187,13 @@ export class Marble {
 
   private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
     transformGuard(ctx, () => {
-      ctx.font = `12pt sans-serif`;
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
+      ctx.font = `700 11pt 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(66, 43, 23, 0.58)';
+      ctx.lineWidth = 3;
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.25);
+      ctx.translate(this.x, this.y + 0.42);
       ctx.scale(1 / zoom, 1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);

@@ -2,7 +2,7 @@ class Options {
   useSkills: boolean = true;
   winningRank: number = 0;
   autoRecording: boolean = false;
-  darkMode: boolean = true;
+  darkMode: boolean = false;
   audioEnabled: boolean = true;
 }
 

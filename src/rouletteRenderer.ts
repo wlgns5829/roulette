@@ -1,4 +1,5 @@
 import type { Camera } from './camera';
+import { drawCuteLunchMonster, getCuteMonsterPalette } from './cuteMonster';
 import { canvasHeight, canvasWidth, initialZoom, Themes } from './data/constants';
 import type { StageDef } from './data/maps';
 import type { GameObject } from './gameObject';
@@ -234,7 +235,8 @@ export class RouletteRenderer {
 
   private renderWinner({ winner, theme, stage }: RenderParameters) {
     if (!winner) return;
-    const accent = stage.accent ?? (theme.winnerText === 'white' ? '#f59e0b' : '#d97706');
+    const palette = getCuteMonsterPalette(winner.id, winner.hue);
+    const accent = stage.accent ?? palette.accent;
     this.ctx.save();
     const centerX = this._canvas.width / 2;
     const centerY = this._canvas.height * 0.48;
@@ -249,23 +251,32 @@ export class RouletteRenderer {
     const subSize = Math.max(20, Math.min(32, this._canvas.width * 0.025));
     const gradient = this.ctx.createRadialGradient(
       centerX,
-      centerY - 20,
+      centerY - 40,
       40,
       centerX,
       centerY,
       this._canvas.width * 0.58
     );
-    gradient.addColorStop(0, 'rgba(255,255,255,0.08)');
-    gradient.addColorStop(0.38, 'rgba(249, 115, 22, 0.14)');
-    gradient.addColorStop(1, 'rgba(6, 10, 18, 0.74)');
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+    gradient.addColorStop(0.4, 'rgba(251, 146, 60, 0.14)');
+    gradient.addColorStop(1, 'rgba(24, 19, 34, 0.78)');
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
 
-    this.ctx.globalAlpha = 0.2;
-    this.ctx.fillStyle = accent;
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, centerY - nameSize * 0.2, nameSize * 1.05, 0, Math.PI * 2);
-    this.ctx.fill();
+    this.ctx.globalAlpha = 0.28;
+    this.ctx.fillStyle = theme.winnerText;
+    for (let i = 0; i < 6; i++) {
+      const spread = this._canvas.width * (0.14 + i * 0.025);
+      this.ctx.beginPath();
+      this.ctx.arc(
+        centerX + Math.cos(i * 0.9) * spread,
+        centerY - nameSize * 0.72 + Math.sin(i * 1.3) * 42,
+        18 + i * 8,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.fill();
+    }
     this.ctx.globalAlpha = 1;
 
     const marbleImage = this.getMarbleImage(winner.name);
@@ -278,14 +289,14 @@ export class RouletteRenderer {
     for (let i = 0; i < 14; i++) {
       const angle = (Math.PI * 2 * i) / 14;
       this.ctx.rotate(angle);
-      this.ctx.fillStyle = `rgba(249, 115, 22, ${0.22 - i * 0.01})`;
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${0.18 - i * 0.006})`;
       this.ctx.fillRect(52, -3, 42, 6);
       this.ctx.rotate(-angle);
     }
     this.ctx.restore();
 
     this.ctx.beginPath();
-    this.ctx.fillStyle = 'rgba(249, 115, 22, 0.2)';
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
     this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * 0.72, 0, Math.PI * 2);
     this.ctx.fill();
 
@@ -298,10 +309,15 @@ export class RouletteRenderer {
         marbleSize
       );
     } else {
-      this.ctx.beginPath();
-      this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize / 2, 0, Math.PI * 2);
-      this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
-      this.ctx.fill();
+      drawCuteLunchMonster(this.ctx, {
+        x: marbleCenterX,
+        y: marbleCenterY,
+        size: marbleSize,
+        hue: winner.hue,
+        seed: winner.id,
+        bounce: 0.35,
+        glow: accent,
+      });
     }
 
     this.ctx.textAlign = 'center';
@@ -310,19 +326,23 @@ export class RouletteRenderer {
     this.ctx.lineWidth = 6;
 
     this.ctx.font = `700 ${labelSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
-    this.ctx.fillStyle = accent;
-    this.ctx.shadowBlur = 24;
+    this.ctx.fillStyle = theme.winnerText;
+    this.ctx.shadowBlur = 16;
     this.ctx.shadowColor = accent;
     this.ctx.fillText('오늘의 커피 당첨자', centerX, centerY - nameSize * 0.72);
 
-    this.ctx.font = `700 ${nameSize}px 'Gowun Batang', 'Noto Serif KR', serif`;
+    this.ctx.fillStyle = 'rgba(24, 19, 34, 0.78)';
+    this.ctx.fillRect(centerX - maxNameWidth * 0.32, centerY - nameSize * 0.8, maxNameWidth * 0.64, labelSize);
     this.ctx.fillStyle = theme.winnerText;
+    this.ctx.fillText('오늘의 커피 당첨자', centerX, centerY - nameSize * 0.72);
+
+    this.ctx.font = `700 ${nameSize}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
+    this.ctx.fillStyle = palette.detail;
     if (theme.winnerOutline) {
       this.ctx.strokeStyle = theme.winnerOutline;
       this.ctx.lineWidth = 10;
       this.ctx.strokeText(winner.name, centerX, centerY);
     }
-    this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
     this.ctx.shadowBlur = 36;
     this.ctx.shadowColor = accent;
     this.ctx.fillText(winner.name, centerX, centerY);
@@ -333,6 +353,12 @@ export class RouletteRenderer {
     this.ctx.fillText(`${stage.title} 통과`, centerX, centerY + nameSize * 0.6);
     this.ctx.fillStyle = accent;
     this.ctx.fillText('폭죽과 함께 오늘의 스폰서 확정!', centerX, centerY + nameSize * 0.88);
+    this.ctx.fillStyle = 'rgba(24, 19, 34, 0.82)';
+    this.ctx.fillRect(centerX - maxNameWidth * 0.38, centerY + nameSize * 0.48, maxNameWidth * 0.76, subSize * 1.8);
+    this.ctx.fillStyle = theme.winnerText;
+    this.ctx.fillText(`${stage.title} 통과`, centerX, centerY + nameSize * 0.6);
+    this.ctx.fillStyle = accent;
+    this.ctx.fillText('폭죽과 함께 오늘의 커피 요정 확정!', centerX, centerY + nameSize * 0.88);
     this.ctx.restore();
   }
 }
