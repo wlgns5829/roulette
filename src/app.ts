@@ -1,12 +1,14 @@
 import { AudioEngine } from './audioEngine';
 import options from './options';
 import type { Roulette } from './roulette';
+import type { MarbleStyle } from './types/MarbleStyle.type';
 import type { LunchEventNotice } from './types/RoundEvent.type';
 
 type WinnerMode = 'first' | 'last' | 'custom';
 
 const storageKey = 'lunch_roulette_names_v3';
 const audioStorageKey = 'lunch_roulette_audio';
+const marbleStyleStorageKey = 'lunch_roulette_marble_style_v1';
 const fixedRoster = ['Dominic', 'Martin'];
 const sampleRoster = ['Alex', 'Mina', 'Chris', 'Jae', 'Sora', 'Yuna', 'Noah', 'Hana'];
 const winnerLines = [
@@ -84,6 +86,7 @@ export function attachApp(roulette: Roulette) {
     const audioToggle = query<HTMLInputElement>('#audioToggle');
     const skillToggle = query<HTMLInputElement>('#skillToggle');
     const themeToggle = query<HTMLInputElement>('#themeToggle');
+    const marbleStyleSelect = query<HTMLSelectElement>('#marbleStyleSelect');
     const stageTitle = query<HTMLElement>('#stageTitle');
     const stageDescription = query<HTMLElement>('#stageDescription');
     const stageFlavor = query<HTMLElement>('#stageFlavor');
@@ -345,6 +348,16 @@ export function attachApp(roulette: Roulette) {
     recordToggle.checked = options.autoRecording;
     skillToggle.checked = options.useSkills;
     themeToggle.checked = options.darkMode;
+    const savedMarbleStyle = localStorage.getItem(marbleStyleStorageKey) as MarbleStyle | null;
+    if (
+      savedMarbleStyle === 'classic' ||
+      savedMarbleStyle === 'cute' ||
+      savedMarbleStyle === 'retro' ||
+      savedMarbleStyle === 'sprite'
+    ) {
+      options.marbleStyle = savedMarbleStyle;
+    }
+    marbleStyleSelect.value = options.marbleStyle;
     options.audioEnabled = localStorage.getItem(audioStorageKey) !== 'false';
     audioToggle.checked = options.audioEnabled;
     audio.setEnabled(options.audioEnabled);
@@ -413,6 +426,19 @@ export function attachApp(roulette: Roulette) {
 
     skillToggle.addEventListener('change', () => {
       options.useSkills = skillToggle.checked;
+    });
+
+    marbleStyleSelect.addEventListener('change', () => {
+      options.marbleStyle = marbleStyleSelect.value as MarbleStyle;
+      localStorage.setItem(marbleStyleStorageKey, options.marbleStyle);
+      audio.playUiClick();
+      const styleLabels: Record<MarbleStyle, string> = {
+        classic: '기본 공',
+        cute: '귀여운 몬스터',
+        retro: '레트로 패러디',
+        sprite: '스프라이트',
+      };
+      showToast(`${styleLabels[options.marbleStyle]} 모드로 바꿨어요.`, '#f59e0b');
     });
 
     audioToggle.addEventListener('change', async () => {

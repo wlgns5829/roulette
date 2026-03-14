@@ -1,6 +1,7 @@
-import { drawCuteLunchMonster, getCuteMonsterPalette } from './cuteMonster';
+import { getCuteMonsterPalette } from './cuteMonster';
 import { Skills, STUCK_DELAY, Themes } from './data/constants';
 import type { IPhysics } from './IPhysics';
+import { drawMarbleLook } from './marbleLooks';
 import options from './options';
 import type { ColorTheme } from './types/ColorTheme';
 import type { VectorLike } from './types/VectorLike';
@@ -156,24 +157,29 @@ export class Marble {
   private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
     const hs = this.size / 2;
     const impactRatio = Math.min(1, this.impact / 500);
+    const style = options.marbleStyle;
 
-    if (skin) {
+    if (style === 'sprite' && skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
         ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
       });
     } else {
-      drawCuteLunchMonster(ctx, {
-        x: this.x,
-        y: this.y,
-        size: this.size * 1.4,
-        hue: this.hue,
-        seed: this.id,
-        rotation: this.angle,
-        bounce: impactRatio,
-        glow: this.theme.marbleWinningBorder,
-      });
+      drawMarbleLook(
+        ctx,
+        {
+          x: this.x,
+          y: this.y,
+          size: this.size * 1.4,
+          hue: this.hue,
+          seed: this.id,
+          rotation: this.angle,
+          bounce: impactRatio,
+          glow: this.theme.marbleWinningBorder,
+        },
+        style === 'sprite' ? 'retro' : style
+      );
     }
 
     ctx.shadowColor = '';

@@ -1,10 +1,12 @@
 import type { Camera } from './camera';
-import { drawCuteLunchMonster, getCuteMonsterPalette } from './cuteMonster';
+import { getCuteMonsterPalette } from './cuteMonster';
 import { canvasHeight, canvasWidth, initialZoom, Themes } from './data/constants';
 import type { StageDef } from './data/maps';
 import type { GameObject } from './gameObject';
 import { KeywordService } from './keywordService';
 import type { Marble } from './marble';
+import { drawMarbleLook } from './marbleLooks';
+import options from './options';
 import type { ParticleManager } from './particleManager';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MapEntityState } from './types/MapEntity.type';
@@ -244,7 +246,7 @@ export class RouletteRenderer {
     );
     const labelSize = Math.max(26, Math.min(42, this._canvas.width * 0.034));
     const subSize = Math.max(20, Math.min(32, this._canvas.width * 0.025));
-    const marbleImage = this.getMarbleImage(winner.name);
+    const marbleImage = options.marbleStyle === 'sprite' ? this.getMarbleImage(winner.name) : undefined;
     const marbleSize = Math.max(96, Math.min(148, this._canvas.width * 0.105));
     const marbleCenterX = centerX;
     const marbleCenterY = centerY - nameSize * 0.95;
@@ -307,15 +309,19 @@ export class RouletteRenderer {
         marbleSize
       );
     } else {
-      drawCuteLunchMonster(this.ctx, {
-        x: marbleCenterX,
-        y: marbleCenterY,
-        size: marbleSize,
-        hue: winner.hue,
-        seed: winner.id,
-        bounce: 0.35,
-        glow: accent,
-      });
+      drawMarbleLook(
+        this.ctx,
+        {
+          x: marbleCenterX,
+          y: marbleCenterY,
+          size: marbleSize,
+          hue: winner.hue,
+          seed: winner.id,
+          bounce: 0.35,
+          glow: accent,
+        },
+        options.marbleStyle === 'sprite' ? 'retro' : options.marbleStyle
+      );
     }
 
     this.ctx.textAlign = 'center';
