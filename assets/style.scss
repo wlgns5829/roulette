@@ -21,16 +21,16 @@
 }
 
 :root.light {
-  --panel-bg: rgba(245, 235, 220, 0.78);
+  --panel-bg: rgba(232, 221, 202, 0.8);
   --panel-border: rgba(171, 126, 77, 0.18);
   --panel-shadow: 0 24px 60px rgba(184, 136, 90, 0.18);
-  --panel-glow: rgba(255, 193, 122, 0.14);
+  --panel-glow: rgba(255, 193, 122, 0.1);
   --text-main: #3b2416;
   --text-muted: rgba(82, 54, 34, 0.72);
-  --field-bg: rgba(255, 250, 242, 0.82);
+  --field-bg: rgba(245, 236, 221, 0.84);
   --field-border: rgba(183, 139, 92, 0.22);
-  --surface-soft: rgba(255, 249, 239, 0.76);
-  --surface-strong: rgba(255, 252, 246, 0.88);
+  --surface-soft: rgba(240, 231, 216, 0.78);
+  --surface-strong: rgba(245, 237, 224, 0.88);
   --button-soft: rgba(115, 83, 45, 0.08);
   --button-strong: linear-gradient(135deg, #ffb97a 0%, #ffd36e 48%, #f9b7d2 100%);
   --shadow-accent: rgba(255, 184, 102, 0.24);

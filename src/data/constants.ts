@@ -25,33 +25,33 @@ export const DefaultBloomColor = {
 
 export const Themes: Record<string, ColorTheme> = {
   light: {
-    background: '#eadfcd',
+    background: '#d7c8b1',
     marbleLightness: 50,
     marbleWinningBorder: 'black',
     skillColor: '#f97316',
     coolTimeIndicator: '#fb7185',
     entity: {
       box: {
-        fill: '#74bcc8',
+        fill: '#66adb8',
         outline: '#2c647b',
-        bloom: '#74bcc8',
+        bloom: '#66adb8',
         bloomRadius: 0,
       },
       circle: {
-        fill: '#f5d79a',
+        fill: '#e8c982',
         outline: '#d68f22',
-        bloom: '#f1c15f',
+        bloom: '#ddaf53',
         bloomRadius: 0,
       },
       polyline: {
-        fill: '#f5ebdb',
+        fill: '#e6d9c6',
         outline: '#714722',
-        bloom: '#f0cc89',
+        bloom: '#ddb774',
         bloomRadius: 0,
       },
     },
     rankStroke: 'black',
-    minimapBackground: '#fefefe',
+    minimapBackground: '#ece0cf',
     minimapViewport: '#6699cc',
 
     winnerBackground: 'rgba(255, 255, 255, 0.5)',
