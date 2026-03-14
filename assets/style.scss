@@ -44,11 +44,13 @@ body {
     radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 28%),
     linear-gradient(180deg, #170f0d 0%, #090b12 55%, #06070a 100%);
   color: var(--text-main);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 body::before {
@@ -73,7 +75,7 @@ canvas {
   inset: 0;
   width: 100%;
   height: 100%;
-  touch-action: none;
+  touch-action: pan-y pinch-zoom;
   user-select: none;
   z-index: 0;
 }
@@ -631,8 +633,8 @@ body.goal-celebration .result-card {
     grid-template-columns: 1fr;
     grid-template-areas:
       'hero'
-      'controls'
       'stage'
+      'controls'
       'live';
     gap: 0.9rem;
     padding-bottom: max(5.5rem, calc(env(safe-area-inset-bottom) + 4rem));
@@ -686,8 +688,57 @@ body.goal-celebration .result-card {
     line-height: 1.45;
   }
 
+  .section-heading {
+    margin-bottom: 0.7rem;
+  }
+
+  .field {
+    margin-bottom: 0.8rem;
+  }
+
   textarea {
-    min-height: 8rem;
+    min-height: 5.5rem;
+    max-height: 8rem;
+    resize: none;
+  }
+
+  .toggle-grid {
+    gap: 0.55rem;
+  }
+
+  .toggle-card {
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    align-items: flex-start;
+  }
+
+  .toggle-card strong {
+    font-size: 0.92rem;
+  }
+
+  .toggle-card span {
+    display: block;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .stage-panel h3 {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
+  }
+
+  .stage-copy,
+  .stage-flavor {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .event-badges {
+    gap: 0.4rem;
+  }
+
+  .event-badge {
+    padding: 0.42rem 0.65rem;
+    font-size: 0.78rem;
   }
 
   .winner-mode,
