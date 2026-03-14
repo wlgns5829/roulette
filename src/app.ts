@@ -1,9 +1,12 @@
+import { AudioEngine } from './audioEngine';
 import options from './options';
 import type { Roulette } from './roulette';
+import type { LunchEventNotice } from './types/RoundEvent.type';
 
 type WinnerMode = 'first' | 'last' | 'custom';
 
 const storageKey = 'lunch_roulette_names';
+const audioStorageKey = 'lunch_roulette_audio';
 const sampleRoster = ['Alex', 'Mina', 'Chris', 'Jae', 'Sora', 'Yuna', 'Noah', 'Hana'];
 const winnerLines = [
   'Everyone else gets coffee. You get the bill.',
@@ -46,6 +49,7 @@ function randomOf<T>(items: T[]): T {
 }
 
 export function attachApp(roulette: Roulette) {
+  const audio = new AudioEngine();
   const setup = async () => {
     await waitForRoulette(roulette);
 
@@ -58,6 +62,7 @@ export function attachApp(roulette: Roulette) {
     const lastWinnerButton = query<HTMLButtonElement>('#btnLast');
     const winningRankInput = query<HTMLInputElement>('#winningRank');
     const recordToggle = query<HTMLInputElement>('#recordToggle');
+    const audioToggle = query<HTMLInputElement>('#audioToggle');
     const skillToggle = query<HTMLInputElement>('#skillToggle');
     const themeToggle = query<HTMLInputElement>('#themeToggle');
     const stageTitle = query<HTMLElement>('#stageTitle');
@@ -72,10 +77,12 @@ export function attachApp(roulette: Roulette) {
     const statusPill = query<HTMLElement>('#statusPill');
     const liveStatus = query<HTMLElement>('#liveStatus');
     const toastRoot = query<HTMLElement>('#toastRoot');
+    const goalOverlay = query<HTMLElement>('#goalOverlay');
 
     let ready = false;
     let winnerMode: WinnerMode = 'first';
     let resetTimer = 0;
+    let goalOverlayTimer = 0;
 
     const getRawNames = () =>
       rosterInput.value
@@ -100,6 +107,23 @@ export function attachApp(roulette: Roulette) {
       window.setTimeout(() => {
         toast.remove();
       }, 1500);
+    };
+
+    const triggerGoalOverlay = (accent: string) => {
+      document.documentElement.style.setProperty('--goal-accent', accent);
+      goalOverlay.classList.remove('active');
+      void goalOverlay.offsetWidth;
+      goalOverlay.classList.add('active');
+      document.body.classList.add('goal-celebration');
+
+      if (goalOverlayTimer) {
+        window.clearTimeout(goalOverlayTimer);
+      }
+
+      goalOverlayTimer = window.setTimeout(() => {
+        goalOverlay.classList.remove('active');
+        document.body.classList.remove('goal-celebration');
+      }, 2200);
     };
 
     const appendFeedItem = (title: string, description: string, accent: string, tone = 'event') => {
@@ -206,12 +230,18 @@ export function attachApp(roulette: Roulette) {
       resultPanel.hidden = true;
       clearFeed();
       startButton.disabled = true;
+      audio.unlock();
+      audio.startBgm();
+      audio.playRoundStart();
       roulette.start();
     };
 
     recordToggle.checked = options.autoRecording;
     skillToggle.checked = options.useSkills;
     themeToggle.checked = options.darkMode;
+    options.audioEnabled = localStorage.getItem(audioStorageKey) !== 'false';
+    audioToggle.checked = options.audioEnabled;
+    audio.setEnabled(options.audioEnabled);
     syncTheme();
 
     const savedRoster = localStorage.getItem(storageKey)?.trim();
@@ -235,6 +265,7 @@ export function attachApp(roulette: Roulette) {
 
     shuffleButton.addEventListener('click', refreshBoard);
     demoButton.addEventListener('click', () => {
+      audio.playUiClick();
       rosterInput.value = sampleRoster.join('\n');
       refreshBoard();
       showToast('Sample lunch roster loaded.', '#38bdf8');
@@ -242,17 +273,20 @@ export function attachApp(roulette: Roulette) {
     startButton.addEventListener('click', startRound);
 
     mapSelect.addEventListener('change', () => {
+      audio.playUiClick();
       roulette.setMap(Number(mapSelect.value));
       renderStage(roulette.getCurrentMap());
       refreshBoard();
     });
 
     firstWinnerButton.addEventListener('click', () => {
+      audio.playUiClick();
       winnerMode = 'first';
       setWinnerRank(1);
     });
 
     lastWinnerButton.addEventListener('click', () => {
+      audio.playUiClick();
       winnerMode = 'last';
       setWinnerRank(Math.max(1, roulette.getCount()));
     });
@@ -271,6 +305,16 @@ export function attachApp(roulette: Roulette) {
       options.useSkills = skillToggle.checked;
     });
 
+    audioToggle.addEventListener('change', async () => {
+      options.audioEnabled = audioToggle.checked;
+      localStorage.setItem(audioStorageKey, String(options.audioEnabled));
+      await audio.unlock();
+      audio.setEnabled(options.audioEnabled);
+      if (options.audioEnabled) {
+        audio.playUiClick();
+      }
+    });
+
     themeToggle.addEventListener('change', syncTheme);
 
     roulette.addEventListener('stagechange', (event) => {
@@ -287,19 +331,27 @@ export function attachApp(roulette: Roulette) {
     });
 
     roulette.addEventListener('round-event', (event) => {
-      const detail = (event as CustomEvent<{ title: string; description: string; accent: string }>).detail;
+      const detail = (event as CustomEvent<LunchEventNotice>).detail;
       appendFeedItem(detail.title, detail.description, detail.accent);
       showToast(detail.title, detail.accent);
+      audio.playRoundEvent(detail.id);
     });
 
     roulette.addEventListener('goal', (event) => {
-      const winner = (event as CustomEvent<{ winner: string }>).detail.winner;
+      const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string }>).detail;
       ready = false;
       startButton.disabled = true;
-      winnerName.textContent = winner;
+      winnerName.textContent = detail.winner;
       winnerLine.textContent = randomOf(winnerLines);
       resultPanel.hidden = false;
-      setStatus('Coffee sponsor', `${winner} got picked. One more round is ready soon.`);
+      setStatus('Coffee sponsor', `${detail.winner} got picked. One more round is ready soon.`);
+      appendFeedItem(
+        'Goal in',
+        `${detail.winner} drops through ${detail.stageTitle} and buys the coffee.`,
+        detail.accent
+      );
+      triggerGoalOverlay(detail.accent);
+      audio.playGoal();
 
       resetTimer = window.setTimeout(() => {
         refreshBoard();

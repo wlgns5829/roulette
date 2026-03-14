@@ -219,17 +219,42 @@ export class RouletteRenderer {
     });
   }
 
-  private renderWinner({ winner, theme }: RenderParameters) {
+  private renderWinner({ winner, theme, stage }: RenderParameters) {
     if (!winner) return;
+    const accent = stage.accent ?? (theme.winnerText === 'white' ? '#f59e0b' : '#d97706');
     this.ctx.save();
-    this.ctx.fillStyle = theme.winnerBackground;
-    this.ctx.fillRect(this._canvas.width / 2, this._canvas.height - 168, this._canvas.width / 2, 168);
+    const panelX = this._canvas.width / 2;
+    const panelY = this._canvas.height - 188;
+    const panelWidth = this._canvas.width / 2;
+    const panelHeight = 188;
+    const gradient = this.ctx.createLinearGradient(panelX, panelY, this._canvas.width, this._canvas.height);
+    gradient.addColorStop(0, `${theme.winnerBackground}`);
+    gradient.addColorStop(0.45, 'rgba(249, 115, 22, 0.18)');
+    gradient.addColorStop(1, 'rgba(17, 24, 39, 0.78)');
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
 
     // Draw marble image or colored circle
-    const marbleSize = 100;
+    const marbleSize = 108;
     const marbleCenterX = this._canvas.width - marbleSize / 2 - 20;
-    const marbleCenterY = this._canvas.height - 168 / 2;
+    const marbleCenterY = this._canvas.height - panelHeight / 2;
     const marbleImage = this.getMarbleImage(winner.name);
+
+    this.ctx.save();
+    this.ctx.translate(marbleCenterX, marbleCenterY);
+    for (let i = 0; i < 14; i++) {
+      const angle = (Math.PI * 2 * i) / 14;
+      this.ctx.rotate(angle);
+      this.ctx.fillStyle = `rgba(249, 115, 22, ${0.22 - i * 0.01})`;
+      this.ctx.fillRect(52, -3, 42, 6);
+      this.ctx.rotate(-angle);
+    }
+    this.ctx.restore();
+
+    this.ctx.beginPath();
+    this.ctx.fillStyle = 'rgba(249, 115, 22, 0.2)';
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * 0.72, 0, Math.PI * 2);
+    this.ctx.fill();
 
     if (marbleImage) {
       this.ctx.drawImage(
@@ -249,15 +274,19 @@ export class RouletteRenderer {
     this.ctx.fillStyle = theme.winnerText;
     this.ctx.strokeStyle = theme.winnerOutline;
 
-    this.ctx.font = 'bold 48px sans-serif';
+    this.ctx.font = '700 24px sans-serif';
     this.ctx.textAlign = 'right';
     this.ctx.lineWidth = 4;
     const textRightX = marbleCenterX - marbleSize / 2 - 20;
+    this.ctx.fillStyle = accent;
+    this.ctx.fillText('GOAL IN', textRightX, this._canvas.height - 132);
+    this.ctx.font = 'bold 52px sans-serif';
+    this.ctx.fillStyle = theme.winnerText;
     if (theme.winnerOutline) {
-      this.ctx.strokeText('Winner', textRightX, this._canvas.height - 120);
+      this.ctx.strokeText('Winner', textRightX, this._canvas.height - 86);
     }
 
-    this.ctx.fillText('Winner', textRightX, this._canvas.height - 120);
+    this.ctx.fillText('Winner', textRightX, this._canvas.height - 86);
     this.ctx.font = 'bold 72px sans-serif';
     this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
     if (theme.winnerOutline) {

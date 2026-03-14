@@ -3,6 +3,7 @@ class Options {
   winningRank: number = 0;
   autoRecording: boolean = false;
   darkMode: boolean = true;
+  audioEnabled: boolean = true;
 }
 
 const options = new Options();

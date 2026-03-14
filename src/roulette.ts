@@ -4,6 +4,7 @@ import { defaultLunchEventPool, getLunchEventNotice, getLunchEventTitles } from 
 import { type StageDef, stages } from './data/maps';
 import { FastForwader } from './fastForwader';
 import type { GameObject } from './gameObject';
+import { GoalCelebrationEffect } from './goalCelebrationEffect';
 import type { IPhysics } from './IPhysics';
 import { Marble } from './marble';
 import { Minimap } from './minimap';
@@ -234,7 +235,16 @@ export class Roulette extends EventTarget {
   }
 
   private _finishRound(marble: Marble) {
-    this.dispatchEvent(new CustomEvent('goal', { detail: { winner: marble.name } }));
+    this._effects.push(new GoalCelebrationEffect(marble.x, marble.y, this._stage?.accent));
+    this.dispatchEvent(
+      new CustomEvent('goal', {
+        detail: {
+          winner: marble.name,
+          stageTitle: this._stage?.title ?? '',
+          accent: this._stage?.accent ?? '#f59e0b',
+        },
+      })
+    );
     this._winner = marble;
     this._isRunning = false;
     this._clearRoundEffects();
