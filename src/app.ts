@@ -79,6 +79,10 @@ export function attachApp(roulette: Roulette) {
     const winnerName = query<HTMLElement>('#winnerName');
     const winnerLine = query<HTMLElement>('#winnerLine');
     const winnerMap = query<HTMLElement>('#winnerMap');
+    const winnerShowcase = query<HTMLElement>('#winnerShowcase');
+    const winnerShowcaseLabel = query<HTMLElement>('#winnerShowcaseLabel');
+    const winnerShowcaseName = query<HTMLElement>('#winnerShowcaseName');
+    const winnerShowcaseStage = query<HTMLElement>('#winnerShowcaseStage');
     const statusPill = query<HTMLElement>('#statusPill');
     const liveStatus = query<HTMLElement>('#liveStatus');
     const mobileHudToggle = query<HTMLButtonElement>('#mobileHudToggle');
@@ -90,6 +94,7 @@ export function attachApp(roulette: Roulette) {
     let winnerMode: WinnerMode = 'first';
     let resetTimer = 0;
     let goalOverlayTimer = 0;
+    let winnerShowcaseTimer = 0;
     let roundRunning = false;
 
     const getRosterTokens = () => {
@@ -165,6 +170,33 @@ export function attachApp(roulette: Roulette) {
       window.setTimeout(() => {
         toast.remove();
       }, 1500);
+    };
+
+    const hideWinnerShowcase = () => {
+      if (winnerShowcaseTimer) {
+        window.clearTimeout(winnerShowcaseTimer);
+        winnerShowcaseTimer = 0;
+      }
+      winnerShowcase.hidden = true;
+      document.body.classList.remove('winner-showcase');
+    };
+
+    const showWinnerShowcase = (winner: string, stageTitle: string, accent: string) => {
+      document.documentElement.style.setProperty('--goal-accent', accent);
+      winnerShowcaseLabel.textContent = '오늘의 커피 당첨';
+      winnerShowcaseName.textContent = winner;
+      winnerShowcaseStage.textContent = `${stageTitle} 최종 통과`;
+      winnerShowcase.hidden = false;
+      document.body.classList.add('winner-showcase');
+
+      if (winnerShowcaseTimer) {
+        window.clearTimeout(winnerShowcaseTimer);
+      }
+
+      winnerShowcaseTimer = window.setTimeout(() => {
+        winnerShowcase.hidden = true;
+        document.body.classList.remove('winner-showcase');
+      }, 3000);
     };
 
     const triggerGoalOverlay = (accent: string) => {
@@ -278,6 +310,8 @@ export function attachApp(roulette: Roulette) {
         window.clearTimeout(resetTimer);
         resetTimer = 0;
       }
+
+      hideWinnerShowcase();
 
       resultPanel.hidden = true;
       clearFeed();
@@ -428,6 +462,7 @@ export function attachApp(roulette: Roulette) {
       winnerName.textContent = detail.winner;
       winnerLine.textContent = randomOf(winnerLines);
       resultPanel.hidden = false;
+      showWinnerShowcase(detail.winner, detail.stageTitle, detail.accent);
       setStatus('오늘의 당첨', `${detail.winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
       appendFeedItem(
         '골인',
@@ -439,7 +474,7 @@ export function attachApp(roulette: Roulette) {
 
       resetTimer = window.setTimeout(() => {
         refreshBoard();
-      }, 2800);
+      }, 3300);
     });
 
     roulette.addEventListener('message', (event) => {

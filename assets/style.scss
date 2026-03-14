@@ -529,6 +529,75 @@ body.goal-celebration .result-card {
   animation: goal-overlay-burst 1.55s ease-out forwards;
 }
 
+.winner-showcase {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(7, 10, 16, 0.22), rgba(7, 10, 16, 0.48));
+}
+
+.winner-showcase[hidden] {
+  display: none;
+}
+
+.winner-showcase-card {
+  width: min(44rem, calc(100vw - 2.5rem));
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border-radius: 1.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--goal-accent) 26%, transparent), transparent 48%),
+    linear-gradient(180deg, rgba(12, 15, 22, 0.9), rgba(7, 9, 14, 0.76));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--goal-accent) 20%, transparent),
+    0 34px 80px rgba(7, 10, 16, 0.52);
+  text-align: center;
+  animation: winner-showcase-in 0.45s cubic-bezier(0.18, 0.8, 0.25, 1) both;
+}
+
+.winner-showcase-label,
+.winner-showcase-stage {
+  margin: 0;
+}
+
+.winner-showcase-label {
+  color: var(--goal-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: clamp(0.78rem, 2vw, 1rem);
+}
+
+.winner-showcase-name {
+  margin: 0.75rem 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(3.2rem, 10vw, 7rem);
+  line-height: 0.92;
+  color: var(--text-main);
+  text-shadow:
+    0 0 24px color-mix(in srgb, var(--goal-accent) 48%, transparent),
+    0 0 64px color-mix(in srgb, var(--goal-accent) 24%, transparent);
+}
+
+.winner-showcase-stage {
+  margin-top: 0.9rem;
+  font-size: clamp(1rem, 2.7vw, 1.35rem);
+  color: var(--text-muted);
+}
+
+body.winner-showcase .hud,
+body.winner-showcase .credits,
+body.winner-showcase .mobile-hud-toggle,
+body.winner-showcase .toast-root {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .toast {
   min-width: 13rem;
   max-width: 18rem;
@@ -603,6 +672,23 @@ body.goal-celebration .result-card {
   100% {
     opacity: 0;
     transform: scale(1.02);
+  }
+}
+
+@keyframes winner-showcase-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -753,6 +839,20 @@ body.goal-celebration .result-card {
   .panel {
     padding: 0.9rem;
     border-radius: 1.1rem;
+  }
+
+  .winner-showcase {
+    padding: 1rem;
+  }
+
+  .winner-showcase-card {
+    width: min(100%, 34rem);
+    padding: 1.2rem 1rem 1.35rem;
+    border-radius: 1.3rem;
+  }
+
+  .winner-showcase-name {
+    font-size: clamp(2.7rem, 14vw, 4.6rem);
   }
 
   .hero {

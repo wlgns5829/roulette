@@ -41,7 +41,7 @@ export class AudioEngine {
 
     if (value) {
       this._ctx.resume();
-      this._masterGain.gain.setTargetAtTime(0.9, this._ctx.currentTime, 0.04);
+      this._masterGain.gain.setTargetAtTime(1, this._ctx.currentTime, 0.04);
       if (this._hasStartedBgm) {
         this.startBgm();
       }
@@ -57,7 +57,7 @@ export class AudioEngine {
     if (!ctx) return;
     await ctx.resume();
     if (this._masterGain) {
-      this._masterGain.gain.setTargetAtTime(this._isEnabled ? 0.9 : 0.0001, ctx.currentTime, 0.04);
+      this._masterGain.gain.setTargetAtTime(this._isEnabled ? 1 : 0.0001, ctx.currentTime, 0.04);
     }
   }
 
@@ -202,7 +202,7 @@ export class AudioEngine {
     const start = ctx.currentTime + 0.02;
     this._bgmGain.gain.cancelScheduledValues(start);
     this._bgmGain.gain.setTargetAtTime(0.035, start, 0.03);
-    this._bgmGain.gain.setTargetAtTime(0.11, start + 2.2, 0.18);
+    this._bgmGain.gain.setTargetAtTime(0.16, start + 2.2, 0.18);
 
     this._playKick(start, 0.18, 180, 38);
     this._playNoise(start + 0.02, 0.32, 0.1, 3800, 0.9, 'highpass');
@@ -267,7 +267,7 @@ export class AudioEngine {
     const sfx = ctx.createGain();
 
     master.gain.value = 0.0001;
-    bgm.gain.value = 0.11;
+    bgm.gain.value = 0.16;
     sfx.gain.value = 0.18;
 
     bgm.connect(master);
