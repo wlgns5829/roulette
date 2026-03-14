@@ -5,16 +5,20 @@ import type { LunchEventNotice } from './types/RoundEvent.type';
 
 type WinnerMode = 'first' | 'last' | 'custom';
 
-const storageKey = 'lunch_roulette_names_v2';
+const storageKey = 'lunch_roulette_names_v3';
 const audioStorageKey = 'lunch_roulette_audio';
-const defaultRoster = ['Dominic'];
+const fixedRoster = ['Dominic', 'Martin'];
 const sampleRoster = ['Alex', 'Mina', 'Chris', 'Jae', 'Sora', 'Yuna', 'Noah', 'Hana'];
 const winnerLines = [
-  'Everyone else gets coffee. You get the bill.',
-  'A dramatic finish and a very real cafe receipt.',
-  'Lunch fate has spoken. Time to buy the round.',
-  'The marble chose chaos and coffee at the same time.',
+  '오늘 커피는 당신이 책임진다.',
+  '점심의 신탁이 내려왔다. 이제 계산할 시간이다.',
+  '구슬은 솔직했다. 커피는 네가 산다.',
+  '오늘의 스폰서는 이미 정해져 있었다.',
 ];
+
+function normalizeNameKey(value: string) {
+  return value.trim().toLowerCase();
+}
 
 function query<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -88,11 +92,29 @@ export function attachApp(roulette: Roulette) {
     let goalOverlayTimer = 0;
     let roundRunning = false;
 
-    const getRawNames = () =>
+    const getRosterTokens = () => {
+      const merged = new Map<string, number>();
+      const fixedRosterSet = new Set(fixedRoster.map(normalizeNameKey));
+      fixedRoster.forEach((name) => {
+        merged.set(name, 1);
+      });
+
       rosterInput.value
         .split(/[,\r\n]/g)
         .map((value) => value.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .forEach((token) => {
+          const parsed = parseNameToken(token);
+          if (!parsed.name || fixedRosterSet.has(normalizeNameKey(parsed.name))) {
+            return;
+          }
+
+          const key = parsed.weight > 1 ? `${parsed.name}/${parsed.weight}` : parsed.name;
+          merged.set(key, (merged.get(key) ?? 0) + parsed.count);
+        });
+
+      return [...merged.entries()].map(([key, count]) => (count > 1 ? `${key}*${count}` : key));
+    };
 
     const setStatus = (pill: string, text: string) => {
       statusPill.textContent = pill;
@@ -101,7 +123,7 @@ export function attachApp(roulette: Roulette) {
 
     const setMobileHudOpen = (open: boolean) => {
       document.body.classList.toggle('mobile-hud-open', open);
-      mobileHudToggle.textContent = open ? 'Watch board' : 'Show setup';
+      mobileHudToggle.textContent = open ? '게임 보기' : '설정 보기';
       mobileHudToggle.setAttribute('aria-expanded', String(open));
     };
 
@@ -111,7 +133,7 @@ export function attachApp(roulette: Roulette) {
 
       if (!showToggle) {
         document.body.classList.remove('mobile-hud-open');
-        mobileHudToggle.textContent = 'Show setup';
+        mobileHudToggle.textContent = '설정 보기';
         mobileHudToggle.setAttribute('aria-expanded', 'false');
       } else if (!document.body.classList.contains('mobile-hud-open')) {
         setMobileHudOpen(false);
@@ -184,16 +206,7 @@ export function attachApp(roulette: Roulette) {
     };
 
     const normalizeRoster = () => {
-      const merged = new Map<string, number>();
-
-      getRawNames().forEach((token) => {
-        const parsed = parseNameToken(token);
-        if (!parsed.name) return;
-        const key = parsed.weight > 1 ? `${parsed.name}/${parsed.weight}` : parsed.name;
-        merged.set(key, (merged.get(key) ?? 0) + parsed.count);
-      });
-
-      rosterInput.value = [...merged.entries()].map(([key, count]) => (count > 1 ? `${key}*${count}` : key)).join('\n');
+      rosterInput.value = getRosterTokens().join('\n');
     };
 
     const syncTheme = () => {
@@ -214,10 +227,10 @@ export function attachApp(roulette: Roulette) {
     };
 
     const refreshBoard = () => {
-      const names = getRawNames();
+      const names = getRosterTokens();
       roulette.setMarbles(names);
       ready = names.length > 0;
-      localStorage.setItem(storageKey, rosterInput.value.trim());
+      localStorage.setItem(storageKey, names.join('\n'));
 
       if (winnerMode === 'last') {
         setWinnerRank(Math.max(1, roulette.getCount()));
@@ -229,10 +242,10 @@ export function attachApp(roulette: Roulette) {
 
       startButton.disabled = !ready;
       setStatus(
-        ready ? 'Board ready' : 'Waiting roster',
+        ready ? '준비 완료' : '명단 대기',
         ready
-          ? `${roulette.getCount()} marbles loaded for the next coffee bet.`
-          : 'Add at least one name to arm the board.'
+          ? `${roulette.getCount()}명의 구슬이 오늘의 커피 내기를 기다리고 있습니다.`
+          : '최소 한 명의 이름을 입력해 주세요.'
       );
     };
 
@@ -249,12 +262,15 @@ export function attachApp(roulette: Roulette) {
         badge.textContent = title;
         eventBadges.append(badge);
       });
-      winnerMap.textContent = `Map: ${stage.title}`;
+      winnerMap.textContent = `맵: ${stage.title}`;
     };
 
     const startRound = () => {
+      normalizeRoster();
+      refreshBoard();
+
       if (!ready) {
-        showToast('Add a roster before starting the round.', '#ef4444');
+        showToast('라운드를 시작하려면 명단이 필요합니다.', '#ef4444');
         return;
       }
 
@@ -281,7 +297,7 @@ export function attachApp(roulette: Roulette) {
     syncTheme();
 
     const savedRoster = localStorage.getItem(storageKey)?.trim();
-    rosterInput.value = savedRoster || defaultRoster.join('\n');
+    rosterInput.value = savedRoster || fixedRoster.join('\n');
 
     const maps = roulette.getMaps();
     maps.forEach((map) => {
@@ -302,9 +318,9 @@ export function attachApp(roulette: Roulette) {
     shuffleButton.addEventListener('click', refreshBoard);
     demoButton.addEventListener('click', () => {
       audio.playUiClick();
-      rosterInput.value = sampleRoster.join('\n');
+      rosterInput.value = [...fixedRoster, ...sampleRoster].join('\n');
       refreshBoard();
-      showToast('Sample lunch roster loaded.', '#38bdf8');
+      showToast('샘플 명단을 불러왔습니다.', '#38bdf8');
     });
     startButton.addEventListener('click', startRound);
     mobileHudToggle.addEventListener('click', () => {
@@ -373,15 +389,15 @@ export function attachApp(roulette: Roulette) {
     roulette.addEventListener('stagechange', (event) => {
       const detail = (event as CustomEvent<ReturnType<Roulette['getCurrentMap']>>).detail;
       renderStage(detail);
-      appendFeedItem('Map ready', detail.flavor, detail.accent, 'system');
+      appendFeedItem('맵 준비 완료', detail.flavor, detail.accent, 'system');
     });
 
     roulette.addEventListener('round-start', (event) => {
       const detail = (event as CustomEvent<ReturnType<Roulette['getCurrentMap']>>).detail;
       setRoundFocus(true);
       clearFeed();
-      appendFeedItem('Round live', `Marbles released on ${detail.title}.`, detail.accent, 'system');
-      setStatus('Round live', 'Watch the chaos. The next coffee sponsor is being decided.');
+      appendFeedItem('라운드 시작', `${detail.title}에서 구슬이 쏟아졌습니다.`, detail.accent, 'system');
+      setStatus('진행 중', '혼돈의 점심 내기가 시작됐습니다.');
     });
 
     roulette.addEventListener('round-event', (event) => {
@@ -389,6 +405,19 @@ export function attachApp(roulette: Roulette) {
       appendFeedItem(detail.title, detail.description, detail.accent);
       showToast(detail.title, detail.accent);
       audio.playRoundEvent(detail.id);
+    });
+
+    roulette.addEventListener('final-approach', (event) => {
+      const detail = (event as CustomEvent<{ contender: string; stageTitle: string; accent: string }>).detail;
+      appendFeedItem(
+        '결승 직전',
+        `${detail.contender}님이 ${detail.stageTitle}의 마지막 관문에 진입했습니다.`,
+        detail.accent,
+        'system'
+      );
+      setStatus('결승 직전', `${detail.contender}님이 거의 골인 직전입니다.`);
+      showToast(`${detail.contender}님 결승 직전!`, detail.accent);
+      audio.playFinalApproach();
     });
 
     roulette.addEventListener('goal', (event) => {
@@ -399,10 +428,10 @@ export function attachApp(roulette: Roulette) {
       winnerName.textContent = detail.winner;
       winnerLine.textContent = randomOf(winnerLines);
       resultPanel.hidden = false;
-      setStatus('Coffee sponsor', `${detail.winner} got picked. One more round is ready soon.`);
+      setStatus('오늘의 당첨', `${detail.winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
       appendFeedItem(
-        'Goal in',
-        `${detail.winner} drops through ${detail.stageTitle} and buys the coffee.`,
+        '골인',
+        `${detail.winner}님이 ${detail.stageTitle}을 통과해 오늘의 커피 당첨자가 됐습니다.`,
         detail.accent
       );
       triggerGoalOverlay(detail.accent);
@@ -420,8 +449,8 @@ export function attachApp(roulette: Roulette) {
     refreshBoard();
     syncMobileHudState();
     appendFeedItem(
-      'Lunch mode loaded',
-      'Three office maps and random mid-round events are armed.',
+      '점심 내기 모드 준비 완료',
+      '세 가지 사무실 맵과 라운드 이벤트가 활성화되었습니다.',
       '#f59e0b',
       'system'
     );

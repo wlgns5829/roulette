@@ -308,9 +308,9 @@ const elevatorChaosEntities: MapEntity[] = [
 
 export const lunchStages: StageDef[] = [
   {
-    title: 'Coffee Run',
-    description: 'A tight hallway of stirrers, sugar cubes, and lunch-break traffic.',
-    flavor: 'Best for fast rounds with sudden sideways chaos.',
+    title: '커피 러시',
+    description: '젓는 막대, 각설탕, 점심시간 인파가 얽힌 좁은 통로입니다.',
+    flavor: '짧고 빠르지만 갑작스러운 옆치기가 많은 맵입니다.',
     accent: '#f59e0b',
     goalY: 138,
     zoomY: 132,
@@ -318,9 +318,9 @@ export const lunchStages: StageDef[] = [
     entities: coffeeRunEntities,
   },
   {
-    title: 'Snack Attack',
-    description: 'Dessert trays, cookie pegs, and a dangerous amount of sugar near the finish.',
-    flavor: 'Bouncy and noisy, with lots of pack reshuffles near the middle.',
+    title: '간식 대소동',
+    description: '디저트 트레이와 쿠키 핀, 그리고 결승 근처의 위험한 설탕 지대가 기다립니다.',
+    flavor: '중반부터 순위가 자주 뒤집히는 통통 튀는 맵입니다.',
     accent: '#fb7185',
     goalY: 148,
     zoomY: 142,
@@ -328,9 +328,9 @@ export const lunchStages: StageDef[] = [
     entities: snackAttackEntities,
   },
   {
-    title: 'Elevator Chaos',
-    description: 'Alternating office chutes where the AC and elevator doors fight for control.',
-    flavor: 'More tactical lanes with late-stage reversals near the bottom.',
+    title: '엘리베이터 카오스',
+    description: '에어컨 바람과 엘리베이터 문이 번갈아 흐름을 뒤흔드는 사무실 코스입니다.',
+    flavor: '하단에서 막판 역전이 자주 터지는 전략형 맵입니다.',
     accent: '#38bdf8',
     goalY: 156,
     zoomY: 149,

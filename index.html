@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lunch Break Marble Roulette</title>
-  <meta name="description" content="A lunch-break coffee bet game built on top of Marble Roulette.">
+  <title>점심 커피 룰렛</title>
+  <meta name="description" content="점심시간 커피 내기를 위한 사무실 테마 마블 룰렛 게임">
   <meta name="theme-color" content="#f97316">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
@@ -22,87 +22,88 @@
 
   <main class="hud">
     <section class="panel hero">
-      <p class="eyebrow">Lunch Break Roulette</p>
-      <h1>Find Today's Coffee Sponsor</h1>
+      <p class="eyebrow">점심 커피 룰렛</p>
+      <h1>오늘의 커피 당첨자를 뽑아보자</h1>
       <p class="lede">
-        Physics pinball, office-chaos events, and just enough drama to make one lunchtime bet worth watching.
+        사무실 테마 맵, 예측불가 이벤트, 그리고 마지막까지 쫄깃한 연출로 점심시간 커피 내기를 더 재밌게 만듭니다.
       </p>
       <div class="hero-status">
-        <span id="statusPill" class="status-pill">Board ready</span>
-        <p id="liveStatus" class="live-status">Load a roster and send the marbles flying.</p>
+        <span id="statusPill" class="status-pill">준비 완료</span>
+        <p id="liveStatus" class="live-status">명단을 확인하고 라운드를 시작해 보세요.</p>
       </div>
     </section>
 
     <section class="panel controls">
       <div class="section-heading">
-        <h2>Roster</h2>
-        <button id="btnDemo" class="ghost">Load sample</button>
+        <h2>참가 명단</h2>
+        <button id="btnDemo" class="ghost">샘플 불러오기</button>
       </div>
       <label class="field">
-        <span>Names</span>
-        <textarea id="rosterInput" placeholder="One name per line, or comma separated"></textarea>
+        <span>이름</span>
+        <textarea id="rosterInput" placeholder="한 줄에 한 명씩 입력하거나 쉼표로 구분해 주세요"></textarea>
       </label>
+      <p class="field-note">Dominic, Martin은 고정 참가자라 항상 포함됩니다.</p>
 
       <div class="section-heading compact">
-        <h2>Round Setup</h2>
+        <h2>라운드 설정</h2>
       </div>
 
       <label class="field">
-        <span>Map</span>
+        <span>맵</span>
         <select id="mapSelect"></select>
       </label>
 
       <div class="field">
-        <span>Winner rule</span>
+        <span>당첨 규칙</span>
         <div class="winner-mode">
-          <button id="btnFirst" class="active" type="button">First</button>
-          <button id="btnLast" type="button">Last</button>
-          <input id="winningRank" type="number" min="1" value="1" aria-label="Winning rank">
+          <button id="btnFirst" class="active" type="button">선착순</button>
+          <button id="btnLast" type="button">막차</button>
+          <input id="winningRank" type="number" min="1" value="1" aria-label="당첨 순위">
         </div>
       </div>
 
       <div class="toggle-grid">
         <label class="toggle-card">
           <div>
-            <strong>Impact skills</strong>
-            <span>Keep the original blast skills on.</span>
+            <strong>임팩트 스킬</strong>
+            <span>원작의 충돌 스킬 효과를 유지합니다.</span>
           </div>
           <input id="skillToggle" type="checkbox" checked>
         </label>
         <label class="toggle-card">
           <div>
-            <strong>Dark arena</strong>
-            <span>Use the brighter neon board style.</span>
+            <strong>다크 아레나</strong>
+            <span>네온 느낌의 보드 테마를 사용합니다.</span>
           </div>
           <input id="themeToggle" type="checkbox" checked>
         </label>
         <label class="toggle-card">
           <div>
-            <strong>Auto record</strong>
-            <span>Save a clip after the winning drop.</span>
+            <strong>자동 녹화</strong>
+            <span>당첨 직후 장면을 자동으로 저장합니다.</span>
           </div>
           <input id="recordToggle" type="checkbox">
         </label>
         <label class="toggle-card">
           <div>
-            <strong>Synth soundtrack</strong>
-            <span>Play built-in BGM and event stingers with no external audio files.</span>
+            <strong>합성 사운드</strong>
+            <span>외부 음원 없이 내장 BGM과 이벤트 효과음을 재생합니다.</span>
           </div>
           <input id="audioToggle" type="checkbox" checked>
         </label>
       </div>
 
       <div class="control-actions">
-        <button id="btnShuffle" class="ghost" type="button">Reset board</button>
-        <button id="btnStart" class="primary" type="button">Start round</button>
+        <button id="btnShuffle" class="ghost" type="button">보드 초기화</button>
+        <button id="btnStart" class="primary" type="button">라운드 시작</button>
       </div>
     </section>
 
     <section class="panel stage-panel">
       <div class="section-heading compact">
-        <h2>Map Briefing</h2>
+        <h2>맵 브리핑</h2>
       </div>
-      <h3 id="stageTitle">Coffee Run</h3>
+      <h3 id="stageTitle">커피 러시</h3>
       <p id="stageDescription" class="stage-copy"></p>
       <p id="stageFlavor" class="stage-flavor"></p>
       <div id="eventBadges" class="event-badges"></div>
@@ -110,12 +111,12 @@
 
     <section class="panel live-panel">
       <div class="section-heading compact">
-        <h2>Live Feed</h2>
+        <h2>실시간 로그</h2>
       </div>
 
       <div id="resultPanel" class="result-card" hidden>
-        <p class="result-label">Coffee sponsor</p>
-        <h3 id="winnerName">Waiting...</h3>
+        <p class="result-label">오늘의 커피 당첨</p>
+        <h3 id="winnerName">대기 중...</h3>
         <p id="winnerLine" class="result-line"></p>
         <p id="winnerMap" class="result-map"></p>
       </div>
@@ -125,14 +126,14 @@
   </main>
 
   <button id="mobileHudToggle" class="mobile-hud-toggle" type="button" hidden aria-expanded="false">
-    Show setup
+    설정 보기
   </button>
 
   <div id="toastRoot" class="toast-root"></div>
   <div id="goalOverlay" class="goal-overlay" aria-hidden="true"></div>
 
   <footer class="credits">
-    Built for lunch bets on top of
+    원작
     <a href="https://github.com/lazygyu/roulette" target="_blank" rel="noreferrer">lazygyu's Marble Roulette</a>.
   </footer>
 </body>

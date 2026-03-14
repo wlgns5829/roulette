@@ -261,6 +261,13 @@ canvas {
   letter-spacing: 0.08em;
 }
 
+.field-note {
+  margin: -0.25rem 0 1rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
 textarea,
 select,
 input[type='number'] {

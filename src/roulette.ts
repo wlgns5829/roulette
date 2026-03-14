@@ -78,6 +78,7 @@ export class Roulette extends EventTarget {
   private _speedEffectRemaining = 0;
   private _gravityEffectRemaining = 0;
   private _gravityOverride: { x: number; y: number } | null = null;
+  private _finalApproachTriggered = false;
 
   get isReady() {
     return this._isReady;
@@ -230,28 +231,81 @@ export class Roulette extends EventTarget {
     const topY = this._marbles[targetIndex] ? this._marbles[targetIndex].y : 0;
     this._goalDist = Math.abs(this._stage.zoomY - topY);
     this._timeScale = this._calcTimeScale();
+    this._maybeTriggerFinalApproach(targetIndex);
 
     this._marbles = this._marbles.filter((marble) => marble.y <= this._stage?.goalY);
   }
 
   private _finishRound(marble: Marble) {
     this._effects.push(new GoalCelebrationEffect(marble.x, marble.y, this._stage?.accent));
+    this._winner = marble;
+    this._isRunning = false;
+    this._clearRoundEffects();
+
+    const accent = this._stage?.accent ?? '#f59e0b';
+    const palette = [accent, '#fef08a', '#ffffff', `hsl(${marble.hue} 100% 62%)`];
+    const centerX = this._renderer.width / 2;
+    const centerY = this._renderer.height * 0.34;
+    this._particleManager.shot(centerX, centerY, { count: 160, palette, sizeRange: [6, 18], speedRange: [90, 260] });
+    this._particleManager.shot(centerX - 170, this._renderer.height * 0.24, {
+      count: 110,
+      palette,
+      sizeRange: [5, 15],
+      speedRange: [80, 220],
+    });
+    this._particleManager.shot(centerX + 170, this._renderer.height * 0.22, {
+      count: 110,
+      palette,
+      sizeRange: [5, 15],
+      speedRange: [80, 220],
+    });
+    this._particleManager.shot(centerX, this._renderer.height * 0.16, {
+      count: 90,
+      palette,
+      sizeRange: [4, 13],
+      speedRange: [70, 180],
+    });
+
     this.dispatchEvent(
       new CustomEvent('goal', {
         detail: {
           winner: marble.name,
           stageTitle: this._stage?.title ?? '',
-          accent: this._stage?.accent ?? '#f59e0b',
+          accent,
         },
       })
     );
-    this._winner = marble;
-    this._isRunning = false;
-    this._clearRoundEffects();
-    this._particleManager.shot(this._renderer.width, this._renderer.height);
     setTimeout(() => {
       this._recorder.stop();
     }, 1000);
+  }
+
+  private _maybeTriggerFinalApproach(targetIndex: number) {
+    if (!this._stage || !this._isRunning || this._finalApproachTriggered) {
+      return;
+    }
+
+    const contender = this._marbles[targetIndex];
+    if (!contender || this._winners.length >= this._winnerRank + 1) {
+      return;
+    }
+
+    const packIsTight = Boolean(this._marbles[targetIndex - 1] || this._marbles[targetIndex + 1]);
+    const isNearGoal = contender.y > this._stage.goalY - 12 || this._goalDist < zoomThreshold * 0.55;
+    if (!packIsTight || !isNearGoal) {
+      return;
+    }
+
+    this._finalApproachTriggered = true;
+    this.dispatchEvent(
+      new CustomEvent('final-approach', {
+        detail: {
+          contender: contender.name,
+          stageTitle: this._stage.title,
+          accent: this._stage.accent ?? '#f59e0b',
+        },
+      })
+    );
   }
 
   private _calcTimeScale(): number {
@@ -380,6 +434,7 @@ export class Roulette extends EventTarget {
     this._eventTimeline = [];
     this._nextEventIndex = 0;
     this._lastRoundEventId = null;
+    this._finalApproachTriggered = false;
     this._clearRoundEffects();
   }
 
@@ -434,7 +489,7 @@ export class Roulette extends EventTarget {
         });
         notice = {
           ...notice,
-          description: `A tray slips and shoves the whole field to the ${direction < 0 ? 'left' : 'right'}.`,
+          description: `트레이가 미끄러지며 전체 구슬이 ${direction < 0 ? '왼쪽' : '오른쪽'}으로 밀려납니다.`,
         };
         break;
       }
@@ -459,7 +514,7 @@ export class Roulette extends EventTarget {
         this._gravityEffectRemaining = 4200;
         notice = {
           ...notice,
-          description: `A freezing AC gust starts pulling every marble to the ${direction < 0 ? 'left' : 'right'}.`,
+          description: `차가운 에어컨 바람이 불어 모든 구슬이 ${direction < 0 ? '왼쪽' : '오른쪽'}으로 끌려갑니다.`,
         };
         break;
       }
@@ -471,7 +526,7 @@ export class Roulette extends EventTarget {
         this.physics.impact(center.id);
         notice = {
           ...notice,
-          description: `${center.name} gets caught in a bean burst and explodes the nearby pack.`,
+          description: `${center.name}님이 원두 폭발에 휘말려 주변 구슬을 흔들어 놓았습니다.`,
         };
         break;
       }
@@ -490,8 +545,8 @@ export class Roulette extends EventTarget {
     return {
       index,
       title: stage.title,
-      description: stage.description ?? 'Classic Marble Roulette physics map.',
-      flavor: stage.flavor ?? 'Original course with live pinball-style collisions.',
+      description: stage.description ?? '기본 마블 룰렛 물리 맵입니다.',
+      flavor: stage.flavor ?? '핀볼처럼 튀는 충돌이 살아 있는 오리지널 코스입니다.',
       accent: stage.accent ?? '#38bdf8',
       eventTitles: getLunchEventTitles(eventPool),
     };

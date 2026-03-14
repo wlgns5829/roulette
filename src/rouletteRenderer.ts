@@ -219,26 +219,59 @@ export class RouletteRenderer {
     });
   }
 
+  private fitTextSize(text: string, maxWidth: number, maxSize: number, minSize: number, weight = 900) {
+    let size = maxSize;
+    while (size > minSize) {
+      this.ctx.font = `${weight} ${size}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+      if (this.ctx.measureText(text).width <= maxWidth) {
+        return size;
+      }
+      size -= 4;
+    }
+
+    return minSize;
+  }
+
   private renderWinner({ winner, theme, stage }: RenderParameters) {
     if (!winner) return;
     const accent = stage.accent ?? (theme.winnerText === 'white' ? '#f59e0b' : '#d97706');
     this.ctx.save();
-    const panelX = this._canvas.width / 2;
-    const panelY = this._canvas.height - 188;
-    const panelWidth = this._canvas.width / 2;
-    const panelHeight = 188;
-    const gradient = this.ctx.createLinearGradient(panelX, panelY, this._canvas.width, this._canvas.height);
-    gradient.addColorStop(0, `${theme.winnerBackground}`);
-    gradient.addColorStop(0.45, 'rgba(249, 115, 22, 0.18)');
-    gradient.addColorStop(1, 'rgba(17, 24, 39, 0.78)');
+    const centerX = this._canvas.width / 2;
+    const centerY = this._canvas.height * 0.48;
+    const maxNameWidth = this._canvas.width * 0.82;
+    const nameSize = this.fitTextSize(
+      winner.name,
+      maxNameWidth,
+      Math.min(176, this._canvas.width * 0.17),
+      Math.max(56, this._canvas.width * 0.075)
+    );
+    const labelSize = Math.max(26, Math.min(42, this._canvas.width * 0.034));
+    const subSize = Math.max(20, Math.min(32, this._canvas.width * 0.025));
+    const gradient = this.ctx.createRadialGradient(
+      centerX,
+      centerY - 20,
+      40,
+      centerX,
+      centerY,
+      this._canvas.width * 0.58
+    );
+    gradient.addColorStop(0, 'rgba(255,255,255,0.08)');
+    gradient.addColorStop(0.38, 'rgba(249, 115, 22, 0.14)');
+    gradient.addColorStop(1, 'rgba(6, 10, 18, 0.74)');
     this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+    this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
 
-    // Draw marble image or colored circle
-    const marbleSize = 108;
-    const marbleCenterX = this._canvas.width - marbleSize / 2 - 20;
-    const marbleCenterY = this._canvas.height - panelHeight / 2;
+    this.ctx.globalAlpha = 0.2;
+    this.ctx.fillStyle = accent;
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, centerY - nameSize * 0.2, nameSize * 1.05, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.globalAlpha = 1;
+
     const marbleImage = this.getMarbleImage(winner.name);
+    const marbleSize = Math.max(84, Math.min(132, this._canvas.width * 0.095));
+    const marbleCenterX = centerX;
+    const marbleCenterY = centerY - nameSize * 0.95;
 
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
@@ -271,28 +304,35 @@ export class RouletteRenderer {
       this.ctx.fill();
     }
 
-    this.ctx.fillStyle = theme.winnerText;
-    this.ctx.strokeStyle = theme.winnerOutline;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.lineJoin = 'round';
+    this.ctx.lineWidth = 6;
 
-    this.ctx.font = '700 24px sans-serif';
-    this.ctx.textAlign = 'right';
-    this.ctx.lineWidth = 4;
-    const textRightX = marbleCenterX - marbleSize / 2 - 20;
+    this.ctx.font = `800 ${labelSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
     this.ctx.fillStyle = accent;
-    this.ctx.fillText('GOAL IN', textRightX, this._canvas.height - 132);
-    this.ctx.font = 'bold 52px sans-serif';
+    this.ctx.shadowBlur = 24;
+    this.ctx.shadowColor = accent;
+    this.ctx.fillText('오늘의 커피 당첨', centerX, centerY - nameSize * 0.72);
+
+    this.ctx.font = `900 ${nameSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
     this.ctx.fillStyle = theme.winnerText;
     if (theme.winnerOutline) {
-      this.ctx.strokeText('Winner', textRightX, this._canvas.height - 86);
+      this.ctx.strokeStyle = theme.winnerOutline;
+      this.ctx.lineWidth = 10;
+      this.ctx.strokeText(winner.name, centerX, centerY);
     }
-
-    this.ctx.fillText('Winner', textRightX, this._canvas.height - 86);
-    this.ctx.font = 'bold 72px sans-serif';
     this.ctx.fillStyle = `hsl(${winner.hue} 100% ${theme.marbleLightness})`;
-    if (theme.winnerOutline) {
-      this.ctx.strokeText(winner.name, textRightX, this._canvas.height - 55);
-    }
-    this.ctx.fillText(winner.name, textRightX, this._canvas.height - 55);
+    this.ctx.shadowBlur = 36;
+    this.ctx.shadowColor = accent;
+    this.ctx.fillText(winner.name, centerX, centerY);
+
+    this.ctx.font = `700 ${subSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+    this.ctx.fillStyle = theme.winnerText;
+    this.ctx.shadowBlur = 0;
+    this.ctx.fillText(`${stage.title} 통과`, centerX, centerY + nameSize * 0.6);
+    this.ctx.fillStyle = accent;
+    this.ctx.fillText('폭죽과 함께 오늘의 스폰서 확정!', centerX, centerY + nameSize * 0.88);
     this.ctx.restore();
   }
 }
