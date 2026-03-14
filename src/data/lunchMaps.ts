@@ -98,6 +98,22 @@ function pool(...ids: LunchEventId[]): LunchEventId[] {
   return ids;
 }
 
+function swapColor(color: string | undefined, replacements: Record<string, string>) {
+  if (!color) return color;
+  return replacements[color] ?? color;
+}
+
+function recolorEntities(entities: MapEntity[], replacements: Record<string, string>): MapEntity[] {
+  return entities.map((entity) => ({
+    ...entity,
+    shape: {
+      ...entity.shape,
+      color: swapColor(entity.shape.color, replacements),
+      bloomColor: swapColor(entity.shape.bloomColor, replacements),
+    },
+  }));
+}
+
 const coffeeRunEntities: MapEntity[] = [
   wall([
     [2, -260],
@@ -180,6 +196,28 @@ const coffeeRunEntities: MapEntity[] = [
     '#fff7ed'
   ),
 ];
+
+const summerSplashEntities = recolorEntities(coffeeRunEntities, {
+  '#f7f0d2': '#f8e7b5',
+  '#ffd29d': '#7dd3fc',
+  '#f8c471': '#facc15',
+  '#f8fafc': '#ecfeff',
+  '#e2e8f0': '#bae6fd',
+  '#fdba74': '#fb7185',
+  '#fff7ed': '#fef3c7',
+  '#f97316': '#fb923c',
+  '#fb7185': '#22d3ee',
+  '#38bdf8': '#0ea5e9',
+  '#ffffff': '#f0fdfa',
+});
+
+const summerSplashStage: Partial<StageDef> = {
+  title: '여름 바다 스플래시',
+  description: '파도빛 레일과 햇살 핀볼 구간이 이어지는 시원한 여름 기본 맵입니다.',
+  flavor: '해변처럼 산뜻하지만 스피너와 해양 이벤트가 순위를 자주 흔듭니다.',
+  accent: '#22d3ee',
+  entities: summerSplashEntities,
+};
 
 const snackAttackEntities: MapEntity[] = [
   wall([
@@ -375,6 +413,7 @@ export const lunchStages: StageDef[] = [
     zoomY: 132,
     eventPool: pool('coffee-spill', 'espresso-shot', 'meeting-call', 'bean-burst', 'bomb-burst', 'shark-rush'),
     entities: coffeeRunEntities,
+    ...summerSplashStage,
   },
   {
     title: '간식 대소동',
