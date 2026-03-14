@@ -167,7 +167,7 @@ export class Marble {
       drawCuteLunchMonster(ctx, {
         x: this.x,
         y: this.y,
-        size: this.size * 1.28,
+        size: this.size * 1.4,
         hue: this.hue,
         seed: this.id,
         rotation: this.angle,
@@ -197,7 +197,7 @@ export class Marble {
       ctx.lineWidth = 3;
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.48);
+      ctx.translate(this.x, this.y + 0.54);
       ctx.scale(1 / zoom, 1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);
@@ -205,18 +205,20 @@ export class Marble {
   }
 
   private _drawOutline(ctx: CanvasRenderingContext2D, lineWidth: number) {
+    const visualRadius = this.size * 0.66;
     ctx.beginPath();
     ctx.strokeStyle = this.theme.marbleWinningBorder;
     ctx.lineWidth = lineWidth;
-    ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, visualRadius, 0, Math.PI * 2);
     ctx.stroke();
   }
 
   private _renderCoolTime(ctx: CanvasRenderingContext2D, zoom: number) {
+    const visualRadius = this.size * 0.66;
     ctx.strokeStyle = this.theme.coolTimeIndicator;
     ctx.lineWidth = 1 / zoom;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size / 2 + 2 / zoom, rad(270), rad(270 + (360 * this._coolTime) / this._maxCoolTime));
+    ctx.arc(this.x, this.y, visualRadius + 2 / zoom, rad(270), rad(270 + (360 * this._coolTime) / this._maxCoolTime));
     ctx.stroke();
   }
 }
