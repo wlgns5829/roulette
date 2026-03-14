@@ -5,8 +5,9 @@ import type { LunchEventNotice } from './types/RoundEvent.type';
 
 type WinnerMode = 'first' | 'last' | 'custom';
 
-const storageKey = 'lunch_roulette_names';
+const storageKey = 'lunch_roulette_names_v2';
 const audioStorageKey = 'lunch_roulette_audio';
+const defaultRoster = ['Dominic'];
 const sampleRoster = ['Alex', 'Mina', 'Chris', 'Jae', 'Sora', 'Yuna', 'Noah', 'Hana'];
 const winnerLines = [
   'Everyone else gets coffee. You get the bill.',
@@ -76,13 +77,16 @@ export function attachApp(roulette: Roulette) {
     const winnerMap = query<HTMLElement>('#winnerMap');
     const statusPill = query<HTMLElement>('#statusPill');
     const liveStatus = query<HTMLElement>('#liveStatus');
+    const mobileHudToggle = query<HTMLButtonElement>('#mobileHudToggle');
     const toastRoot = query<HTMLElement>('#toastRoot');
     const goalOverlay = query<HTMLElement>('#goalOverlay');
+    const mobileLayout = window.matchMedia('(max-width: 980px)');
 
     let ready = false;
     let winnerMode: WinnerMode = 'first';
     let resetTimer = 0;
     let goalOverlayTimer = 0;
+    let roundRunning = false;
 
     const getRawNames = () =>
       rosterInput.value
@@ -93,6 +97,38 @@ export function attachApp(roulette: Roulette) {
     const setStatus = (pill: string, text: string) => {
       statusPill.textContent = pill;
       liveStatus.textContent = text;
+    };
+
+    const setMobileHudOpen = (open: boolean) => {
+      document.body.classList.toggle('mobile-hud-open', open);
+      mobileHudToggle.textContent = open ? 'Watch board' : 'Show setup';
+      mobileHudToggle.setAttribute('aria-expanded', String(open));
+    };
+
+    const syncMobileHudState = () => {
+      const showToggle = mobileLayout.matches && roundRunning;
+      mobileHudToggle.hidden = !showToggle;
+
+      if (!showToggle) {
+        document.body.classList.remove('mobile-hud-open');
+        mobileHudToggle.textContent = 'Show setup';
+        mobileHudToggle.setAttribute('aria-expanded', 'false');
+      } else if (!document.body.classList.contains('mobile-hud-open')) {
+        setMobileHudOpen(false);
+      }
+    };
+
+    const setRoundFocus = (running: boolean) => {
+      roundRunning = running;
+      document.body.classList.toggle('round-focus', running);
+
+      if (!running) {
+        document.body.classList.remove('mobile-hud-open');
+      } else if (mobileLayout.matches) {
+        setMobileHudOpen(false);
+      }
+
+      syncMobileHudState();
     };
 
     const showToast = (message: string, accent = '#f59e0b') => {
@@ -245,7 +281,7 @@ export function attachApp(roulette: Roulette) {
     syncTheme();
 
     const savedRoster = localStorage.getItem(storageKey)?.trim();
-    rosterInput.value = savedRoster || sampleRoster.join('\n');
+    rosterInput.value = savedRoster || defaultRoster.join('\n');
 
     const maps = roulette.getMaps();
     maps.forEach((map) => {
@@ -271,6 +307,10 @@ export function attachApp(roulette: Roulette) {
       showToast('Sample lunch roster loaded.', '#38bdf8');
     });
     startButton.addEventListener('click', startRound);
+    mobileHudToggle.addEventListener('click', () => {
+      audio.playUiClick();
+      setMobileHudOpen(!document.body.classList.contains('mobile-hud-open'));
+    });
 
     mapSelect.addEventListener('change', () => {
       audio.playUiClick();
@@ -317,6 +357,19 @@ export function attachApp(roulette: Roulette) {
 
     themeToggle.addEventListener('change', syncTheme);
 
+    const onViewportChange = () => {
+      if (mobileLayout.matches && roundRunning) {
+        setMobileHudOpen(false);
+      }
+      syncMobileHudState();
+    };
+
+    if ('addEventListener' in mobileLayout) {
+      mobileLayout.addEventListener('change', onViewportChange);
+    } else {
+      mobileLayout.addListener(onViewportChange);
+    }
+
     roulette.addEventListener('stagechange', (event) => {
       const detail = (event as CustomEvent<ReturnType<Roulette['getCurrentMap']>>).detail;
       renderStage(detail);
@@ -325,6 +378,7 @@ export function attachApp(roulette: Roulette) {
 
     roulette.addEventListener('round-start', (event) => {
       const detail = (event as CustomEvent<ReturnType<Roulette['getCurrentMap']>>).detail;
+      setRoundFocus(true);
       clearFeed();
       appendFeedItem('Round live', `Marbles released on ${detail.title}.`, detail.accent, 'system');
       setStatus('Round live', 'Watch the chaos. The next coffee sponsor is being decided.');
@@ -339,6 +393,7 @@ export function attachApp(roulette: Roulette) {
 
     roulette.addEventListener('goal', (event) => {
       const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string }>).detail;
+      setRoundFocus(false);
       ready = false;
       startButton.disabled = true;
       winnerName.textContent = detail.winner;
@@ -363,6 +418,7 @@ export function attachApp(roulette: Roulette) {
     });
 
     refreshBoard();
+    syncMobileHudState();
     appendFeedItem(
       'Lunch mode loaded',
       'Three office maps and random mid-round events are armed.',
