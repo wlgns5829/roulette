@@ -84,6 +84,7 @@ export class Roulette extends EventTarget {
   private _gravityEffectRemaining = 0;
   private _gravityOverride: { x: number; y: number } | null = null;
   private _finalApproachTriggered = false;
+  private _closeRaceAssistCooldown = 0;
 
   get isReady() {
     return this._isReady;
@@ -181,9 +182,15 @@ export class Roulette extends EventTarget {
         this._triggerRoundEvent();
       }
     }
+
+    this._applyCloseRaceAssist();
   }
 
   private _updateTemporaryRoundEffects(deltaTime: number) {
+    if (this._closeRaceAssistCooldown > 0) {
+      this._closeRaceAssistCooldown = Math.max(0, this._closeRaceAssistCooldown - deltaTime);
+    }
+
     if (this._speedEffectRemaining > 0) {
       this._speedEffectRemaining -= deltaTime;
       if (this._speedEffectRemaining <= 0) {
@@ -200,6 +207,67 @@ export class Roulette extends EventTarget {
         this.physics.setGravity(defaultGravity);
       }
     }
+  }
+
+  private _applyCloseRaceAssist() {
+    if (!this._stage || this._closeRaceAssistCooldown > 0) {
+      return;
+    }
+
+    const ranked = this._marbles
+      .filter((marble) => marble.isActive)
+      .slice()
+      .sort((a, b) => b.y - a.y);
+    if (ranked.length < 2) {
+      return;
+    }
+
+    const leader = ranked[0];
+    const runnerUp = ranked[1];
+    const progress = leader.y / this._stage.goalY;
+    if (progress < 0.42) {
+      return;
+    }
+
+    const third = ranked[2];
+    const topGap = leader.y - runnerUp.y;
+    const podiumGap = third ? leader.y - third.y : topGap;
+    const desiredTopGap = progress > 0.82 ? 0.95 : progress > 0.68 ? 1.5 : 2.35;
+    const desiredPackGap = progress > 0.82 ? 2.5 : progress > 0.68 ? 3.8 : 5.5;
+
+    if (topGap <= desiredTopGap && podiumGap <= desiredPackGap) {
+      this._closeRaceAssistCooldown = progress > 0.82 ? 140 : 220;
+      return;
+    }
+
+    const tension = Math.min(1, Math.max(topGap - desiredTopGap, podiumGap - desiredPackGap * 0.72) / 4.8);
+    if (tension <= 0.04) {
+      this._closeRaceAssistCooldown = 180;
+      return;
+    }
+
+    const leaderBrake = (progress > 0.82 ? 0.16 : 0.11) + tension * (progress > 0.82 ? 0.34 : 0.22);
+    this.physics.nudgeMarble(leader.id, {
+      x: (Math.random() - 0.5) * 0.12,
+      y: -leaderBrake,
+    });
+    leader.impact = Math.max(leader.impact, 90 + tension * 110);
+
+    const chasers = ranked.slice(1, Math.min(ranked.length, progress > 0.82 ? 4 : 5));
+    chasers.forEach((marble, index) => {
+      const distance = leader.y - marble.y;
+      const catchup =
+        (progress > 0.82 ? 0.16 : 0.1) + Math.max(0, distance - (1.15 + index * 0.8)) * 0.05 + tension * 0.18;
+      const laneAdjust = Math.max(-0.18, Math.min(0.18, (leader.x - marble.x) * 0.05));
+
+      this.physics.nudgeMarble(marble.id, {
+        x: laneAdjust + (Math.random() - 0.5) * 0.08,
+        y: catchup,
+      });
+      marble.impact = Math.max(marble.impact, 100 + tension * 120);
+    });
+
+    this._closeRaceAssistCooldown = progress > 0.82 ? 110 : 170;
   }
 
   private _updateMarbles(deltaTime: number) {
@@ -446,6 +514,7 @@ export class Roulette extends EventTarget {
     this._nextEventIndex = 0;
     this._lastRoundEventId = null;
     this._finalApproachTriggered = false;
+    this._closeRaceAssistCooldown = 0;
     this._clearRoundEffects();
   }
 
