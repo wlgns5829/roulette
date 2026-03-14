@@ -3,37 +3,42 @@ import type { LunchEventId, LunchEventNotice } from '../types/RoundEvent.type';
 const eventCatalog: Record<LunchEventId, Omit<LunchEventNotice, 'id'>> = {
   'coffee-spill': {
     title: '커피 쏟음',
-    description: '트레이가 기울어지며 전체 구슬이 한쪽으로 미끄러집니다.',
+    description: '바닥에 커피가 번지며 구슬들이 한쪽으로 미끄러집니다.',
     accent: '#b7791f',
   },
   'espresso-shot': {
     title: '에스프레소 샷',
-    description: '카페인 부스트가 터지며 라운드 전체 속도가 빨라집니다.',
+    description: '카페인 부스트가 들어와 전체 속도가 잠깐 빨라집니다.',
     accent: '#f97316',
   },
   'meeting-call': {
     title: '회의 호출',
-    description: '휴대폰이 울리고 의자가 밀리며 구슬들이 동시에 흔들립니다.',
+    description: '갑작스러운 호출에 모두가 흔들리며 라인이 뒤엉킵니다.',
     accent: '#38bdf8',
   },
   'ac-draft': {
     title: '에어컨 바람',
-    description: '차가운 사무실 바람이 구슬들의 진행 방향을 틀어버립니다.',
+    description: '옆에서 강한 바람이 불어 구슬 진행 방향이 꺾입니다.',
     accent: '#22d3ee',
   },
   'bean-burst': {
     title: '원두 폭발',
-    description: '원두 봉지가 터지며 구슬 무리에 충격파가 퍼집니다.',
+    description: '원두 포대가 터지며 중심 구슬 주변으로 충격파가 퍼집니다.',
+    accent: '#ef4444',
+  },
+  'bomb-burst': {
+    title: '점심 폭탄',
+    description: '폭탄이 펑펑 터지며 근처 구슬들의 위치가 크게 뒤집힙니다.',
     accent: '#ef4444',
   },
   'sugar-crash': {
-    title: '당 충전 끊김',
-    description: '순간적으로 힘이 빠지며 전체 라운드가 느려집니다.',
+    title: '당 충전 방전',
+    description: '순간적으로 힘이 빠지며 전체 흐름이 느려집니다.',
     accent: '#a78bfa',
   },
   'shark-rush': {
     title: '상어 난입',
-    description: '귀여운 상어가 옆 라인에서 튀어나와 구슬 흐름을 휘저어 놓습니다.',
+    description: '귀여운 상어가 옆 라인에서 튀어나와 구슬 흐름을 휘젓습니다.',
     accent: '#60a5fa',
   },
 };
@@ -44,6 +49,7 @@ export const defaultLunchEventPool: LunchEventId[] = [
   'meeting-call',
   'ac-draft',
   'bean-burst',
+  'bomb-burst',
   'sugar-crash',
   'shark-rush',
 ];

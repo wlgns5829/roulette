@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,6 +8,12 @@
   <meta name="description" content="점심시간 커피 내기를 위한 사무실 테마 마블 룰렛 게임">
   <meta name="theme-color" content="#f97316">
   <meta name="mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="192x192" href="assets/android-icon-192x192.png">
   <link rel="manifest" href="assets/manifest.json">
@@ -23,7 +29,7 @@
   <main class="hud">
     <section class="panel hero">
       <p class="eyebrow">점심 커피 룰렛</p>
-      <h1>오늘의 커피 당첨자를 뽑아보자</h1>
+      <h1>오늘의 커피 당첨자를 정해 보자</h1>
       <p class="lede">
         사무실 테마 맵, 예측불가 이벤트, 그리고 마지막까지 쫄깃한 연출로 점심시간 커피 내기를 더 재밌게 만듭니다.
       </p>
@@ -40,7 +46,7 @@
       </div>
       <label class="field">
         <span>이름</span>
-        <textarea id="rosterInput" placeholder="한 줄에 한 명씩 입력하거나 쉼표로 구분해 주세요"></textarea>
+        <textarea id="rosterInput" placeholder="한 줄에 한 명씩 입력하거나 쉼표로 구분해 주세요."></textarea>
       </label>
       <p class="field-note">Dominic, Martin은 고정 참가자라 항상 포함됩니다.</p>
 
@@ -56,8 +62,8 @@
       <div class="field">
         <span>당첨 규칙</span>
         <div class="winner-mode">
-          <button id="btnFirst" class="active" type="button">선착순</button>
-          <button id="btnLast" type="button">막차</button>
+          <button id="btnFirst" class="active" type="button">첫 번째</button>
+          <button id="btnLast" type="button">마지막</button>
           <input id="winningRank" type="number" min="1" value="1" aria-label="당첨 순위">
         </div>
       </div>
@@ -65,29 +71,29 @@
       <div class="toggle-grid">
         <label class="toggle-card">
           <div>
-            <strong>임팩트 스킬</strong>
-            <span>원작의 충돌 스킬 효과를 유지합니다.</span>
+            <strong>물리 효과</strong>
+            <span>충돌 이펙트와 연출 효과를 함께 보여줍니다.</span>
           </div>
           <input id="skillToggle" type="checkbox" checked>
         </label>
         <label class="toggle-card">
           <div>
-            <strong>다크 아레나</strong>
-            <span>네온 느낌의 보드 테마를 사용합니다.</span>
+            <strong>밝은 테마</strong>
+            <span>더 밝은 보드 스타일로 분위기를 바꿉니다.</span>
           </div>
           <input id="themeToggle" type="checkbox" checked>
         </label>
         <label class="toggle-card">
           <div>
             <strong>자동 녹화</strong>
-            <span>당첨 직후 장면을 자동으로 저장합니다.</span>
+            <span>당첨 순간 화면을 자동으로 저장합니다.</span>
           </div>
           <input id="recordToggle" type="checkbox">
         </label>
         <label class="toggle-card">
           <div>
             <strong>합성 사운드</strong>
-            <span>외부 음원 없이 내장 BGM과 이벤트 효과음을 재생합니다.</span>
+            <span>저작권 걱정 없는 BGM과 이벤트 효과음을 재생합니다.</span>
           </div>
           <input id="audioToggle" type="checkbox" checked>
         </label>
@@ -115,8 +121,8 @@
       </div>
 
       <div id="resultPanel" class="result-card" hidden>
-        <p class="result-label">오늘의 커피 당첨</p>
-        <h3 id="winnerName">대기 중...</h3>
+        <p class="result-label">오늘의 커피 당첨자</p>
+        <h3 id="winnerName">대기 중..</h3>
         <p id="winnerLine" class="result-line"></p>
         <p id="winnerMap" class="result-map"></p>
       </div>
@@ -131,7 +137,7 @@
 
   <div id="winnerShowcase" class="winner-showcase" hidden aria-live="polite">
     <div class="winner-showcase-card">
-      <p id="winnerShowcaseLabel" class="winner-showcase-label">오늘의 커피 당첨</p>
+      <p id="winnerShowcaseLabel" class="winner-showcase-label">오늘의 커피 당첨자</p>
       <h2 id="winnerShowcaseName" class="winner-showcase-name">Dominic</h2>
       <p id="winnerShowcaseStage" class="winner-showcase-stage">커피 러시 돌파</p>
     </div>

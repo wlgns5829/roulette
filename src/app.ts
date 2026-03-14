@@ -184,9 +184,9 @@ export function attachApp(roulette: Roulette) {
 
     const showWinnerShowcase = (winner: string, stageTitle: string, accent: string) => {
       document.documentElement.style.setProperty('--goal-accent', accent);
-      winnerShowcaseLabel.textContent = '오늘의 커피 당첨';
+      winnerShowcaseLabel.textContent = '오늘의 커피 당첨자';
       winnerShowcaseName.textContent = winner;
-      winnerShowcaseStage.textContent = `${stageTitle} 최종 통과`;
+      winnerShowcaseStage.textContent = `${stageTitle} 최종 돌파`;
       winnerShowcase.hidden = false;
       document.body.classList.add('winner-showcase');
 

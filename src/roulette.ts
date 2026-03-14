@@ -26,6 +26,7 @@ import { VideoRecorder } from './utils/videoRecorder';
 const defaultGravity = { x: 0, y: 10 };
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
   'shark-rush': 7,
+  'bomb-burst': 3,
 };
 
 export type StageSummary = {
@@ -537,6 +538,10 @@ export class Roulette extends EventTarget {
         this._gravityEffectRemaining = 4200;
         notice = {
           ...notice,
+          description: `강한 에어컨 바람이 불어 구슬들이 ${direction < 0 ? '왼쪽' : '오른쪽'}으로 휘청였습니다.`,
+        };
+        notice = {
+          ...notice,
           description: `차가운 에어컨 바람이 불어 모든 구슬이 ${direction < 0 ? '왼쪽' : '오른쪽'}으로 끌려갑니다.`,
         };
         break;
@@ -549,8 +554,49 @@ export class Roulette extends EventTarget {
         this.physics.impact(center.id);
         notice = {
           ...notice,
+          description: `${center.name} 주변에서 원두 포대가 터지며 충격파가 번졌습니다.`,
+        };
+        notice = {
+          ...notice,
           description: `${center.name}님이 원두 폭발에 휘말려 주변 구슬을 흔들어 놓았습니다.`,
         };
+        break;
+      }
+      case 'bomb-burst': {
+        const blastCount = 2 + Math.floor(Math.random() * 2);
+        const blasts = activeMarbles
+          .slice()
+          .sort(() => Math.random() - 0.5)
+          .slice(0, blastCount);
+
+        blasts.forEach((center, blastIndex) => {
+          this._effects.push(new GoalCelebrationEffect(center.x, center.y, notice.accent));
+          this._effects.push(new SkillEffect(center.x, center.y));
+
+          activeMarbles.forEach((marble) => {
+            const dx = marble.x - center.x;
+            const dy = marble.y - center.y;
+            const distance = Math.max(0.45, Math.hypot(dx, dy));
+            if (distance > 7.2) return;
+
+            const distanceWeight = 1 - distance / 7.2;
+            const angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.18;
+            const power = 0.9 + distanceWeight * 2.4 + blastIndex * 0.18;
+            this.physics.nudgeMarble(marble.id, {
+              x: Math.cos(angle) * power,
+              y: Math.sin(angle) * power + 0.22,
+            });
+            marble.impact = Math.max(marble.impact, 260 + distanceWeight * 220);
+          });
+        });
+
+        if (blasts.length > 0) {
+          const blastNames = blasts.map((marble) => marble.name).join(', ');
+          notice = {
+            ...notice,
+            description: `${blastNames} 주변에서 점심 폭탄이 연달아 터지며 순위가 크게 흔들렸습니다.`,
+          };
+        }
         break;
       }
       case 'sugar-crash': {
@@ -560,13 +606,18 @@ export class Roulette extends EventTarget {
       }
       case 'shark-rush': {
         const ranked = activeMarbles.slice().sort((a, b) => b.y - a.y);
-        const candidate = ranked[Math.floor(Math.random() * Math.max(1, Math.ceil(ranked.length * 0.6)))];
+        const lowerPool = ranked.slice(0, Math.max(1, Math.ceil(ranked.length * 0.45)));
+        const upperPool = ranked.slice(Math.max(1, Math.floor(ranked.length * 0.45)));
+        const lowerBias = this._roundElapsed > 8500 ? 0.78 : 0.52;
+        const candidatePool =
+          Math.random() < lowerBias && lowerPool.length > 0 ? lowerPool : upperPool.length > 0 ? upperPool : ranked;
+        const candidate = candidatePool[Math.floor(Math.random() * candidatePool.length)];
         if (!candidate) return;
 
         const direction = Math.random() < 0.5 ? 1 : -1;
         const sweepY = Math.max(
           24,
-          Math.min((this._stage?.goalY ?? candidate.y + 8) - 8, candidate.y + (Math.random() - 0.5) * 3)
+          Math.min((this._stage?.goalY ?? candidate.y + 10) - 5.5, candidate.y + (Math.random() - 0.5) * 6.5)
         );
         const band = 5.5;
         const startX = direction > 0 ? -2.8 : 28.4;

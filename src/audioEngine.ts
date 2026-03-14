@@ -338,6 +338,18 @@ export class AudioEngine {
         this._playKick(time, 0.11, 150, 42);
         this._playNoise(time + 0.04, 0.12, 0.08, 900, 1.2, 'bandpass');
         break;
+      case 'bomb-burst':
+        this._playKick(time, 0.14, 180, 34);
+        this._playKick(time + 0.08, 0.11, 140, 28);
+        this._playNoise(time + 0.01, 0.18, 0.12, 760, 1.8, 'bandpass');
+        this._playNoise(time + 0.1, 0.14, 0.08, 2800, 0.9, 'highpass');
+        this._playTone(midiToFreq(43), time + 0.02, 0.26, {
+          type: 'sawtooth',
+          gain: 0.12,
+          release: 0.18,
+          filter: 720,
+        });
+        break;
       case 'sugar-crash':
         this._playTone(midiToFreq(55), time, 0.22, {
           type: 'triangle',

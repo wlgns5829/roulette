@@ -222,7 +222,7 @@ export class RouletteRenderer {
   private fitTextSize(text: string, maxWidth: number, maxSize: number, minSize: number, weight = 900) {
     let size = maxSize;
     while (size > minSize) {
-      this.ctx.font = `${weight} ${size}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+      this.ctx.font = `${weight} ${size}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
       if (this.ctx.measureText(text).width <= maxWidth) {
         return size;
       }
@@ -309,13 +309,13 @@ export class RouletteRenderer {
     this.ctx.lineJoin = 'round';
     this.ctx.lineWidth = 6;
 
-    this.ctx.font = `800 ${labelSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+    this.ctx.font = `700 ${labelSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
     this.ctx.fillStyle = accent;
     this.ctx.shadowBlur = 24;
     this.ctx.shadowColor = accent;
-    this.ctx.fillText('오늘의 커피 당첨', centerX, centerY - nameSize * 0.72);
+    this.ctx.fillText('오늘의 커피 당첨자', centerX, centerY - nameSize * 0.72);
 
-    this.ctx.font = `900 ${nameSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+    this.ctx.font = `700 ${nameSize}px 'Gowun Batang', 'Noto Serif KR', serif`;
     this.ctx.fillStyle = theme.winnerText;
     if (theme.winnerOutline) {
       this.ctx.strokeStyle = theme.winnerOutline;
@@ -327,7 +327,7 @@ export class RouletteRenderer {
     this.ctx.shadowColor = accent;
     this.ctx.fillText(winner.name, centerX, centerY);
 
-    this.ctx.font = `700 ${subSize}px 'Trebuchet MS', 'Avenir Next', sans-serif`;
+    this.ctx.font = `600 ${subSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
     this.ctx.fillStyle = theme.winnerText;
     this.ctx.shadowBlur = 0;
     this.ctx.fillText(`${stage.title} 통과`, centerX, centerY + nameSize * 0.6);

@@ -4,6 +4,7 @@ export type LunchEventId =
   | 'meeting-call'
   | 'ac-draft'
   | 'bean-burst'
+  | 'bomb-burst'
   | 'sugar-crash'
   | 'shark-rush';
 
