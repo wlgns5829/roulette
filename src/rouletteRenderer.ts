@@ -128,10 +128,164 @@ export class RouletteRenderer {
   protected onBeforeEntities(): void {}
   protected onAfterScene(): void {}
 
+  private renderSummerBackdrop(stage: StageDef) {
+    const { width, height } = this._canvas;
+    const accent = stage.accent ?? '#22d3ee';
+    const horizonY = height * 0.56;
+    const waterTop = height * 0.58;
+    const now = performance.now() * 0.001;
+
+    const sky = this.ctx.createLinearGradient(0, 0, 0, horizonY);
+    sky.addColorStop(0, '#4a7ca8');
+    sky.addColorStop(0.45, '#6fb6cf');
+    sky.addColorStop(1, '#d8e8d9');
+    this.ctx.fillStyle = sky;
+    this.ctx.fillRect(0, 0, width, horizonY);
+
+    const sun = this.ctx.createRadialGradient(
+      width * 0.82,
+      height * 0.18,
+      width * 0.01,
+      width * 0.82,
+      height * 0.18,
+      width * 0.12
+    );
+    sun.addColorStop(0, 'rgba(255, 255, 233, 0.88)');
+    sun.addColorStop(0.35, 'rgba(255, 221, 160, 0.66)');
+    sun.addColorStop(1, 'rgba(255, 201, 112, 0)');
+    this.ctx.fillStyle = sun;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const water = this.ctx.createLinearGradient(0, waterTop, 0, height);
+    water.addColorStop(0, '#4ca2c7');
+    water.addColorStop(0.52, '#277f9e');
+    water.addColorStop(1, '#1c4e69');
+    this.ctx.fillStyle = water;
+    this.ctx.fillRect(0, waterTop, width, height - waterTop);
+
+    const sand = this.ctx.createLinearGradient(0, height * 0.8, 0, height);
+    sand.addColorStop(0, 'rgba(225, 206, 154, 0.74)');
+    sand.addColorStop(1, 'rgba(185, 158, 111, 0.92)');
+    this.ctx.fillStyle = sand;
+    this.ctx.fillRect(0, height * 0.82, width, height * 0.18);
+
+    this.drawWaveBand(height * 0.6, height * 0.045, 'rgba(232, 250, 255, 0.28)', now * 0.9);
+    this.drawWaveBand(height * 0.68, height * 0.05, 'rgba(176, 232, 245, 0.24)', now * 0.7 + 1.6);
+    this.drawWaveBand(height * 0.77, height * 0.055, 'rgba(239, 245, 214, 0.18)', now * 0.55 + 2.1);
+
+    this.drawSummerTube(width * 0.86, height * 0.26, Math.min(width, height) * 0.07, accent, now);
+    this.drawIcedDrink(width * 0.13, height * 0.72, Math.min(width, height) * 0.11, now);
+  }
+
+  private drawWaveBand(y: number, amplitude: number, color: string, phase: number) {
+    const { width, height } = this._canvas;
+    const segment = width / 6;
+
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, height);
+    this.ctx.lineTo(0, y);
+
+    for (let i = 0; i <= 6; i++) {
+      const startX = i * segment;
+      const cp1X = startX + segment * 0.35;
+      const cp2X = startX + segment * 0.68;
+      const endX = startX + segment;
+      const wave = Math.sin(phase + i * 0.82) * amplitude;
+      const nextWave = Math.sin(phase + (i + 1) * 0.82) * amplitude;
+      this.ctx.bezierCurveTo(cp1X, y + wave, cp2X, y - nextWave, endX, y + nextWave * 0.5);
+    }
+
+    this.ctx.lineTo(width, height);
+    this.ctx.closePath();
+    this.ctx.fillStyle = color;
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private drawSummerTube(x: number, y: number, radius: number, accent: string, time: number) {
+    const bob = Math.sin(time * 1.1) * radius * 0.08;
+
+    this.ctx.save();
+    this.ctx.translate(x, y + bob);
+    this.ctx.rotate(Math.sin(time * 0.8) * 0.08);
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, radius * 0.95, radius * 0.82, radius * 0.28, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    this.ctx.fillStyle = '#fff8ec';
+    this.ctx.fill();
+
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * 0.46, 0, Math.PI * 2);
+    this.ctx.fillStyle = '#5db0d3';
+    this.ctx.fill();
+
+    this.ctx.lineWidth = radius * 0.24;
+    this.ctx.strokeStyle = accent;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * 0.76, -0.4, 0.95);
+    this.ctx.stroke();
+
+    this.ctx.strokeStyle = '#fb7185';
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * 0.76, 1.2, 2.5);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawIcedDrink(x: number, y: number, size: number, time: number) {
+    const sway = Math.sin(time * 0.7 + 0.8) * size * 0.04;
+
+    this.ctx.save();
+    this.ctx.translate(x, y + sway);
+    this.ctx.rotate(Math.sin(time * 0.5) * 0.03);
+
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, size * 0.92, size * 0.62, size * 0.18, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = 'rgba(248, 254, 255, 0.82)';
+    this.ctx.beginPath();
+    this.ctx.roundRect(-size * 0.42, -size * 0.54, size * 0.84, size * 1.14, size * 0.14);
+    this.ctx.fill();
+
+    const drink = this.ctx.createLinearGradient(0, -size * 0.38, 0, size * 0.5);
+    drink.addColorStop(0, '#7dd3fc');
+    drink.addColorStop(0.52, '#38bdf8');
+    drink.addColorStop(1, '#0ea5e9');
+    this.ctx.fillStyle = drink;
+    this.ctx.beginPath();
+    this.ctx.roundRect(-size * 0.34, -size * 0.36, size * 0.68, size * 0.82, size * 0.12);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+    this.ctx.beginPath();
+    this.ctx.roundRect(-size * 0.22, -size * 0.26, size * 0.12, size * 0.62, size * 0.08);
+    this.ctx.fill();
+
+    this.ctx.strokeStyle = '#fef3c7';
+    this.ctx.lineWidth = size * 0.08;
+    this.ctx.beginPath();
+    this.ctx.moveTo(size * 0.02, -size * 0.64);
+    this.ctx.lineTo(size * 0.32, -size * 1.02);
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = '#fef3c7';
+    this.ctx.beginPath();
+    this.ctx.ellipse(size * 0.34, -size * 1.03, size * 0.08, size * 0.12, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
   render(renderParameters: RenderParameters, uiObjects: UIObject[]) {
     this._theme = renderParameters.theme;
-    this.ctx.fillStyle = this._theme.background;
-    this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+    this.renderSummerBackdrop(renderParameters.stage);
 
     this.ctx.save();
     this.ctx.scale(initialZoom, initialZoom);
