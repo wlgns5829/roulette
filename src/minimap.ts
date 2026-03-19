@@ -53,7 +53,7 @@ export class Minimap implements UIObject {
     if (this._onViewportChangeHandler) {
       this._onViewportChangeHandler({
         x: this.mousePosition.x / 4,
-        y: this.mousePosition.y / 4,
+        y: this.lastParams.camera.toWorldY(this.mousePosition.y / 4),
       });
     }
   }
@@ -71,6 +71,10 @@ export class Minimap implements UIObject {
     ctx.fillStyle = params.theme.minimapBackground;
     ctx.translate(10, 10);
     ctx.scale(4, 4);
+    if (Math.abs(params.camera.toVisualY(0)) > 0.001) {
+      ctx.translate(0, stage.goalY);
+      ctx.scale(1, -1);
+    }
     ctx.fillRect(0, 0, 26, stage.goalY);
 
     this.ctx.lineWidth = 3 / (params.camera.zoom + initialZoom);
