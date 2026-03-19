@@ -23,7 +23,14 @@ import { bound } from './utils/bound.decorator';
 import { parseName, shuffle } from './utils/utils';
 import { VideoRecorder } from './utils/videoRecorder';
 
-const defaultGravity = { x: 0, y: 7.2 };
+function isCompactViewport() {
+  return typeof window !== 'undefined' && window.innerWidth <= 980;
+}
+
+function getDefaultGravity() {
+  return { x: 0, y: isCompactViewport() ? 4.9 : 6.2 };
+}
+
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
   'shark-rush': 12,
   'bomb-burst': 3,
@@ -204,7 +211,7 @@ export class Roulette extends EventTarget {
       if (this._gravityEffectRemaining <= 0) {
         this._gravityEffectRemaining = 0;
         this._gravityOverride = null;
-        this.physics.setGravity(defaultGravity);
+        this.physics.setGravity(getDefaultGravity());
       }
     }
   }
@@ -510,7 +517,7 @@ export class Roulette extends EventTarget {
     }
 
     this.physics.createStage(this._stage);
-    this.physics.setGravity(defaultGravity);
+    this.physics.setGravity(getDefaultGravity());
     this._camera.setFlow(this._stage.goalY, true);
     this._camera.initializePosition();
   }
@@ -531,17 +538,18 @@ export class Roulette extends EventTarget {
     this._gravityEffectRemaining = 0;
     this._gravityOverride = null;
     if (this.physics) {
-      this.physics.setGravity(defaultGravity);
+      this.physics.setGravity(getDefaultGravity());
     }
   }
 
   private _scheduleRoundEvents() {
-    const totalEvents = Math.max(6, Math.min(10, Math.ceil(this._totalMarbleCount / 2)));
+    const pace = isCompactViewport() ? 1.34 : 1;
+    const totalEvents = Math.max(5, Math.min(9, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 2.4 : 2.2))));
     const schedule: number[] = [];
-    let nextAt = 1450 + Math.random() * 650;
+    let nextAt = (1750 + Math.random() * 850) * pace;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += 1650 + Math.random() * 1050;
+      nextAt += (2250 + Math.random() * 1350) * pace;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -615,7 +623,7 @@ export class Roulette extends EventTarget {
       }
       case 'ac-draft': {
         const direction = Math.random() < 0.5 ? -1 : 1;
-        this._gravityOverride = { x: direction * 2.2, y: 10 };
+        this._gravityOverride = { x: direction * 2.2, y: getDefaultGravity().y };
         this.physics.setGravity(this._gravityOverride);
         this._gravityEffectRemaining = 4200;
         notice = {

@@ -3,6 +3,7 @@ import options from './options';
 import type { Roulette } from './roulette';
 import type { MarbleStyle } from './types/MarbleStyle.type';
 import type { LunchEventNotice } from './types/RoundEvent.type';
+import { shuffle } from './utils/utils';
 
 type WinnerMode = 'first' | 'last' | 'custom';
 
@@ -264,6 +265,17 @@ export function attachApp(roulette: Roulette) {
       rosterInput.value = getRosterTokens().join('\n');
     };
 
+    const shuffleRoster = () => {
+      const tokens = getRosterTokens();
+      const fixedSet = new Set(fixedRoster.map(normalizeNameKey));
+      const fixedTokens = tokens.filter((token) => fixedSet.has(normalizeNameKey(parseNameToken(token).name)));
+      const customTokens = tokens.filter((token) => !fixedSet.has(normalizeNameKey(parseNameToken(token).name)));
+
+      rosterInput.value = [...fixedTokens, ...shuffle(customTokens)].join('\n');
+      refreshBoard();
+      showToast('출발 순서를 다시 섞었어요.', '#38bdf8');
+    };
+
     const syncTheme = () => {
       options.darkMode = themeToggle.checked;
       roulette.setTheme(options.darkMode ? 'dark' : 'light');
@@ -387,7 +399,10 @@ export function attachApp(roulette: Roulette) {
       refreshBoard();
     });
 
-    shuffleButton.addEventListener('click', refreshBoard);
+    shuffleButton.addEventListener('click', () => {
+      audio.playUiClick();
+      shuffleRoster();
+    });
     demoButton.addEventListener('click', () => {
       audio.playUiClick();
       rosterInput.value = sampleRoster.join('\n');

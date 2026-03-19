@@ -198,17 +198,17 @@ const coffeeRunEntities: MapEntity[] = [
 ];
 
 const summerSplashEntities = recolorEntities(coffeeRunEntities, {
-  '#f7f0d2': '#f8e7b5',
-  '#ffd29d': '#7dd3fc',
-  '#f8c471': '#facc15',
-  '#f8fafc': '#ecfeff',
-  '#e2e8f0': '#bae6fd',
-  '#fdba74': '#fb7185',
-  '#fff7ed': '#fef3c7',
-  '#f97316': '#fb923c',
-  '#fb7185': '#22d3ee',
-  '#38bdf8': '#0ea5e9',
-  '#ffffff': '#f0fdfa',
+  '#f7f0d2': '#f7e7b5',
+  '#ffd29d': '#ff8b61',
+  '#f8c471': '#ffd166',
+  '#f8fafc': '#fffef6',
+  '#e2e8f0': '#ffe3b3',
+  '#fdba74': '#ffb85c',
+  '#fff7ed': '#fff2d6',
+  '#f97316': '#ff7a59',
+  '#fb7185': '#ff5f95',
+  '#38bdf8': '#ffcf56',
+  '#ffffff': '#fffdf8',
 });
 
 const summerSplashStage: Partial<StageDef> = {
@@ -300,6 +300,21 @@ const snackAttackEntities: MapEntity[] = [
     '#fff7ed'
   ),
 ];
+
+const snackAttackVisibleEntities = recolorEntities(snackAttackEntities, {
+  '#fecaca': '#fff0d8',
+  '#fb7185': '#ff7a59',
+  '#fda4af': '#ffb48a',
+  '#fdba74': '#ffd166',
+  '#f3f4f6': '#fffef6',
+  '#ffe4e6': '#fff4e5',
+  '#fff1f2': '#fff8ec',
+  '#f43f5e': '#ff5d73',
+  '#f59e0b': '#ffcb53',
+  '#fecdd3': '#ffe0c2',
+  '#ffffff': '#fffdf8',
+  '#fff7ed': '#fff1dc',
+});
 
 const elevatorChaosEntities: MapEntity[] = [
   wall([
@@ -403,6 +418,21 @@ const elevatorChaosEntities: MapEntity[] = [
   ),
 ];
 
+const elevatorChaosVisibleEntities = recolorEntities(elevatorChaosEntities, {
+  '#bfdbfe': '#fff0d6',
+  '#93c5fd': '#ffd86b',
+  '#7dd3fc': '#ffb58a',
+  '#67e8f9': '#ff8fab',
+  '#e0f2fe': '#fffbf1',
+  '#f8fafc': '#fffef9',
+  '#bae6fd': '#ffe59d',
+  '#22d3ee': '#ff8f5d',
+  '#06b6d4': '#ff6b6b',
+  '#0ea5e9': '#ffd166',
+  '#38bdf8': '#ffe08a',
+  '#dbeafe': '#fff3de',
+});
+
 export const lunchStages: StageDef[] = [
   {
     title: '커피 러시',
@@ -423,7 +453,7 @@ export const lunchStages: StageDef[] = [
     goalY: 148,
     zoomY: 142,
     eventPool: pool('coffee-spill', 'meeting-call', 'bean-burst', 'bomb-burst', 'sugar-crash', 'shark-rush'),
-    entities: snackAttackEntities,
+    entities: snackAttackVisibleEntities,
   },
   {
     title: '엘리베이터 카오스',
@@ -433,6 +463,6 @@ export const lunchStages: StageDef[] = [
     goalY: 156,
     zoomY: 149,
     eventPool: pool('ac-draft', 'meeting-call', 'espresso-shot', 'bomb-burst', 'sugar-crash', 'shark-rush'),
-    entities: elevatorChaosEntities,
+    entities: elevatorChaosVisibleEntities,
   },
 ];

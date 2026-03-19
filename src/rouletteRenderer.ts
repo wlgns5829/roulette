@@ -164,15 +164,15 @@ export class RouletteRenderer {
     this.ctx.fillStyle = currentMist;
     this.ctx.fillRect(0, surfaceY, width, height - surfaceY);
 
-    this.drawWaveBand(surfaceY, height * 0.028, 'rgba(255, 255, 255, 0.22)', now * 0.95, true);
-    this.drawWaveBand(surfaceY + height * 0.05, height * 0.024, 'rgba(210, 248, 255, 0.16)', now * 0.72 + 1.3, true);
-    this.drawWaveBand(surfaceY + height * 0.1, height * 0.02, 'rgba(153, 226, 243, 0.11)', now * 0.55 + 2.2, true);
+    this.drawWaveBand(surfaceY, height * 0.028, 'rgba(255, 255, 255, 0.16)', now * 0.95, true);
+    this.drawWaveBand(surfaceY + height * 0.05, height * 0.024, 'rgba(210, 248, 255, 0.12)', now * 0.72 + 1.3, true);
+    this.drawWaveBand(surfaceY + height * 0.1, height * 0.02, 'rgba(153, 226, 243, 0.08)', now * 0.55 + 2.2, true);
 
     for (let i = 0; i < 5; i++) {
       const x = width * (0.12 + i * 0.19) + Math.sin(now * 0.42 + i * 1.1) * width * 0.018;
       const ribbonWidth = width * (0.028 + (i % 2) * 0.008);
       const phase = now * (0.66 + i * 0.08) + i * 0.7;
-      this.drawCurrentRibbon(x, ribbonWidth, phase, `rgba(214, 247, 255, ${0.06 + (i % 2) * 0.04})`);
+      this.drawCurrentRibbon(x, ribbonWidth, phase, `rgba(214, 247, 255, ${0.03 + (i % 2) * 0.025})`);
     }
 
     for (let i = 0; i < 24; i++) {
