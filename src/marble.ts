@@ -218,7 +218,7 @@ export class Marble {
       ctx.lineWidth = 3;
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
-      ctx.translate(this.x, this.y + 0.54 * this._getVisualScale());
+      ctx.translate(this.x, this.y + 0.96 * this._getVisualScale());
       ctx.scale(1 / zoom, -1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);

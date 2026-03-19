@@ -3,6 +3,9 @@ import type { StageDef } from './data/maps';
 import type { Marble } from './marble';
 import type { VectorLike } from './types/VectorLike';
 
+const cruisingZoom = 0.86;
+const finishZoomBoost = 1.75;
+
 export class Camera {
   private _position: VectorLike = { x: 0, y: 0 };
   private _targetPosition: VectorLike = { x: 0, y: 0 };
@@ -68,7 +71,7 @@ export class Camera {
   initializePosition(center?: VectorLike, zoom?: number) {
     const x = center?.x ?? 12.95;
     const y = this.toVisualY(center?.y ?? 2);
-    const z = zoom ?? 1;
+    const z = zoom ?? cruisingZoom;
 
     this._position = { x, y };
     this._targetPosition = { x, y };
@@ -111,12 +114,13 @@ export class Camera {
       this.setPosition({ x: targetMarble.position.x, y: this.toVisualY(targetMarble.position.y) });
       if (needToZoom) {
         const goalDist = Math.abs(this.toVisualY(stage.zoomY) - this._position.y);
-        this.zoom = Math.max(1, (1 - goalDist / zoomThreshold) * 4);
+        const finishRatio = Math.max(0, Math.min(1, 1 - goalDist / zoomThreshold));
+        this.zoom = cruisingZoom + finishRatio * finishZoomBoost;
       } else {
-        this.zoom = 1;
+        this.zoom = cruisingZoom;
       }
     } else {
-      this.zoom = 1;
+      this.zoom = cruisingZoom;
     }
   }
 

@@ -13,13 +13,13 @@ type ToneOptions = {
   detune?: number;
 };
 
-const bpm = 126;
+const bpm = 114;
 const stepLength = 60 / bpm / 2;
 const scheduleAheadTime = 0.18;
 const schedulerInterval = 80;
 const enabledMasterGain = 1.48;
-const defaultBgmGain = 0.46;
-const duckedBgmGain = 0.08;
+const defaultBgmGain = 0.5;
+const duckedBgmGain = 0.1;
 
 type BgmTrack = {
   bassPatterns: number[][];

@@ -880,12 +880,12 @@ export class Roulette extends EventTarget {
 
       const spawnWidth = Math.max((cols - 1) * 0.6, 1);
       const spawnHeight = Math.max(rows - 1, 1);
-      const margin = 3;
+      const margin = 4.8;
       const viewW = canvasWidth / initialZoom;
       const viewH = canvasHeight / initialZoom;
       const zoom = Math.max(
-        1.5,
-        Math.min(Math.min(viewW / (spawnWidth + margin * 2), viewH / (spawnHeight + margin * 2)), 3)
+        1.15,
+        Math.min(Math.min(viewW / (spawnWidth + margin * 2), viewH / (spawnHeight + margin * 2)), 2.25)
       );
 
       this._camera.initializePosition({ x: centerX, y: centerY }, zoom);
