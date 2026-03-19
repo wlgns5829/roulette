@@ -23,7 +23,7 @@ import { bound } from './utils/bound.decorator';
 import { parseName, shuffle } from './utils/utils';
 import { VideoRecorder } from './utils/videoRecorder';
 
-const defaultGravity = { x: 0, y: 10 };
+const defaultGravity = { x: 0, y: 7.2 };
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
   'shark-rush': 12,
   'bomb-burst': 3,
@@ -436,7 +436,13 @@ export class Roulette extends EventTarget {
     const minimap = new Minimap();
     minimap.onViewportChange((pos) => {
       if (pos) {
-        this._camera.setPosition(pos, false);
+        this._camera.setPosition(
+          {
+            x: pos.x,
+            y: this._stage ? this._camera.toVisualY(pos.y) : pos.y,
+          },
+          false
+        );
         this._camera.lock(true);
       } else {
         this._camera.lock(false);
@@ -505,6 +511,7 @@ export class Roulette extends EventTarget {
 
     this.physics.createStage(this._stage);
     this.physics.setGravity(defaultGravity);
+    this._camera.setFlow(this._stage.goalY, true);
     this._camera.initializePosition();
   }
 

@@ -10,6 +10,8 @@ export class Camera {
   private _targetZoom: number = 1;
   private _locked = false;
   private _shouldFollowMarbles = false;
+  private _goalY = 0;
+  private _reverseFlow = true;
 
   get zoom() {
     return this._zoom;
@@ -46,13 +48,26 @@ export class Camera {
     this._locked = v;
   }
 
+  setFlow(goalY: number, reverseFlow = true) {
+    this._goalY = goalY;
+    this._reverseFlow = reverseFlow;
+  }
+
+  toVisualY(y: number) {
+    return this._reverseFlow ? this._goalY - y : y;
+  }
+
+  toWorldY(y: number) {
+    return this._reverseFlow ? this._goalY - y : y;
+  }
+
   startFollowingMarbles() {
     this._shouldFollowMarbles = true;
   }
 
   initializePosition(center?: VectorLike, zoom?: number) {
     const x = center?.x ?? 12.95;
-    const y = center?.y ?? 2;
+    const y = this.toVisualY(center?.y ?? 2);
     const z = zoom ?? 1;
 
     this._position = { x, y };
@@ -93,9 +108,9 @@ export class Camera {
 
     if (marbles.length > 0) {
       const targetMarble = marbles[targetIndex] ? marbles[targetIndex] : marbles[0];
-      this.setPosition(targetMarble.position);
+      this.setPosition({ x: targetMarble.position.x, y: this.toVisualY(targetMarble.position.y) });
       if (needToZoom) {
-        const goalDist = Math.abs(stage.zoomY - this._position.y);
+        const goalDist = Math.abs(this.toVisualY(stage.zoomY) - this._position.y);
         this.zoom = Math.max(1, (1 - goalDist / zoomThreshold) * 4);
       } else {
         this.zoom = 1;
@@ -120,6 +135,10 @@ export class Camera {
     ctx.translate(-this.x * this._zoom, -this.y * this._zoom);
     ctx.scale(this.zoom, this.zoom);
     ctx.translate(ctx.canvas.width / zoomFactor, ctx.canvas.height / zoomFactor);
+    if (this._reverseFlow) {
+      ctx.translate(0, this._goalY);
+      ctx.scale(1, -1);
+    }
     callback(ctx);
     ctx.restore();
   }

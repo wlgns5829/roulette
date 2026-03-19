@@ -24,6 +24,7 @@ export type CuteMonsterOptions = {
   rotation?: number;
   bounce?: number;
   glow?: string;
+  flipY?: boolean;
 };
 
 const paletteFamilies = [
@@ -240,6 +241,9 @@ export function drawCuteLunchMonster(ctx: CanvasRenderingContext2D, options: Cut
 
   ctx.save();
   ctx.translate(x, y + bob);
+  if (options.flipY) {
+    ctx.scale(1, -1);
+  }
 
   if (options.glow) {
     ctx.shadowColor = options.glow;

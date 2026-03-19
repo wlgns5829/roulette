@@ -131,80 +131,78 @@ export class RouletteRenderer {
   private renderSummerBackdrop(stage: StageDef) {
     const { width, height } = this._canvas;
     const accent = stage.accent ?? '#22d3ee';
-    const horizonY = height * 0.57;
-    const waterTop = height * 0.61;
+    const surfaceY = height * 0.14;
     const now = performance.now() * 0.001;
 
     const backdrop = this.ctx.createLinearGradient(0, 0, 0, height);
-    backdrop.addColorStop(0, '#4d80ab');
-    backdrop.addColorStop(0.36, '#6db9d4');
-    backdrop.addColorStop(0.56, '#d9efe6');
-    backdrop.addColorStop(0.68, '#79c4da');
-    backdrop.addColorStop(0.84, '#4f9bbd');
-    backdrop.addColorStop(1, '#bcccb5');
+    backdrop.addColorStop(0, '#bff6ff');
+    backdrop.addColorStop(0.12, '#88def2');
+    backdrop.addColorStop(0.38, '#46a6c8');
+    backdrop.addColorStop(0.7, '#1c6f97');
+    backdrop.addColorStop(1, '#0f3554');
     this.ctx.fillStyle = backdrop;
     this.ctx.fillRect(0, 0, width, height);
 
-    const seaMist = this.ctx.createLinearGradient(0, horizonY - height * 0.1, 0, waterTop + height * 0.08);
-    seaMist.addColorStop(0, 'rgba(255, 255, 245, 0)');
-    seaMist.addColorStop(0.34, 'rgba(248, 250, 240, 0.46)');
-    seaMist.addColorStop(0.66, 'rgba(208, 241, 247, 0.32)');
-    seaMist.addColorStop(1, 'rgba(79, 155, 189, 0)');
-    this.ctx.fillStyle = seaMist;
-    this.ctx.fillRect(0, horizonY - height * 0.1, width, height * 0.22);
-
-    const sun = this.ctx.createRadialGradient(
-      width * 0.82,
-      height * 0.18,
-      width * 0.01,
-      width * 0.82,
-      height * 0.18,
-      width * 0.12
+    const surfaceGlow = this.ctx.createRadialGradient(
+      width * 0.5,
+      -height * 0.04,
+      width * 0.02,
+      width * 0.5,
+      0,
+      width * 0.42
     );
-    sun.addColorStop(0, 'rgba(255, 255, 233, 0.88)');
-    sun.addColorStop(0.35, 'rgba(255, 221, 160, 0.66)');
-    sun.addColorStop(1, 'rgba(255, 201, 112, 0)');
-    this.ctx.fillStyle = sun;
-    this.ctx.fillRect(0, 0, width, height);
+    surfaceGlow.addColorStop(0, 'rgba(255, 255, 245, 0.96)');
+    surfaceGlow.addColorStop(0.28, 'rgba(216, 247, 255, 0.56)');
+    surfaceGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = surfaceGlow;
+    this.ctx.fillRect(0, 0, width, height * 0.46);
 
-    const water = this.ctx.createLinearGradient(0, horizonY - height * 0.02, 0, height);
-    water.addColorStop(0, 'rgba(123, 208, 226, 0.48)');
-    water.addColorStop(0.22, 'rgba(102, 187, 214, 0.82)');
-    water.addColorStop(0.58, '#2e8daf');
-    water.addColorStop(1, '#245b73');
-    this.ctx.fillStyle = water;
-    this.ctx.fillRect(0, horizonY - height * 0.02, width, height - horizonY + height * 0.02);
+    const currentMist = this.ctx.createLinearGradient(0, surfaceY, 0, height);
+    currentMist.addColorStop(0, 'rgba(244, 254, 255, 0.16)');
+    currentMist.addColorStop(0.35, 'rgba(190, 245, 255, 0.08)');
+    currentMist.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = currentMist;
+    this.ctx.fillRect(0, surfaceY, width, height - surfaceY);
 
-    const foam = this.ctx.createLinearGradient(0, waterTop - height * 0.04, 0, waterTop + height * 0.045);
-    foam.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    foam.addColorStop(0.46, 'rgba(244, 250, 242, 0.34)');
-    foam.addColorStop(0.62, 'rgba(223, 245, 249, 0.2)');
-    foam.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    this.ctx.fillStyle = foam;
-    this.ctx.fillRect(0, waterTop - height * 0.04, width, height * 0.09);
+    this.drawWaveBand(surfaceY, height * 0.028, 'rgba(255, 255, 255, 0.22)', now * 0.95, true);
+    this.drawWaveBand(surfaceY + height * 0.05, height * 0.024, 'rgba(210, 248, 255, 0.16)', now * 0.72 + 1.3, true);
+    this.drawWaveBand(surfaceY + height * 0.1, height * 0.02, 'rgba(153, 226, 243, 0.11)', now * 0.55 + 2.2, true);
 
-    const sand = this.ctx.createLinearGradient(0, height * 0.84, 0, height);
-    sand.addColorStop(0, 'rgba(229, 215, 168, 0.22)');
-    sand.addColorStop(0.4, 'rgba(210, 188, 135, 0.52)');
-    sand.addColorStop(1, 'rgba(170, 150, 103, 0.9)');
-    this.ctx.fillStyle = sand;
-    this.ctx.fillRect(0, height * 0.84, width, height * 0.16);
+    for (let i = 0; i < 5; i++) {
+      const x = width * (0.12 + i * 0.19) + Math.sin(now * 0.42 + i * 1.1) * width * 0.018;
+      const ribbonWidth = width * (0.028 + (i % 2) * 0.008);
+      const phase = now * (0.66 + i * 0.08) + i * 0.7;
+      this.drawCurrentRibbon(x, ribbonWidth, phase, `rgba(214, 247, 255, ${0.06 + (i % 2) * 0.04})`);
+    }
 
-    this.drawWaveBand(height * 0.66, height * 0.038, 'rgba(236, 250, 255, 0.2)', now * 0.92);
-    this.drawWaveBand(height * 0.75, height * 0.047, 'rgba(195, 239, 247, 0.22)', now * 0.72 + 1.6);
-    this.drawWaveBand(height * 0.84, height * 0.05, 'rgba(239, 245, 214, 0.14)', now * 0.55 + 2.1);
+    for (let i = 0; i < 24; i++) {
+      const travel = (now * (0.08 + (i % 4) * 0.018) + i * 0.11) % 1;
+      const bubbleX = width * (0.08 + ((i * 0.17) % 0.84)) + Math.sin(now * 0.9 + i) * width * 0.008;
+      const bubbleY = height + 36 - travel * (height + 72);
+      const bubbleSize = Math.max(2.5, Math.min(width, height) * (0.004 + (i % 3) * 0.0016));
+      this.ctx.save();
+      this.ctx.globalAlpha = 0.15 + (1 - travel) * 0.28;
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+      this.ctx.strokeStyle = 'rgba(239, 253, 255, 0.7)';
+      this.ctx.lineWidth = 1.1;
+      this.ctx.beginPath();
+      this.ctx.arc(bubbleX, bubbleY, bubbleSize, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
 
-    this.drawSummerTube(width * 0.87, height * 0.25, Math.min(width, height) * 0.068, accent, now);
-    this.drawIcedDrink(width * 0.14, height * 0.79, Math.min(width, height) * 0.106, now);
+    this.drawSummerTube(width * 0.84, height * 0.12, Math.min(width, height) * 0.052, accent, now);
+    this.drawIcedDrink(width * 0.16, height * 0.17, Math.min(width, height) * 0.074, now);
   }
 
-  private drawWaveBand(y: number, amplitude: number, color: string, phase: number) {
+  private drawWaveBand(y: number, amplitude: number, color: string, phase: number, fillFromTop = false) {
     const { width, height } = this._canvas;
     const segment = width / 6;
 
     this.ctx.save();
     this.ctx.beginPath();
-    this.ctx.moveTo(0, height);
+    this.ctx.moveTo(0, fillFromTop ? 0 : height);
     this.ctx.lineTo(0, y);
 
     for (let i = 0; i <= 6; i++) {
@@ -217,7 +215,36 @@ export class RouletteRenderer {
       this.ctx.bezierCurveTo(cp1X, y + wave, cp2X, y - nextWave, endX, y + nextWave * 0.5);
     }
 
-    this.ctx.lineTo(width, height);
+    this.ctx.lineTo(width, fillFromTop ? 0 : height);
+    this.ctx.closePath();
+    this.ctx.fillStyle = color;
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private drawCurrentRibbon(x: number, width: number, phase: number, color: string) {
+    const { height } = this._canvas;
+
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.moveTo(x - width * 0.7, height + 40);
+
+    for (let i = 0; i <= 7; i++) {
+      const t = i / 7;
+      const y = height + 40 - t * (height + 80);
+      const sway = Math.sin(phase + t * 7.2) * width;
+      const taper = 1 - t * 0.74;
+      this.ctx.lineTo(x + sway - width * taper, y);
+    }
+
+    for (let i = 7; i >= 0; i--) {
+      const t = i / 7;
+      const y = height + 40 - t * (height + 80);
+      const sway = Math.sin(phase + t * 7.2) * width;
+      const taper = 1 - t * 0.74;
+      this.ctx.lineTo(x + sway + width * taper, y);
+    }
+
     this.ctx.closePath();
     this.ctx.fillStyle = color;
     this.ctx.fill();
@@ -377,7 +404,13 @@ export class RouletteRenderer {
 
   private renderMarbles({ marbles, camera, winnerRank, winners, size }: RenderParameters) {
     const winnerIndex = winnerRank - winners.length;
-    const viewPort = { x: camera.x, y: camera.y, w: size.x, h: size.y, zoom: camera.zoom * initialZoom };
+    const viewPort = {
+      x: camera.x,
+      y: camera.toWorldY(camera.y),
+      w: size.x,
+      h: size.y,
+      zoom: camera.zoom * initialZoom,
+    };
 
     marbles.forEach((marble, i) => {
       marble.render(

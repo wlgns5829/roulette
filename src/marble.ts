@@ -175,6 +175,7 @@ export class Marble {
     if (style === 'sprite' && skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
+        ctx.scale(1, -1);
         ctx.rotate(this.angle);
         ctx.drawImage(skin, -hs * visualScale, -hs * visualScale, hs * 2 * visualScale, hs * 2 * visualScale);
       });
@@ -190,6 +191,7 @@ export class Marble {
           rotation: this.angle,
           bounce: impactRatio,
           glow: this.theme.marbleWinningBorder,
+          flipY: true,
         },
         style === 'sprite' ? 'retro' : style
       );
@@ -217,7 +219,7 @@ export class Marble {
       ctx.fillStyle = this.color;
       ctx.shadowBlur = 0;
       ctx.translate(this.x, this.y + 0.54 * this._getVisualScale());
-      ctx.scale(1 / zoom, 1 / zoom);
+      ctx.scale(1 / zoom, -1 / zoom);
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);
     });

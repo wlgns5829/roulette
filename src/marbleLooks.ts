@@ -10,17 +10,21 @@ type MarbleLookOptions = {
   rotation?: number;
   bounce?: number;
   glow?: string;
+  flipY?: boolean;
 };
 
 function drawClassicMarble(
   ctx: CanvasRenderingContext2D,
-  { x, y, size, hue, rotation = 0, bounce = 0, glow }: MarbleLookOptions
+  { x, y, size, hue, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
 ) {
   const radius = size * 0.64;
   const stretch = 1 + Math.min(1, bounce) * 0.05;
 
   ctx.save();
   ctx.translate(x, y);
+  if (flipY) {
+    ctx.scale(1, -1);
+  }
   ctx.rotate(rotation * 0.1);
   ctx.scale(stretch, 1 - Math.min(1, bounce) * 0.04);
 
@@ -149,12 +153,15 @@ function drawRetroBuddy(
 
 function drawRetroParody(
   ctx: CanvasRenderingContext2D,
-  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow }: MarbleLookOptions
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
 ) {
   const palette = getCuteMonsterPalette(seed + 7, hue + 24);
 
   ctx.save();
   ctx.translate(x, y);
+  if (flipY) {
+    ctx.scale(1, -1);
+  }
   ctx.rotate(rotation * 0.08);
   ctx.scale(1 + Math.min(1, bounce) * 0.05, 1 - Math.min(1, bounce) * 0.04);
   ctx.lineJoin = 'round';
