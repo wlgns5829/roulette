@@ -80,15 +80,20 @@ export class RankRenderer implements UIObject {
 
     ctx.translate(0, -startY);
     ctx.font = 'bold 11pt sans-serif';
+    const useStroke = Boolean(theme.rankStroke);
     if (theme.rankStroke) {
       ctx.lineWidth = 2;
       ctx.strokeStyle = theme.rankStroke;
     }
+    ctx.shadowColor = useStroke ? 'transparent' : 'rgba(255, 255, 255, 0.4)';
+    ctx.shadowBlur = useStroke ? 0 : 4;
     winners.forEach((marble: { hue: number; name: string }, rank: number) => {
       const y = rank * this.fontHeight;
       if (y >= startY && y <= startY + ctx.canvas.height) {
         ctx.fillStyle = `hsl(${marble.hue} 100% ${theme.marbleLightness}`;
-        ctx.strokeText(`${rank === winnerRank ? '☆' : '\u2714'} ${marble.name} #${rank + 1}`, startX, 20 + y);
+        if (useStroke) {
+          ctx.strokeText(`${rank === winnerRank ? '☆' : '\u2714'} ${marble.name} #${rank + 1}`, startX, 20 + y);
+        }
         ctx.fillText(`${rank === winnerRank ? '☆' : '\u2714'} ${marble.name} #${rank + 1}`, startX, 20 + y);
       }
     });
@@ -97,7 +102,9 @@ export class RankRenderer implements UIObject {
       const y = (rank + winners.length) * this.fontHeight;
       if (y >= startY && y <= startY + ctx.canvas.height) {
         ctx.fillStyle = `hsl(${marble.hue} 100% ${theme.marbleLightness}`;
-        ctx.strokeText(`${marble.name} #${rank + 1 + winners.length}`, startX, 20 + y);
+        if (useStroke) {
+          ctx.strokeText(`${marble.name} #${rank + 1 + winners.length}`, startX, 20 + y);
+        }
         ctx.fillText(`${marble.name} #${rank + 1 + winners.length}`, startX, 20 + y);
       }
     });

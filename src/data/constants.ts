@@ -50,7 +50,7 @@ export const Themes: Record<string, ColorTheme> = {
         bloomRadius: 0,
       },
     },
-    rankStroke: 'black',
+    rankStroke: '',
     minimapBackground: '#ece0cf',
     minimapViewport: '#6699cc',
 

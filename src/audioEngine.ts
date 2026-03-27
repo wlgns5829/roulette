@@ -13,12 +13,12 @@ type ToneOptions = {
   detune?: number;
 };
 
-const bpm = 104;
+const bpm = 92;
 const stepLength = 60 / bpm / 2;
 const scheduleAheadTime = 0.18;
 const schedulerInterval = 80;
-const enabledMasterGain = 1.56;
-const defaultBgmGain = 0.56;
+const enabledMasterGain = 1.52;
+const defaultBgmGain = 0.52;
 const duckedBgmGain = 0.12;
 
 type BgmTrack = {
@@ -53,120 +53,120 @@ function midiToFreq(midi: number) {
 const bgmTracks: BgmTrack[] = [
   {
     bassPatterns: [
-      [36, -1, 36, 43, 40, -1, 43, -1, 45, -1, 43, 40, 48, -1, 45, -1],
-      [36, -1, 36, 40, 43, -1, 45, -1, 47, -1, 45, 43, 50, -1, 47, -1],
-      [33, -1, 33, 40, 38, -1, 40, -1, 45, -1, 43, 40, 48, -1, 45, -1],
-      [36, -1, 40, 43, 45, -1, 47, -1, 52, -1, 48, 45, 43, -1, 40, -1],
+      [36, -1, -1, 43, -1, -1, 40, -1, 43, -1, -1, 48, -1, 45, -1, -1],
+      [36, -1, -1, 40, -1, -1, 43, -1, 45, -1, -1, 50, -1, 47, -1, -1],
+      [33, -1, -1, 40, -1, -1, 38, -1, 41, -1, -1, 48, -1, 45, -1, -1],
+      [36, -1, -1, 43, -1, -1, 45, -1, 47, -1, -1, 52, -1, 48, -1, -1],
     ],
     chordPatterns: [
-      [60, -1, -1, 64, -1, -1, 67, -1, 62, -1, -1, 65, -1, -1, 69, -1],
-      [60, -1, 64, -1, 67, -1, 71, -1, 62, -1, 65, -1, 69, -1, 72, -1],
-      [57, -1, 60, -1, 64, -1, 67, -1, 59, -1, 62, -1, 65, -1, 69, -1],
-      [60, -1, 65, -1, 69, -1, 72, -1, 74, -1, 72, 69, 67, -1, 64, -1],
+      [60, -1, -1, -1, 64, -1, -1, -1, 67, -1, -1, -1, 71, -1, -1, -1],
+      [60, -1, -1, -1, 64, -1, -1, -1, 67, -1, -1, -1, 72, -1, -1, -1],
+      [57, -1, -1, -1, 60, -1, -1, -1, 64, -1, -1, -1, 69, -1, -1, -1],
+      [60, -1, -1, -1, 65, -1, -1, -1, 69, -1, -1, -1, 72, -1, -1, -1],
     ],
-    chordIntervals: [0, 4, 7, 11],
+    chordIntervals: [0, 4, 7, 12],
     arpPatterns: [
-      [72, 76, 79, 83, 79, 76, 79, 84, 72, 76, 79, 83, 79, 76, 77, 79],
-      [72, 76, 79, 84, 79, 76, 81, 86, 74, 77, 81, 86, 81, 77, 79, 81],
-      [69, 72, 76, 81, 76, 72, 77, 81, 71, 74, 77, 83, 77, 74, 76, 77],
-      [72, 77, 81, 86, 81, 77, 84, 88, 76, 79, 84, 88, 84, 79, 81, 84],
+      [79, -1, 83, -1, 86, -1, 83, -1, 88, -1, 86, -1, 83, -1, 79, -1],
+      [79, -1, 84, -1, 88, -1, 84, -1, 91, -1, 88, -1, 84, -1, 79, -1],
+      [76, -1, 81, -1, 84, -1, 81, -1, 88, -1, 84, -1, 81, -1, 76, -1],
+      [79, -1, 84, -1, 88, -1, 91, -1, 93, -1, 91, -1, 88, -1, 84, -1],
     ],
-    pulsePattern: [48, -1, 48, -1, 52, -1, 50, -1, 55, -1, 52, -1, 57, -1, 55, -1],
+    pulsePattern: [55, -1, -1, -1, 57, -1, -1, -1, 59, -1, -1, -1, 60, -1, -1, -1],
     padRoots: [48, 52],
-    kickStartFreq: 122,
-    kickEndFreq: 36,
-    bassGain: 0.082,
-    subGain: 0.056,
-    chordGain: 0.033,
-    pulseGain: 0.029,
-    arpGain: 0.04,
-    arpAccentGain: 0.025,
-    bassFilter: 760,
-    subFilter: 290,
-    chordFilter: 1680,
-    pulseFilter: 1080,
-    arpFilter: 2480,
-    arpAccentFilter: 3320,
-    hatGain: 0.046,
-    offHatGain: 0.028,
+    kickStartFreq: 96,
+    kickEndFreq: 30,
+    bassGain: 0.05,
+    subGain: 0.035,
+    chordGain: 0.028,
+    pulseGain: 0.018,
+    arpGain: 0.026,
+    arpAccentGain: 0.018,
+    bassFilter: 540,
+    subFilter: 240,
+    chordFilter: 1240,
+    pulseFilter: 980,
+    arpFilter: 2140,
+    arpAccentFilter: 2840,
+    hatGain: 0.014,
+    offHatGain: 0.01,
   },
   {
     bassPatterns: [
-      [38, -1, 38, 45, 42, -1, 45, -1, 47, -1, 45, 42, 50, -1, 47, -1],
-      [38, -1, 42, 45, 47, -1, 50, -1, 52, -1, 50, 47, 54, -1, 52, -1],
-      [35, -1, 35, 42, 40, -1, 42, -1, 47, -1, 45, 42, 50, -1, 47, -1],
-      [38, -1, 42, 47, 50, -1, 52, -1, 54, -1, 52, 50, 47, -1, 45, -1],
+      [38, -1, -1, 45, -1, -1, 42, -1, 45, -1, -1, 50, -1, 47, -1, -1],
+      [38, -1, -1, 42, -1, -1, 45, -1, 47, -1, -1, 52, -1, 50, -1, -1],
+      [35, -1, -1, 42, -1, -1, 40, -1, 43, -1, -1, 50, -1, 47, -1, -1],
+      [38, -1, -1, 45, -1, -1, 47, -1, 50, -1, -1, 54, -1, 52, -1, -1],
     ],
     chordPatterns: [
-      [62, -1, -1, 66, -1, -1, 69, -1, 64, -1, -1, 67, -1, -1, 71, -1],
-      [62, -1, 66, -1, 69, -1, 73, -1, 64, -1, 67, -1, 71, -1, 74, -1],
-      [59, -1, 62, -1, 66, -1, 69, -1, 61, -1, 64, -1, 67, -1, 71, -1],
-      [62, -1, 67, -1, 71, -1, 74, -1, 76, -1, 74, 71, 69, -1, 66, -1],
+      [62, -1, -1, -1, 66, -1, -1, -1, 69, -1, -1, -1, 73, -1, -1, -1],
+      [62, -1, -1, -1, 66, -1, -1, -1, 69, -1, -1, -1, 74, -1, -1, -1],
+      [59, -1, -1, -1, 62, -1, -1, -1, 66, -1, -1, -1, 71, -1, -1, -1],
+      [62, -1, -1, -1, 67, -1, -1, -1, 71, -1, -1, -1, 74, -1, -1, -1],
     ],
-    chordIntervals: [0, 4, 7, 9],
+    chordIntervals: [0, 4, 7, 12],
     arpPatterns: [
-      [74, 78, 81, 85, 81, 78, 81, 86, 74, 78, 81, 85, 81, 78, 80, 81],
-      [74, 78, 81, 86, 81, 78, 83, 88, 76, 79, 83, 88, 83, 79, 81, 83],
-      [71, 74, 78, 83, 78, 74, 79, 83, 73, 76, 79, 85, 79, 76, 78, 79],
-      [76, 79, 83, 88, 83, 79, 86, 90, 78, 81, 86, 90, 86, 81, 83, 86],
+      [81, -1, 85, -1, 88, -1, 85, -1, 90, -1, 88, -1, 85, -1, 81, -1],
+      [81, -1, 86, -1, 90, -1, 86, -1, 93, -1, 90, -1, 86, -1, 81, -1],
+      [78, -1, 83, -1, 86, -1, 83, -1, 90, -1, 86, -1, 83, -1, 78, -1],
+      [83, -1, 88, -1, 91, -1, 88, -1, 95, -1, 91, -1, 88, -1, 83, -1],
     ],
-    pulsePattern: [50, -1, 54, -1, 57, -1, 54, -1, 59, -1, 57, -1, 61, -1, 57, -1],
+    pulsePattern: [57, -1, -1, -1, 59, -1, -1, -1, 61, -1, -1, -1, 62, -1, -1, -1],
     padRoots: [50, 54],
-    kickStartFreq: 128,
-    kickEndFreq: 38,
-    bassGain: 0.08,
-    subGain: 0.054,
-    chordGain: 0.031,
-    pulseGain: 0.028,
-    arpGain: 0.041,
-    arpAccentGain: 0.025,
-    bassFilter: 810,
-    subFilter: 320,
-    chordFilter: 1820,
-    pulseFilter: 1180,
-    arpFilter: 2620,
-    arpAccentFilter: 3440,
-    hatGain: 0.048,
-    offHatGain: 0.03,
+    kickStartFreq: 104,
+    kickEndFreq: 32,
+    bassGain: 0.052,
+    subGain: 0.036,
+    chordGain: 0.03,
+    pulseGain: 0.019,
+    arpGain: 0.028,
+    arpAccentGain: 0.019,
+    bassFilter: 580,
+    subFilter: 250,
+    chordFilter: 1320,
+    pulseFilter: 1040,
+    arpFilter: 2260,
+    arpAccentFilter: 2960,
+    hatGain: 0.016,
+    offHatGain: 0.011,
   },
   {
     bassPatterns: [
-      [41, -1, 41, 48, 45, -1, 48, -1, 50, -1, 48, 45, 53, -1, 50, -1],
-      [41, -1, 45, 48, 50, -1, 53, -1, 55, -1, 53, 50, 57, -1, 55, -1],
-      [38, -1, 38, 45, 43, -1, 45, -1, 50, -1, 48, 45, 53, -1, 50, -1],
-      [41, -1, 45, 50, 53, -1, 55, -1, 57, -1, 55, 53, 50, -1, 48, -1],
+      [41, -1, -1, 48, -1, -1, 45, -1, 48, -1, -1, 53, -1, 50, -1, -1],
+      [41, -1, -1, 45, -1, -1, 48, -1, 50, -1, -1, 55, -1, 53, -1, -1],
+      [38, -1, -1, 45, -1, -1, 43, -1, 46, -1, -1, 53, -1, 50, -1, -1],
+      [41, -1, -1, 48, -1, -1, 50, -1, 53, -1, -1, 57, -1, 55, -1, -1],
     ],
     chordPatterns: [
-      [65, -1, -1, 69, -1, -1, 72, -1, 67, -1, -1, 71, -1, -1, 74, -1],
-      [65, -1, 69, -1, 72, -1, 76, -1, 67, -1, 71, -1, 74, -1, 77, -1],
-      [62, -1, 65, -1, 69, -1, 72, -1, 64, -1, 67, -1, 71, -1, 74, -1],
-      [65, -1, 71, -1, 74, -1, 77, -1, 79, -1, 77, 74, 72, -1, 69, -1],
+      [65, -1, -1, -1, 69, -1, -1, -1, 72, -1, -1, -1, 76, -1, -1, -1],
+      [65, -1, -1, -1, 69, -1, -1, -1, 72, -1, -1, -1, 77, -1, -1, -1],
+      [62, -1, -1, -1, 65, -1, -1, -1, 69, -1, -1, -1, 74, -1, -1, -1],
+      [65, -1, -1, -1, 71, -1, -1, -1, 74, -1, -1, -1, 77, -1, -1, -1],
     ],
     chordIntervals: [0, 4, 7, 11],
     arpPatterns: [
-      [77, 81, 84, 88, 84, 81, 84, 89, 77, 81, 84, 88, 84, 81, 83, 84],
-      [77, 81, 84, 89, 84, 81, 86, 91, 79, 83, 86, 91, 86, 83, 84, 86],
-      [74, 77, 81, 86, 81, 77, 83, 86, 76, 79, 83, 88, 83, 79, 81, 83],
-      [79, 83, 86, 91, 86, 83, 88, 93, 81, 84, 88, 93, 88, 84, 86, 88],
+      [84, -1, 88, -1, 91, -1, 88, -1, 93, -1, 91, -1, 88, -1, 84, -1],
+      [84, -1, 89, -1, 93, -1, 89, -1, 96, -1, 93, -1, 89, -1, 84, -1],
+      [81, -1, 86, -1, 89, -1, 86, -1, 93, -1, 89, -1, 86, -1, 81, -1],
+      [86, -1, 91, -1, 95, -1, 91, -1, 98, -1, 95, -1, 91, -1, 86, -1],
     ],
-    pulsePattern: [53, -1, 53, -1, 57, -1, 55, -1, 60, -1, 57, -1, 62, -1, 60, -1],
+    pulsePattern: [60, -1, -1, -1, 62, -1, -1, -1, 64, -1, -1, -1, 65, -1, -1, -1],
     padRoots: [53, 57],
-    kickStartFreq: 132,
-    kickEndFreq: 40,
-    bassGain: 0.084,
-    subGain: 0.056,
-    chordGain: 0.034,
-    pulseGain: 0.03,
-    arpGain: 0.042,
-    arpAccentGain: 0.026,
-    bassFilter: 860,
-    subFilter: 340,
-    chordFilter: 1900,
-    pulseFilter: 1240,
-    arpFilter: 2720,
-    arpAccentFilter: 3560,
-    hatGain: 0.05,
-    offHatGain: 0.031,
+    kickStartFreq: 110,
+    kickEndFreq: 34,
+    bassGain: 0.054,
+    subGain: 0.038,
+    chordGain: 0.031,
+    pulseGain: 0.02,
+    arpGain: 0.029,
+    arpAccentGain: 0.02,
+    bassFilter: 620,
+    subFilter: 260,
+    chordFilter: 1380,
+    pulseFilter: 1080,
+    arpFilter: 2320,
+    arpAccentFilter: 3020,
+    hatGain: 0.017,
+    offHatGain: 0.011,
   },
 ];
 
@@ -554,44 +554,35 @@ export class AudioEngine {
     const chordPattern = track.chordPatterns[bar];
     const arpPattern = track.arpPatterns[bar];
 
-    if (step % 4 === 0) {
-      this._playKick(time, 0.18, track.kickStartFreq, track.kickEndFreq, 'bgm');
+    if (step === 0 || step === 8) {
+      this._playKick(time, step === 0 ? 0.075 : 0.045, track.kickStartFreq, track.kickEndFreq, 'bgm');
       this._playTone(
         midiToFreq(step < 8 ? track.padRoots[0] : track.padRoots[1]),
         time,
-        stepLength * 3.8,
+        stepLength * 7.6,
         {
           type: 'sine',
-          gain: 0.052,
-          attack: 0.02,
-          release: 0.4,
-          filter: track.subFilter + 120,
+          gain: 0.044,
+          attack: 0.06,
+          release: 0.75,
+          filter: track.subFilter + 90,
         },
         'bgm'
       );
     }
 
-    if (step === 4 || step === 12) {
-      this._playNoise(time, 0.12, 0.046, 2100, 1.3, 'bandpass', 'bgm');
-      this._playSnare(time + 0.01, 0.072, 'bgm');
+    if ((step === 6 || step === 14) && bar >= 1) {
+      this._playNoise(time, 0.08, 0.012, 4200, 0.8, 'highpass', 'bgm');
     }
 
-    if (step % 2 === 0) {
-      this._playNoise(
-        time + 0.008,
-        0.045,
-        step % 4 === 0 ? track.hatGain : track.hatGain * 0.7,
-        7600,
-        1.1,
-        'highpass',
-        'bgm'
-      );
-    } else if (bar >= 2) {
-      this._playNoise(time + 0.01, 0.032, track.offHatGain, 9000, 0.7, 'highpass', 'bgm');
+    if (step % 4 === 2) {
+      this._playNoise(time + 0.008, 0.028, track.hatGain, 6200, 0.6, 'highpass', 'bgm');
+    } else if (step % 8 === 5 && bar >= 2) {
+      this._playNoise(time + 0.01, 0.025, track.offHatGain, 7000, 0.5, 'highpass', 'bgm');
     }
 
     if (step === 15 && bar === 3) {
-      this._playNoise(time, 0.18, 0.04, 2800, 1.8, 'bandpass', 'bgm');
+      this._playNoise(time, 0.12, 0.016, 2600, 1.1, 'bandpass', 'bgm');
     }
 
     const bassNote = bassPattern[step];
@@ -601,10 +592,10 @@ export class AudioEngine {
         time,
         stepLength * 1.45,
         {
-          type: 'sawtooth',
+          type: 'triangle',
           gain: track.bassGain,
-          attack: 0.01,
-          release: 0.2,
+          attack: 0.03,
+          release: 0.34,
           filter: track.bassFilter,
         },
         'bgm'
@@ -614,10 +605,10 @@ export class AudioEngine {
         time,
         stepLength * 1.2,
         {
-          type: 'triangle',
+          type: 'sine',
           gain: track.subGain,
-          attack: 0.01,
-          release: 0.18,
+          attack: 0.03,
+          release: 0.28,
           filter: track.subFilter,
         },
         'bgm'
@@ -630,12 +621,12 @@ export class AudioEngine {
         this._playTone(
           midiToFreq(chordNote + interval),
           time + 0.01 + index * 0.008,
-          stepLength * 0.72,
+          stepLength * 2.2,
           {
-            type: 'square',
+            type: 'triangle',
             gain: track.chordGain,
-            attack: 0.01,
-            release: 0.09,
+            attack: 0.04,
+            release: 0.42,
             pan: step % 8 < 4 ? -0.24 + index * 0.08 : 0.24 - index * 0.08,
             filter: track.chordFilter,
           },
@@ -645,17 +636,17 @@ export class AudioEngine {
     }
 
     const pulseNote = track.pulsePattern[step];
-    if (pulseNote > 0 && step % 4 !== 0) {
+    if (pulseNote > 0 && step % 8 === 4) {
       this._playTone(
         midiToFreq(pulseNote),
         time + 0.012,
-        stepLength * 0.56,
+        stepLength * 1.7,
         {
-          type: 'triangle',
+          type: 'sine',
           gain: track.pulseGain,
-          attack: 0.008,
-          release: 0.08,
-          pan: step % 2 === 0 ? -0.14 : 0.14,
+          attack: 0.03,
+          release: 0.24,
+          pan: step % 8 === 4 ? -0.12 : 0.12,
           filter: track.pulseFilter,
         },
         'bgm'
@@ -667,14 +658,14 @@ export class AudioEngine {
       this._playTone(
         midiToFreq(arpNote),
         time + 0.03,
-        stepLength * (bar === 3 ? 0.48 : 0.4),
+        stepLength * 0.95,
         {
-          type: step % 4 === 3 ? 'sawtooth' : 'triangle',
-          gain: bar >= 2 ? track.arpGain + 0.004 : track.arpGain,
-          attack: 0.005,
-          release: 0.07,
+          type: step % 8 === 0 ? 'sine' : 'triangle',
+          gain: bar >= 2 ? track.arpGain + 0.003 : track.arpGain,
+          attack: 0.02,
+          release: 0.18,
           pan: step % 2 === 0 ? -0.3 : 0.3,
-          filter: bar >= 2 ? track.arpFilter + 260 : track.arpFilter,
+          filter: bar >= 2 ? track.arpFilter + 120 : track.arpFilter,
         },
         'bgm'
       );
@@ -684,35 +675,18 @@ export class AudioEngine {
       this._playTone(
         midiToFreq(arpNote + 12),
         time + 0.045,
-        stepLength * 0.26,
+        stepLength * 0.5,
         {
-          type: 'triangle',
+          type: 'sine',
           gain: track.arpAccentGain,
-          attack: 0.005,
-          release: 0.06,
+          attack: 0.01,
+          release: 0.16,
           pan: step % 2 === 0 ? 0.22 : -0.22,
           filter: track.arpAccentFilter,
         },
         'bgm'
       );
     }
-  }
-
-  private _playSnare(time: number, gainAmount: number, target: ToneTarget = 'sfx') {
-    this._playNoise(time, 0.09, gainAmount, 2400, 0.9, 'bandpass', target);
-    this._playTone(
-      midiToFreq(50),
-      time,
-      0.06,
-      {
-        type: 'triangle',
-        gain: gainAmount * 0.55,
-        attack: 0.001,
-        release: 0.08,
-        filter: 950,
-      },
-      target
-    );
   }
 
   private _playKick(time: number, gainAmount: number, startFreq: number, endFreq: number, target: ToneTarget = 'sfx') {
