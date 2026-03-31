@@ -195,6 +195,73 @@ function buildVariantStage(
   };
 }
 
+function slalomBars(startY: number, rows: number, gapY: number, colorA: string, colorB: string): MapEntity[] {
+  const entities: MapEntity[] = [];
+
+  for (let index = 0; index < rows; index++) {
+    const y = startY + index * gapY;
+    const fromLeft = index % 2 === 0;
+    entities.push(box(fromLeft ? 8.1 : 17.9, y, 1.8, 0.1, fromLeft ? 0.62 : -0.62, fromLeft ? colorA : colorB));
+    entities.push(box(fromLeft ? 15.8 : 10.2, y + gapY * 0.34, 1.45, 0.1, fromLeft ? -0.52 : 0.52, fromLeft ? colorB : colorA));
+  }
+
+  return entities;
+}
+
+function gatePairs(startY: number, rows: number, gapY: number, colorA: string, colorB: string): MapEntity[] {
+  const entities: MapEntity[] = [];
+
+  for (let index = 0; index < rows; index++) {
+    const y = startY + index * gapY;
+    entities.push(
+      movingBox(8.8, y, 1.65, 0.11, 0.08, colorA, {
+        axis: 'x',
+        amplitude: 1.15,
+        speed: 1.12 + index * 0.08,
+        phase: index * 0.6,
+      })
+    );
+    entities.push(
+      movingBox(17.2, y + gapY * 0.38, 1.65, 0.11, -0.08, colorB, {
+        axis: 'x',
+        amplitude: 1.05,
+        speed: 1.2 + index * 0.08,
+        phase: index * 0.7 + 1.2,
+      })
+    );
+  }
+
+  return entities;
+}
+
+function spinnerLadder(startY: number, rows: number, gapY: number, colorA: string, colorB: string): MapEntity[] {
+  const entities: MapEntity[] = [];
+
+  for (let index = 0; index < rows; index++) {
+    const y = startY + index * gapY;
+    const left = index % 2 === 0;
+    entities.push(spinner(left ? 9.1 : 16.9, y, 2.7 + (index % 2) * 0.5, left ? 4.7 : -4.7, left ? colorA : colorB));
+    entities.push(spinner(left ? 16.2 : 9.8, y + gapY * 0.42, 2.2, left ? -4.2 : 4.2, left ? colorB : colorA));
+  }
+
+  return entities;
+}
+
+function bumperGarden(startY: number, rows: number, gapY: number, colorA: string, colorB: string): MapEntity[] {
+  const entities: MapEntity[] = [];
+
+  for (let row = 0; row < rows; row++) {
+    const y = startY + row * gapY;
+    const offset = row % 2 === 0 ? 0 : 1.15;
+    for (let col = 0; col < 4; col++) {
+      const x = 8.1 + offset + col * 2.6;
+      entities.push(bumper(x, y, 0.28 + ((row + col) % 2) * 0.03, (row + col) % 2 === 0 ? colorA : colorB, 1.34));
+    }
+  }
+
+  return entities;
+}
+
 const coffeeRunEntities: MapEntity[] = [
   wall([
     [2, -260],
@@ -695,12 +762,15 @@ const curatedLunchVariants: StageDef[] = [
     description: 'The same fast lane, but reflected so the rhythm flips from side to side.',
     flavor: 'Feels familiar for a second, then the angles punish the wrong instincts.',
     accent: '#f97316',
-    entities: recolorEntities(mirrorEntities(coffeeRunEntities), {
-      '#f97316': '#fb7185',
-      '#fb7185': '#38bdf8',
-      '#38bdf8': '#f59e0b',
-      '#fdba74': '#fde68a',
-    }),
+    entities: combineEntities(
+      recolorEntities(mirrorEntities(coffeeRunEntities), {
+        '#f97316': '#fb7185',
+        '#fb7185': '#38bdf8',
+        '#38bdf8': '#f59e0b',
+        '#fdba74': '#fde68a',
+      }),
+      slalomBars(59, 4, 13.4, '#fde68a', '#fb7185')
+    ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
     title: 'Coffee Rush Turbo',
@@ -710,6 +780,7 @@ const curatedLunchVariants: StageDef[] = [
     eventPool: pool('espresso-shot', 'coffee-spill', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
       tuneEntities(coffeeRunEntities, { angularScale: 1.2, motionScale: 1.18, restitutionBoost: 0.04 }),
+      spinnerLadder(60, 3, 19, '#fca5a5', '#fde68a'),
       [
         spinner(13, 68.5, 3.5, -5.1, '#fde68a'),
         movingBox(13, 120.6, 2.1, 0.11, 0, '#fff7ed', { axis: 'x', amplitude: 1.65, speed: 1.8, phase: 0.4 }),
@@ -722,11 +793,15 @@ const curatedLunchVariants: StageDef[] = [
     flavor: 'Great for races where the leader should keep getting tugged back into traffic.',
     accent: '#38bdf8',
     eventPool: pool('ac-draft', 'coffee-spill', 'meeting-call', 'bomb-burst', 'shark-rush'),
-    entities: combineEntities(coffeeRunEntities, [
-      movingBox(8.4, 111.8, 1.9, 0.11, 0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.42, phase: 0.2 }),
-      movingBox(17.6, 111.8, 1.9, 0.11, -0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.5, phase: 1.1 }),
-      ...pegField(9.1, 123.4, 4, 2, 2.25, 2.35, '#ffffff'),
-    ]),
+    entities: combineEntities(
+      coffeeRunEntities,
+      gatePairs(72, 4, 14.5, '#dbeafe', '#bfdbfe'),
+      [
+        movingBox(8.4, 111.8, 1.9, 0.11, 0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.42, phase: 0.2 }),
+        movingBox(17.6, 111.8, 1.9, 0.11, -0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.5, phase: 1.1 }),
+        ...pegField(9.1, 123.4, 4, 2, 2.25, 2.35, '#ffffff'),
+      ]
+    ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
     title: 'Coffee Rush Pinball',
@@ -734,24 +809,31 @@ const curatedLunchVariants: StageDef[] = [
     flavor: 'The first-place marble looks safe until one strange bounce rewrites the whole finish.',
     accent: '#fbbf24',
     eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(coffeeRunEntities, [
-      bumper(9.2, 70.4, 0.33, '#fde68a', 1.35),
-      bumper(16.8, 73.6, 0.33, '#fde68a', 1.35),
-      bumper(13, 101.4, 0.34, '#fff7ed', 1.4),
-      spinner(13, 116.2, 2.4, -4.8, '#fcd34d'),
-    ]),
+    entities: combineEntities(
+      coffeeRunEntities,
+      bumperGarden(74, 3, 13.5, '#fde68a', '#fff7ed'),
+      [
+        bumper(9.2, 70.4, 0.33, '#fde68a', 1.35),
+        bumper(16.8, 73.6, 0.33, '#fde68a', 1.35),
+        bumper(13, 101.4, 0.34, '#fff7ed', 1.4),
+        spinner(13, 116.2, 2.4, -4.8, '#fcd34d'),
+      ]
+    ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: 'Summer Splash Mirror',
     description: 'A mirrored tide lane that makes every drift and spinner hit read differently.',
     flavor: 'Clean to watch, but surprisingly nasty once the field bunches up.',
     accent: '#0ea5e9',
-    entities: recolorEntities(mirrorEntities(summerSplashEntities), {
-      '#ff8c5d': '#38bdf8',
-      '#ff6791': '#fb7185',
-      '#ffd85f': '#fde68a',
-      '#fff8ef': '#ffffff',
-    }),
+    entities: combineEntities(
+      recolorEntities(mirrorEntities(summerSplashEntities), {
+        '#ff8c5d': '#38bdf8',
+        '#ff6791': '#fb7185',
+        '#ffd85f': '#fde68a',
+        '#fff8ef': '#ffffff',
+      }),
+      spinnerLadder(63, 3, 20.5, '#7dd3fc', '#f9a8d4')
+    ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: 'Summer Splash Whirlpool',
@@ -759,11 +841,11 @@ const curatedLunchVariants: StageDef[] = [
     flavor: 'Perfect if you want the camera to stay locked on a messy battle for first.',
     accent: '#06b6d4',
     eventPool: pool('ac-draft', 'espresso-shot', 'meeting-call', 'shark-rush'),
-    entities: combineEntities(tuneEntities(summerSplashEntities, { angularScale: 1.12, motionScale: 1.1 }), [
-      spinner(13, 70.5, 3.2, 5.1, '#67e8f9'),
-      spinner(13, 110.4, 3.6, -5.3, '#bae6fd'),
-      ...pegField(8.1, 127.5, 4, 2, 2.4, 2.4, '#ecfeff'),
-    ]),
+    entities: combineEntities(
+      tuneEntities(summerSplashEntities, { angularScale: 1.12, motionScale: 1.1 }),
+      spinnerLadder(70.5, 3, 20, '#67e8f9', '#bae6fd'),
+      [spinner(13, 110.4, 3.6, -5.3, '#bae6fd'), ...pegField(8.1, 127.5, 4, 2, 2.4, 2.4, '#ecfeff')]
+    ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: 'Summer Splash Tide Shift',
@@ -771,11 +853,15 @@ const curatedLunchVariants: StageDef[] = [
     flavor: 'Leaders can still be seen clearly, but they have to keep re-finding the lane.',
     accent: '#22c55e',
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(summerSplashEntities, [
-      movingBox(13, 66.8, 2.25, 0.11, 0.05, '#dcfce7', { axis: 'x', amplitude: 1.65, speed: 1.38, phase: 0.2 }),
-      movingBox(13, 118.4, 2.15, 0.11, -0.05, '#bbf7d0', { axis: 'x', amplitude: 1.45, speed: 1.6, phase: 1.8 }),
-      movingBox(13, 128.8, 1.8, 0.11, 0, '#f0fdf4', { axis: 'y', amplitude: 1.1, speed: 1.55, phase: 0.7 }),
-    ]),
+    entities: combineEntities(
+      summerSplashEntities,
+      gatePairs(67.5, 4, 15.5, '#dcfce7', '#bbf7d0'),
+      [
+        movingBox(13, 66.8, 2.25, 0.11, 0.05, '#dcfce7', { axis: 'x', amplitude: 1.65, speed: 1.38, phase: 0.2 }),
+        movingBox(13, 118.4, 2.15, 0.11, -0.05, '#bbf7d0', { axis: 'x', amplitude: 1.45, speed: 1.6, phase: 1.8 }),
+        movingBox(13, 128.8, 1.8, 0.11, 0, '#f0fdf4', { axis: 'y', amplitude: 1.1, speed: 1.55, phase: 0.7 }),
+      ]
+    ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: 'Summer Splash Sunset',
@@ -791,6 +877,7 @@ const curatedLunchVariants: StageDef[] = [
         '#ff8c5d': '#f97316',
         '#ff6791': '#ec4899',
       }),
+      bumperGarden(82, 2, 18, '#fdba74', '#fff7ed'),
       [bumper(13.2, 121.8, 0.34, '#fff1c2', 1.35), ...sugarBits([[10.2, 129.6], [13, 131.1], [15.8, 129.8]], '#fff7ed')]
     ),
   }),
@@ -819,12 +906,15 @@ const curatedLunchVariants: StageDef[] = [
     description: 'Mirrored peg walls and bounce plates make the late chaos arrive from the opposite side.',
     flavor: 'Simple change, very different feel once the field stacks up near the end.',
     accent: '#f97316',
-    entities: recolorEntities(mirrorEntities(snackAttackVisibleEntities), {
-      '#ff7a59': '#fb7185',
-      '#ffb48a': '#f59e0b',
-      '#ffd166': '#fde68a',
-      '#ff5d73': '#38bdf8',
-    }),
+    entities: combineEntities(
+      recolorEntities(mirrorEntities(snackAttackVisibleEntities), {
+        '#ff7a59': '#fb7185',
+        '#ffb48a': '#f59e0b',
+        '#ffd166': '#fde68a',
+        '#ff5d73': '#38bdf8',
+      }),
+      slalomBars(82, 4, 14.5, '#fdba74', '#fda4af')
+    ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
     title: 'Snack Attack Crunch',
@@ -834,6 +924,7 @@ const curatedLunchVariants: StageDef[] = [
     eventPool: pool('bean-burst', 'bomb-burst', 'espresso-shot', 'shark-rush'),
     entities: combineEntities(
       tuneEntities(snackAttackVisibleEntities, { angularScale: 1.16, motionScale: 1.12, restitutionBoost: 0.05 }),
+      spinnerLadder(86, 3, 18, '#fb7185', '#fdba74'),
       [
         spinner(13, 111.4, 3.2, -4.9, '#fb7185'),
         movingBox(13, 140.8, 2.05, 0.11, 0, '#fff7ed', { axis: 'x', amplitude: 1.55, speed: 1.8, phase: 0.5 }),
@@ -846,11 +937,15 @@ const curatedLunchVariants: StageDef[] = [
     flavor: 'A perfect stage for suspense right before the winner breaks the line.',
     accent: '#f59e0b',
     eventPool: pool('coffee-spill', 'meeting-call', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(snackAttackVisibleEntities, [
-      ...pegField(7.5, 134.2, 5, 2, 2.15, 2.4, '#fff8ec'),
-      bumper(10.8, 143.4, 0.29, '#ffe7ba', 1.32),
-      bumper(15.2, 143.4, 0.29, '#ffe7ba', 1.32),
-    ]),
+    entities: combineEntities(
+      snackAttackVisibleEntities,
+      bumperGarden(102, 3, 14, '#fff8ec', '#ffe7ba'),
+      [
+        ...pegField(7.5, 134.2, 5, 2, 2.15, 2.4, '#fff8ec'),
+        bumper(10.8, 143.4, 0.29, '#ffe7ba', 1.32),
+        bumper(15.2, 143.4, 0.29, '#ffe7ba', 1.32),
+      ]
+    ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
     title: 'Snack Attack Overdrive',
@@ -868,6 +963,7 @@ const curatedLunchVariants: StageDef[] = [
           '#ff5d73': '#a78bfa',
         }
       ),
+      gatePairs(86, 3, 18, '#ddd6fe', '#c4b5fd'),
       [
         movingBox(9.5, 120.4, 1.8, 0.11, 0.12, '#ddd6fe', { axis: 'y', amplitude: 1.2, speed: 1.7, phase: 0.2 }),
         movingBox(16.5, 120.4, 1.8, 0.11, -0.12, '#ddd6fe', { axis: 'y', amplitude: 1.2, speed: 1.76, phase: 1.2 }),

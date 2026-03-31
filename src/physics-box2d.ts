@@ -41,7 +41,43 @@ export class Box2dPhysics implements IPhysics {
   }
 
   createStage(stage: StageDef): void {
-    this.createEntities(stage.entities);
+    this.createEntities([...(stage.entities ?? []), ...this.createSafetyRails(stage.goalY)]);
+  }
+
+  private createSafetyRails(goalY: number): MapEntity[] {
+    const invisible = 'rgba(0, 0, 0, 0)';
+    return [
+      {
+        position: { x: 0, y: 0 },
+        type: 'static',
+        shape: {
+          type: 'polyline',
+          rotation: 0,
+          color: invisible,
+          bloomColor: invisible,
+          points: [
+            [0.9, -320],
+            [0.9, goalY + 16],
+          ],
+        },
+        props: { density: 1, angularVelocity: 0, restitution: 0 },
+      },
+      {
+        position: { x: 0, y: 0 },
+        type: 'static',
+        shape: {
+          type: 'polyline',
+          rotation: 0,
+          color: invisible,
+          bloomColor: invisible,
+          points: [
+            [25.1, -320],
+            [25.1, goalY + 16],
+          ],
+        },
+        props: { density: 1, angularVelocity: 0, restitution: 0 },
+      },
+    ];
   }
 
   createEntities(entities?: MapEntity[]) {
