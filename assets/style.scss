@@ -3,6 +3,15 @@
   --font-display: 'Jua', 'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif;
   --stage-accent: #f59e0b;
   --goal-accent: #f59e0b;
+  --app-bg-top-left: rgba(255, 183, 120, 0.18);
+  --app-bg-top-right: rgba(117, 213, 255, 0.14);
+  --app-bg-bottom: rgba(255, 170, 214, 0.1);
+  --app-bg-start: #2e1d31;
+  --app-bg-mid: #21182d;
+  --app-bg-end: #181522;
+  --ambient-one-color: rgba(255, 181, 118, 0.32);
+  --ambient-two-color: rgba(105, 209, 255, 0.28);
+  --ambient-three-color: rgba(255, 171, 218, 0.24);
   --panel-bg: rgba(39, 28, 43, 0.74);
   --panel-border: rgba(255, 250, 239, 0.2);
   --panel-shadow: 0 24px 72px rgba(64, 34, 22, 0.28);
@@ -48,10 +57,10 @@ body {
   min-height: 100dvh;
   font-family: var(--font-ui);
   background:
-    radial-gradient(circle at top left, rgba(255, 183, 120, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(117, 213, 255, 0.14), transparent 26%),
-    radial-gradient(circle at 50% 78%, rgba(255, 170, 214, 0.1), transparent 34%),
-    linear-gradient(180deg, #2e1d31 0%, #21182d 46%, #181522 100%);
+    radial-gradient(circle at top left, var(--app-bg-top-left), transparent 32%),
+    radial-gradient(circle at top right, var(--app-bg-top-right), transparent 26%),
+    radial-gradient(circle at 50% 78%, var(--app-bg-bottom), transparent 34%),
+    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-mid) 46%, var(--app-bg-end) 100%);
   color: var(--text-main);
   overflow-x: hidden;
   overflow-y: auto;
@@ -117,7 +126,7 @@ canvas {
   height: 26rem;
   top: -6rem;
   left: -3rem;
-  background: rgba(255, 181, 118, 0.32);
+  background: var(--ambient-one-color);
 }
 
 .ambient-two {
@@ -125,7 +134,7 @@ canvas {
   height: 22rem;
   right: 4rem;
   top: 12rem;
-  background: rgba(105, 209, 255, 0.28);
+  background: var(--ambient-two-color);
 }
 
 .ambient-three {
@@ -133,7 +142,7 @@ canvas {
   height: 18rem;
   right: 20%;
   bottom: 4rem;
-  background: rgba(255, 171, 218, 0.24);
+  background: var(--ambient-three-color);
 }
 
 .hud {

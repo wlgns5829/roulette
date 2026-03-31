@@ -128,7 +128,25 @@ export class RouletteRenderer {
   protected onBeforeEntities(): void {}
   protected onAfterScene(): void {}
 
-  private renderSummerBackdrop(stage: StageDef) {
+  private renderBackdrop(stage: StageDef) {
+    switch (stage.backdrop) {
+      case 'sunset':
+        this.renderSunsetBackdrop(stage);
+        break;
+      case 'midnight':
+        this.renderMidnightBackdrop(stage);
+        break;
+      case 'garden':
+        this.renderGardenBackdrop(stage);
+        break;
+      case 'lagoon':
+      default:
+        this.renderLagoonBackdrop(stage);
+        break;
+    }
+  }
+
+  private renderLagoonBackdrop(stage: StageDef) {
     const { width, height } = this._canvas;
     const accent = stage.accent ?? '#22d3ee';
     const surfaceY = height * 0.14;
@@ -194,6 +212,198 @@ export class RouletteRenderer {
 
     this.drawSummerTube(width * 0.84, height * 0.12, Math.min(width, height) * 0.052, accent, now);
     this.drawIcedDrink(width * 0.16, height * 0.17, Math.min(width, height) * 0.074, now);
+  }
+
+  private renderSunsetBackdrop(stage: StageDef) {
+    const { width, height } = this._canvas;
+    const accent = stage.accent ?? '#fb7185';
+    const now = performance.now() * 0.001;
+    const horizonY = height * 0.48;
+
+    const backdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    backdrop.addColorStop(0, '#ffd8ab');
+    backdrop.addColorStop(0.18, '#ffab74');
+    backdrop.addColorStop(0.46, '#d66aa1');
+    backdrop.addColorStop(0.74, '#5d2e6d');
+    backdrop.addColorStop(1, '#26182e');
+    this.ctx.fillStyle = backdrop;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.drawGlowOrb(width * 0.78, height * 0.22, Math.min(width, height) * 0.16, 'rgba(255, 245, 223, 0.96)', 'rgba(255, 193, 118, 0)');
+    this.drawWaveBand(height * 0.16, height * 0.018, 'rgba(255, 244, 232, 0.14)', now * 0.2 + 0.4, true);
+    this.drawWaveBand(height * 0.24, height * 0.022, 'rgba(255, 228, 219, 0.1)', now * 0.28 + 1.3, true);
+
+    for (let i = 0; i < 18; i++) {
+      const drift = (now * (0.035 + (i % 3) * 0.008) + i * 0.11) % 1;
+      const x = width * (0.08 + ((i * 0.21) % 0.82)) + Math.sin(now * 0.5 + i) * width * 0.01;
+      const y = height * 0.12 + drift * height * 0.3;
+      const w = Math.max(9, width * (0.007 + (i % 3) * 0.002));
+      const h = w * (0.42 + (i % 2) * 0.16);
+      this.ctx.save();
+      this.ctx.translate(x, y);
+      this.ctx.rotate(Math.sin(now * 0.7 + i) * 0.35);
+      this.ctx.fillStyle = i % 3 === 0 ? accent : i % 2 === 0 ? 'rgba(255, 237, 213, 0.78)' : 'rgba(255, 191, 157, 0.72)';
+      this.ctx.fillRect(-w / 2, -h / 2, w, h);
+      this.ctx.restore();
+    }
+
+    this.drawWaveBand(horizonY, height * 0.026, 'rgba(255, 255, 255, 0.07)', now * 0.52 + 0.5, true);
+    this.drawWaveBand(horizonY + height * 0.06, height * 0.032, 'rgba(149, 72, 108, 0.44)', now * 0.68 + 1.1);
+    this.drawWaveBand(horizonY + height * 0.14, height * 0.05, 'rgba(89, 39, 76, 0.7)', now * 0.84 + 2.2);
+    this.drawWaveBand(horizonY + height * 0.24, height * 0.07, 'rgba(44, 24, 48, 0.95)', now * 0.98 + 3.1);
+
+    for (let i = 0; i < 4; i++) {
+      const lanternX = width * (0.16 + i * 0.22) + Math.sin(now * 0.45 + i) * width * 0.012;
+      const lanternY = horizonY + height * (0.04 + (i % 2) * 0.05);
+      this.ctx.save();
+      this.ctx.translate(lanternX, lanternY);
+      this.ctx.fillStyle = 'rgba(255, 235, 214, 0.14)';
+      this.ctx.beginPath();
+      this.ctx.ellipse(0, 16, 28, 9, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 222, 189, 0.85)' : 'rgba(255, 178, 132, 0.8)';
+      this.ctx.beginPath();
+      this.ctx.roundRect(-11, -16, 22, 24, 7);
+      this.ctx.fill();
+      this.ctx.strokeStyle = accent;
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, -16);
+      this.ctx.lineTo(0, -34);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+  }
+
+  private renderMidnightBackdrop(stage: StageDef) {
+    const { width, height } = this._canvas;
+    const accent = stage.accent ?? '#22d3ee';
+    const now = performance.now() * 0.001;
+    const horizonY = height * 0.58;
+
+    const backdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    backdrop.addColorStop(0, '#09111f');
+    backdrop.addColorStop(0.28, '#101b33');
+    backdrop.addColorStop(0.65, '#120f27');
+    backdrop.addColorStop(1, '#060912');
+    this.ctx.fillStyle = backdrop;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.drawGlowOrb(width * 0.5, height * 0.18, Math.min(width, height) * 0.2, 'rgba(46, 214, 255, 0.16)', 'rgba(46, 214, 255, 0)');
+    this.drawGlowOrb(width * 0.18, height * 0.16, Math.min(width, height) * 0.1, 'rgba(244, 114, 182, 0.12)', 'rgba(244, 114, 182, 0)');
+
+    for (let i = 0; i < 42; i++) {
+      const x = width * ((i * 0.137) % 1);
+      const y = height * (0.06 + ((i * 0.097) % 0.42));
+      const size = 1.1 + (i % 3) * 0.9;
+      const pulse = 0.48 + 0.42 * Math.sin(now * (0.8 + (i % 5) * 0.12) + i);
+      this.ctx.fillStyle = i % 4 === 0 ? `rgba(244, 114, 182, ${0.24 + pulse * 0.28})` : `rgba(216, 244, 255, ${0.2 + pulse * 0.24})`;
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, size, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+
+    this.ctx.save();
+    this.ctx.strokeStyle = 'rgba(72, 214, 255, 0.2)';
+    this.ctx.lineWidth = 1.2;
+    for (let i = 0; i < 9; i++) {
+      const ratio = i / 8;
+      const y = horizonY + ratio * ratio * (height - horizonY);
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, y);
+      this.ctx.lineTo(width, y);
+      this.ctx.stroke();
+    }
+    for (let i = -8; i <= 8; i++) {
+      const baseX = width * 0.5 + i * width * 0.08;
+      this.ctx.beginPath();
+      this.ctx.moveTo(baseX, height);
+      this.ctx.lineTo(width * 0.5 + i * width * 0.018, horizonY);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+
+    for (let i = 0; i < 5; i++) {
+      const ringX = width * (0.14 + i * 0.19);
+      const ringY = height * (0.22 + (i % 2) * 0.08);
+      const radius = Math.min(width, height) * (0.03 + (i % 3) * 0.01);
+      this.ctx.save();
+      this.ctx.strokeStyle = i % 2 === 0 ? accent : 'rgba(244, 114, 182, 0.6)';
+      this.ctx.lineWidth = 3;
+      this.ctx.globalAlpha = 0.35;
+      this.ctx.beginPath();
+      this.ctx.ellipse(ringX, ringY, radius * 1.3, radius, Math.sin(now * 0.4 + i) * 0.4, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
+    this.ctx.fillStyle = 'rgba(4, 10, 19, 0.92)';
+    this.ctx.fillRect(0, horizonY, width, height - horizonY);
+  }
+
+  private renderGardenBackdrop(stage: StageDef) {
+    const { width, height } = this._canvas;
+    const accent = stage.accent ?? '#facc15';
+    const now = performance.now() * 0.001;
+
+    const backdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    backdrop.addColorStop(0, '#e9ffd9');
+    backdrop.addColorStop(0.2, '#b8f0be');
+    backdrop.addColorStop(0.55, '#73c691');
+    backdrop.addColorStop(1, '#214c36');
+    this.ctx.fillStyle = backdrop;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.drawGlowOrb(width * 0.16, height * 0.16, Math.min(width, height) * 0.15, 'rgba(255, 251, 208, 0.92)', 'rgba(255, 251, 208, 0)');
+    this.drawWaveBand(height * 0.18, height * 0.022, 'rgba(255, 255, 255, 0.16)', now * 0.22 + 0.8, true);
+    this.drawWaveBand(height * 0.28, height * 0.026, 'rgba(236, 255, 236, 0.1)', now * 0.3 + 1.5, true);
+
+    this.drawWaveBand(height * 0.62, height * 0.034, 'rgba(127, 213, 140, 0.5)', now * 0.48 + 0.5);
+    this.drawWaveBand(height * 0.72, height * 0.05, 'rgba(88, 170, 100, 0.72)', now * 0.66 + 1.7);
+    this.drawWaveBand(height * 0.82, height * 0.064, 'rgba(41, 104, 63, 0.94)', now * 0.82 + 2.8);
+
+    for (let i = 0; i < 16; i++) {
+      const travel = (now * (0.045 + (i % 4) * 0.01) + i * 0.09) % 1;
+      const x = width * (0.06 + ((i * 0.19) % 0.88)) + Math.sin(now * 0.7 + i * 0.6) * width * 0.015;
+      const y = -20 + travel * (height + 40);
+      const size = Math.max(10, Math.min(width, height) * (0.012 + (i % 3) * 0.003));
+      this.drawLeaf(x, y, size, Math.sin(now * 0.9 + i) * 0.8, i % 3 === 0 ? accent : i % 2 === 0 ? '#fef3c7' : '#86efac');
+    }
+
+    for (let i = 0; i < 6; i++) {
+      const flowerX = width * (0.1 + i * 0.15);
+      const flowerY = height * (0.86 + (i % 2) * 0.035);
+      this.drawGlowOrb(flowerX, flowerY, Math.min(width, height) * 0.028, 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0)');
+    }
+  }
+
+  private drawGlowOrb(x: number, y: number, radius: number, coreColor: string, outerColor: string) {
+    const glow = this.ctx.createRadialGradient(x, y, radius * 0.12, x, y, radius);
+    glow.addColorStop(0, coreColor);
+    glow.addColorStop(1, outerColor);
+    this.ctx.fillStyle = glow;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.fill();
+  }
+
+  private drawLeaf(x: number, y: number, size: number, rotation: number, color: string) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.rotate(rotation);
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, -size * 0.7);
+    this.ctx.bezierCurveTo(size * 0.72, -size * 0.2, size * 0.62, size * 0.55, 0, size * 0.72);
+    this.ctx.bezierCurveTo(-size * 0.62, size * 0.55, -size * 0.72, -size * 0.2, 0, -size * 0.7);
+    this.ctx.fill();
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
+    this.ctx.lineWidth = Math.max(1.2, size * 0.08);
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, -size * 0.52);
+    this.ctx.lineTo(0, size * 0.5);
+    this.ctx.stroke();
+    this.ctx.restore();
   }
 
   private drawWaveBand(y: number, amplitude: number, color: string, phase: number, fillFromTop = false) {
@@ -333,7 +543,7 @@ export class RouletteRenderer {
 
   render(renderParameters: RenderParameters, uiObjects: UIObject[]) {
     this._theme = renderParameters.theme;
-    this.renderSummerBackdrop(renderParameters.stage);
+    this.renderBackdrop(renderParameters.stage);
 
     this.ctx.save();
     this.ctx.scale(initialZoom, initialZoom);

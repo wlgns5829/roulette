@@ -1,4 +1,5 @@
 import { AudioEngine } from './audioEngine';
+import { stageBackdrops } from './data/stageBackdrops';
 import options from './options';
 import type { Roulette } from './roulette';
 import type { MarbleStyle } from './types/MarbleStyle.type';
@@ -317,10 +318,20 @@ export function attachApp(roulette: Roulette) {
     };
 
     const renderStage = (stage: ReturnType<Roulette['getCurrentMap']>) => {
+      const backdrop = stageBackdrops[stage.backdrop];
       stageTitle.textContent = stage.title;
       stageDescription.textContent = stage.description;
       stageFlavor.textContent = stage.flavor;
       document.documentElement.style.setProperty('--stage-accent', stage.accent);
+      document.documentElement.style.setProperty('--app-bg-top-left', backdrop.uiTopLeft);
+      document.documentElement.style.setProperty('--app-bg-top-right', backdrop.uiTopRight);
+      document.documentElement.style.setProperty('--app-bg-bottom', backdrop.uiBottom);
+      document.documentElement.style.setProperty('--app-bg-start', backdrop.uiStart);
+      document.documentElement.style.setProperty('--app-bg-mid', backdrop.uiMid);
+      document.documentElement.style.setProperty('--app-bg-end', backdrop.uiEnd);
+      document.documentElement.style.setProperty('--ambient-one-color', backdrop.ambientOne);
+      document.documentElement.style.setProperty('--ambient-two-color', backdrop.ambientTwo);
+      document.documentElement.style.setProperty('--ambient-three-color', backdrop.ambientThree);
 
       eventBadges.innerHTML = '';
       stage.eventTitles.forEach((title) => {

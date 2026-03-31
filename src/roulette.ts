@@ -2,6 +2,7 @@ import { Camera } from './camera';
 import { canvasHeight, canvasWidth, initialZoom, Skills, Themes, zoomThreshold } from './data/constants';
 import { defaultLunchEventPool, getLunchEventNotice, getLunchEventTitles } from './data/lunchEvents';
 import { type StageDef, stages } from './data/maps';
+import { getStageBackdrop, type StageBackdropId } from './data/stageBackdrops';
 import { FastForwader } from './fastForwader';
 import type { GameObject } from './gameObject';
 import { GoalCelebrationEffect } from './goalCelebrationEffect';
@@ -42,6 +43,7 @@ export type StageSummary = {
   description: string;
   flavor: string;
   accent: string;
+  backdrop: StageBackdropId;
   eventTitles: string[];
 };
 
@@ -759,6 +761,7 @@ export class Roulette extends EventTarget {
       description: stage.description ?? '기본 마블 룰렛 물리 맵입니다.',
       flavor: stage.flavor ?? '핀볼처럼 튀는 충돌이 살아 있는 오리지널 코스입니다.',
       accent: stage.accent ?? '#38bdf8',
+      backdrop: stage.backdrop ?? getStageBackdrop(index),
       eventTitles: getLunchEventTitles(eventPool),
     };
   }

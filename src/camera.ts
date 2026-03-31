@@ -4,7 +4,7 @@ import type { Marble } from './marble';
 import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
-const finishZoomBoost = 2.15;
+const finishZoomBoost = 1.8;
 
 export class Camera {
   private _position: VectorLike = { x: 0, y: 0 };

@@ -1,12 +1,14 @@
 import type { MapEntity } from '../types/MapEntity.type';
 import type { LunchEventId } from '../types/RoundEvent.type';
 import { curatedLunchStages } from './lunchMaps';
+import { getStageBackdrop, type StageBackdropId } from './stageBackdrops';
 
 export type StageDef = {
   title: string;
   description?: string;
   flavor?: string;
   accent?: string;
+  backdrop?: StageBackdropId;
   eventPool?: LunchEventId[];
   entities?: MapEntity[];
   goalY: number;
@@ -2987,4 +2989,7 @@ const baseStages: StageDef[] = [
   },
 ];
 
-export const stages: StageDef[] = [...curatedLunchStages, ...baseStages];
+export const stages: StageDef[] = [...curatedLunchStages, ...baseStages].map((stage, index) => ({
+  ...stage,
+  backdrop: stage.backdrop ?? getStageBackdrop(index),
+}));
