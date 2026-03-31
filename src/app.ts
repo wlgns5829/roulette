@@ -147,7 +147,7 @@ export function attachApp(roulette: Roulette) {
 
     const setStatus = (pill: string, text: string) => {
       statusPill.textContent = pill;
-      liveStatus.textContent = text;
+      liveStatus.textContent = pill === '진행 중' ? '레이스 시작' : text;
     };
 
     const setMobileHudOpen = (open: boolean) => {
