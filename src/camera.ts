@@ -3,8 +3,8 @@ import type { StageDef } from './data/maps';
 import type { Marble } from './marble';
 import type { VectorLike } from './types/VectorLike';
 
-const cruisingZoom = 0.86;
-const finishZoomBoost = 1.75;
+const cruisingZoom = 0.88;
+const finishZoomBoost = 2.15;
 
 export class Camera {
   private _position: VectorLike = { x: 0, y: 0 };
@@ -111,9 +111,18 @@ export class Camera {
 
     if (marbles.length > 0) {
       const targetMarble = marbles[targetIndex] ? marbles[targetIndex] : marbles[0];
-      this.setPosition({ x: targetMarble.position.x, y: this.toVisualY(targetMarble.position.y) });
+      const chaseMarble = marbles[targetIndex + 1] ?? marbles[targetIndex - 1] ?? targetMarble;
+      const leaderVisualY = this.toVisualY(targetMarble.position.y);
+      const progress = Math.max(0, Math.min(1, targetMarble.position.y / stage.goalY));
+      const finishBias = needToZoom ? Math.max(0, Math.min(1, (progress - 0.58) / 0.42)) : 0;
+      const chaseGap = Math.abs(targetMarble.position.y - chaseMarble.position.y);
+      const chaseBias = needToZoom ? Math.max(0, 0.18 - chaseGap * 0.03) : 0;
+      const targetX = targetMarble.position.x * (1 - chaseBias) + chaseMarble.position.x * chaseBias;
+      const targetY = leaderVisualY * (1 - finishBias * 0.42);
+
+      this.setPosition({ x: targetX, y: targetY });
       if (needToZoom) {
-        const goalDist = Math.abs(this.toVisualY(stage.zoomY) - this._position.y);
+        const goalDist = Math.abs(this.toVisualY(stage.zoomY) - leaderVisualY);
         const finishRatio = Math.max(0, Math.min(1, 1 - goalDist / zoomThreshold));
         this.zoom = cruisingZoom + finishRatio * finishZoomBoost;
       } else {

@@ -1,6 +1,6 @@
 import type { MapEntity } from '../types/MapEntity.type';
 import type { LunchEventId } from '../types/RoundEvent.type';
-import { lunchStages } from './lunchMaps';
+import { curatedLunchStages } from './lunchMaps';
 
 export type StageDef = {
   title: string;
@@ -2987,4 +2987,4 @@ const baseStages: StageDef[] = [
   },
 ];
 
-export const stages: StageDef[] = [...lunchStages, ...baseStages];
+export const stages: StageDef[] = [...curatedLunchStages, ...baseStages];

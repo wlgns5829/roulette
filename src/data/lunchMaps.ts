@@ -114,6 +114,87 @@ function recolorEntities(entities: MapEntity[], replacements: Record<string, str
   }));
 }
 
+const trackWidth = 26;
+
+function cloneEntity(entity: MapEntity): MapEntity {
+  return {
+    ...entity,
+    position: { ...entity.position },
+    props: { ...entity.props },
+    motion: entity.motion ? { ...entity.motion } : undefined,
+    shape:
+      entity.shape.type === 'polyline'
+        ? {
+            ...entity.shape,
+            points: entity.shape.points.map(([x, y]) => [x, y] as Point),
+          }
+        : { ...entity.shape },
+  };
+}
+
+function cloneEntities(entities: MapEntity[]): MapEntity[] {
+  return entities.map(cloneEntity);
+}
+
+function mirrorEntities(entities: MapEntity[], width = trackWidth): MapEntity[] {
+  return entities.map((entity) => {
+    const mirrored = cloneEntity(entity);
+    mirrored.position.x = width - mirrored.position.x;
+    mirrored.props.angularVelocity *= -1;
+
+    if (mirrored.motion?.axis === 'x') {
+      mirrored.motion.phase = (mirrored.motion.phase ?? 0) + Math.PI;
+    }
+
+    if (mirrored.shape.type === 'box') {
+      mirrored.shape.rotation *= -1;
+    }
+
+    if (mirrored.shape.type === 'polyline') {
+      mirrored.shape.points = mirrored.shape.points.map(([x, y]) => [width - x, y]);
+    }
+
+    return mirrored;
+  });
+}
+
+function tuneEntities(
+  entities: MapEntity[],
+  {
+    angularScale = 1,
+    motionScale = 1,
+    restitutionBoost = 0,
+  }: { angularScale?: number; motionScale?: number; restitutionBoost?: number } = {}
+): MapEntity[] {
+  return entities.map((entity) => {
+    const tuned = cloneEntity(entity);
+    tuned.props.angularVelocity *= angularScale;
+    tuned.props.restitution = Math.max(0, Math.min(1.8, tuned.props.restitution + restitutionBoost));
+
+    if (tuned.motion) {
+      tuned.motion.speed *= motionScale;
+      tuned.motion.amplitude *= 0.94 + motionScale * 0.12;
+    }
+
+    return tuned;
+  });
+}
+
+function combineEntities(...groups: MapEntity[][]): MapEntity[] {
+  return groups.flatMap((group) => cloneEntities(group));
+}
+
+function buildVariantStage(
+  base: StageDef,
+  overrides: Omit<Partial<StageDef>, 'entities'> & { entities?: MapEntity[] }
+): StageDef {
+  return {
+    ...base,
+    ...overrides,
+    entities: overrides.entities ? cloneEntities(overrides.entities) : cloneEntities(base.entities ?? []),
+  };
+}
+
 const coffeeRunEntities: MapEntity[] = [
   wall([
     [2, -260],
@@ -573,4 +654,231 @@ export const lunchStages: StageDef[] = [
     eventPool: pool('ac-draft', 'meeting-call', 'espresso-shot', 'bomb-burst', 'sugar-crash', 'shark-rush'),
     entities: elevatorChaosVisibleEntities,
   },
+];
+
+const curatedCoffeeRushStage: StageDef = {
+  title: 'Coffee Rush',
+  description: 'Angled ramps, stirrers, and sugar pegs make the opening sprint feel fast right away.',
+  flavor: 'Good for tight mid-race packs and dramatic last-second passes.',
+  accent: '#f59e0b',
+  goalY: 136,
+  zoomY: 129,
+  eventPool: pool('coffee-spill', 'espresso-shot', 'meeting-call', 'bean-burst', 'bomb-burst', 'shark-rush'),
+  entities: coffeeRunEntities,
+};
+
+const curatedSummerSplashStage: StageDef = {
+  title: 'Summer Splash',
+  description: 'A wave-like lane with flowing ramps, drifting gates, and rotating float bars.',
+  flavor: 'The route breathes in wide arcs, so the lead changes feel very visible on camera.',
+  accent: '#38bdf8',
+  goalY: 138,
+  zoomY: 132,
+  eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'espresso-shot', 'shark-rush'),
+  entities: summerSplashEntities,
+};
+
+const curatedSnackAttackStage: StageDef = {
+  title: 'Snack Attack',
+  description: 'Dense peg fields and late moving gates turn the last third into pure chaos.',
+  flavor: 'If the front-runner slips once, the whole pack can pile into the finish together.',
+  accent: '#fb7185',
+  goalY: 148,
+  zoomY: 142,
+  eventPool: pool('coffee-spill', 'meeting-call', 'bean-burst', 'bomb-burst', 'sugar-crash', 'shark-rush'),
+  entities: snackAttackVisibleEntities,
+};
+
+const curatedLunchVariants: StageDef[] = [
+  buildVariantStage(curatedCoffeeRushStage, {
+    title: 'Coffee Rush Mirror',
+    description: 'The same fast lane, but reflected so the rhythm flips from side to side.',
+    flavor: 'Feels familiar for a second, then the angles punish the wrong instincts.',
+    accent: '#f97316',
+    entities: recolorEntities(mirrorEntities(coffeeRunEntities), {
+      '#f97316': '#fb7185',
+      '#fb7185': '#38bdf8',
+      '#38bdf8': '#f59e0b',
+      '#fdba74': '#fde68a',
+    }),
+  }),
+  buildVariantStage(curatedCoffeeRushStage, {
+    title: 'Coffee Rush Turbo',
+    description: 'Everything spins and slides a little faster, so the lead never sits still for long.',
+    flavor: 'Best when you want a fast broadcast-style opening and a noisy finish.',
+    accent: '#ef4444',
+    eventPool: pool('espresso-shot', 'coffee-spill', 'bomb-burst', 'shark-rush'),
+    entities: combineEntities(
+      tuneEntities(coffeeRunEntities, { angularScale: 1.2, motionScale: 1.18, restitutionBoost: 0.04 }),
+      [
+        spinner(13, 68.5, 3.5, -5.1, '#fde68a'),
+        movingBox(13, 120.6, 2.1, 0.11, 0, '#fff7ed', { axis: 'x', amplitude: 1.65, speed: 1.8, phase: 0.4 }),
+      ]
+    ),
+  }),
+  buildVariantStage(curatedCoffeeRushStage, {
+    title: 'Coffee Rush Crosswind',
+    description: 'The lane is similar, but the event mix favors sideways chaos and re-entries.',
+    flavor: 'Great for races where the leader should keep getting tugged back into traffic.',
+    accent: '#38bdf8',
+    eventPool: pool('ac-draft', 'coffee-spill', 'meeting-call', 'bomb-burst', 'shark-rush'),
+    entities: combineEntities(coffeeRunEntities, [
+      movingBox(8.4, 111.8, 1.9, 0.11, 0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.42, phase: 0.2 }),
+      movingBox(17.6, 111.8, 1.9, 0.11, -0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.5, phase: 1.1 }),
+      ...pegField(9.1, 123.4, 4, 2, 2.25, 2.35, '#ffffff'),
+    ]),
+  }),
+  buildVariantStage(curatedCoffeeRushStage, {
+    title: 'Coffee Rush Pinball',
+    description: 'Extra bumpers turn the middle into a pinball pocket before the final spin gate.',
+    flavor: 'The first-place marble looks safe until one strange bounce rewrites the whole finish.',
+    accent: '#fbbf24',
+    eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
+    entities: combineEntities(coffeeRunEntities, [
+      bumper(9.2, 70.4, 0.33, '#fde68a', 1.35),
+      bumper(16.8, 73.6, 0.33, '#fde68a', 1.35),
+      bumper(13, 101.4, 0.34, '#fff7ed', 1.4),
+      spinner(13, 116.2, 2.4, -4.8, '#fcd34d'),
+    ]),
+  }),
+  buildVariantStage(curatedSummerSplashStage, {
+    title: 'Summer Splash Mirror',
+    description: 'A mirrored tide lane that makes every drift and spinner hit read differently.',
+    flavor: 'Clean to watch, but surprisingly nasty once the field bunches up.',
+    accent: '#0ea5e9',
+    entities: recolorEntities(mirrorEntities(summerSplashEntities), {
+      '#ff8c5d': '#38bdf8',
+      '#ff6791': '#fb7185',
+      '#ffd85f': '#fde68a',
+      '#fff8ef': '#ffffff',
+    }),
+  }),
+  buildVariantStage(curatedSummerSplashStage, {
+    title: 'Summer Splash Whirlpool',
+    description: 'Extra rotators in the lower half keep the front pack spinning back into each other.',
+    flavor: 'Perfect if you want the camera to stay locked on a messy battle for first.',
+    accent: '#06b6d4',
+    eventPool: pool('ac-draft', 'espresso-shot', 'meeting-call', 'shark-rush'),
+    entities: combineEntities(tuneEntities(summerSplashEntities, { angularScale: 1.12, motionScale: 1.1 }), [
+      spinner(13, 70.5, 3.2, 5.1, '#67e8f9'),
+      spinner(13, 110.4, 3.6, -5.3, '#bae6fd'),
+      ...pegField(8.1, 127.5, 4, 2, 2.4, 2.4, '#ecfeff'),
+    ]),
+  }),
+  buildVariantStage(curatedSummerSplashStage, {
+    title: 'Summer Splash Tide Shift',
+    description: 'Moving gates stack on top of each other so the racing line keeps changing.',
+    flavor: 'Leaders can still be seen clearly, but they have to keep re-finding the lane.',
+    accent: '#22c55e',
+    eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'sugar-crash', 'shark-rush'),
+    entities: combineEntities(summerSplashEntities, [
+      movingBox(13, 66.8, 2.25, 0.11, 0.05, '#dcfce7', { axis: 'x', amplitude: 1.65, speed: 1.38, phase: 0.2 }),
+      movingBox(13, 118.4, 2.15, 0.11, -0.05, '#bbf7d0', { axis: 'x', amplitude: 1.45, speed: 1.6, phase: 1.8 }),
+      movingBox(13, 128.8, 1.8, 0.11, 0, '#f0fdf4', { axis: 'y', amplitude: 1.1, speed: 1.55, phase: 0.7 }),
+    ]),
+  }),
+  buildVariantStage(curatedSummerSplashStage, {
+    title: 'Summer Splash Sunset',
+    description: 'A warmer colorway with a few extra sugar drops near the bottom funnel.',
+    flavor: 'Looks bright and relaxed, then suddenly compresses into a very sharp final sprint.',
+    accent: '#fb7185',
+    entities: combineEntities(
+      recolorEntities(summerSplashEntities, {
+        '#ffb168': '#fb923c',
+        '#ff946d': '#fb7185',
+        '#ffd27a': '#fcd34d',
+        '#fff1c2': '#fff7ed',
+        '#ff8c5d': '#f97316',
+        '#ff6791': '#ec4899',
+      }),
+      [bumper(13.2, 121.8, 0.34, '#fff1c2', 1.35), ...sugarBits([[10.2, 129.6], [13, 131.1], [15.8, 129.8]], '#fff7ed')]
+    ),
+  }),
+  buildVariantStage(curatedSummerSplashStage, {
+    title: 'Summer Splash Moonwave',
+    description: 'Cooler colors, calmer top lane, then a sudden cluster of late bumpers.',
+    flavor: 'It gives the leader room early so the finish rush looks even more dramatic.',
+    accent: '#a78bfa',
+    eventPool: pool('meeting-call', 'espresso-shot', 'bomb-burst', 'shark-rush'),
+    entities: combineEntities(
+      recolorEntities(summerSplashEntities, {
+        '#ffb168': '#c4b5fd',
+        '#ff946d': '#93c5fd',
+        '#ffd27a': '#bfdbfe',
+        '#ff6791': '#818cf8',
+      }),
+      [
+        bumper(8.6, 118.8, 0.31, '#ddd6fe', 1.3),
+        bumper(17.3, 118.8, 0.31, '#ddd6fe', 1.3),
+        spinner(13, 127.8, 2.4, 4.9, '#c4b5fd'),
+      ]
+    ),
+  }),
+  buildVariantStage(curatedSnackAttackStage, {
+    title: 'Snack Attack Mirror',
+    description: 'Mirrored peg walls and bounce plates make the late chaos arrive from the opposite side.',
+    flavor: 'Simple change, very different feel once the field stacks up near the end.',
+    accent: '#f97316',
+    entities: recolorEntities(mirrorEntities(snackAttackVisibleEntities), {
+      '#ff7a59': '#fb7185',
+      '#ffb48a': '#f59e0b',
+      '#ffd166': '#fde68a',
+      '#ff5d73': '#38bdf8',
+    }),
+  }),
+  buildVariantStage(curatedSnackAttackStage, {
+    title: 'Snack Attack Crunch',
+    description: 'More spin, more rebound, and one extra mixer gate in the last quarter.',
+    flavor: 'Front-runners still look strong on camera, but they almost never get clean air.',
+    accent: '#ef4444',
+    eventPool: pool('bean-burst', 'bomb-burst', 'espresso-shot', 'shark-rush'),
+    entities: combineEntities(
+      tuneEntities(snackAttackVisibleEntities, { angularScale: 1.16, motionScale: 1.12, restitutionBoost: 0.05 }),
+      [
+        spinner(13, 111.4, 3.2, -4.9, '#fb7185'),
+        movingBox(13, 140.8, 2.05, 0.11, 0, '#fff7ed', { axis: 'x', amplitude: 1.55, speed: 1.8, phase: 0.5 }),
+      ]
+    ),
+  }),
+  buildVariantStage(curatedSnackAttackStage, {
+    title: 'Snack Attack Sugar Trap',
+    description: 'The lower lane packs in more pegs and mini bumpers to create stubborn traffic.',
+    flavor: 'A perfect stage for suspense right before the winner breaks the line.',
+    accent: '#f59e0b',
+    eventPool: pool('coffee-spill', 'meeting-call', 'sugar-crash', 'shark-rush'),
+    entities: combineEntities(snackAttackVisibleEntities, [
+      ...pegField(7.5, 134.2, 5, 2, 2.15, 2.4, '#fff8ec'),
+      bumper(10.8, 143.4, 0.29, '#ffe7ba', 1.32),
+      bumper(15.2, 143.4, 0.29, '#ffe7ba', 1.32),
+    ]),
+  }),
+  buildVariantStage(curatedSnackAttackStage, {
+    title: 'Snack Attack Overdrive',
+    description: 'The whole board plays faster and the moving bars cut back and forth more aggressively.',
+    flavor: 'This one is built for volatile late leads and hard-to-trust first places.',
+    accent: '#8b5cf6',
+    eventPool: pool('espresso-shot', 'ac-draft', 'bomb-burst', 'shark-rush'),
+    entities: combineEntities(
+      recolorEntities(
+        tuneEntities(snackAttackVisibleEntities, { angularScale: 1.08, motionScale: 1.2, restitutionBoost: 0.04 }),
+        {
+          '#ff7a59': '#c084fc',
+          '#ffb48a': '#e9d5ff',
+          '#ffd166': '#fde68a',
+          '#ff5d73': '#a78bfa',
+        }
+      ),
+      [
+        movingBox(9.5, 120.4, 1.8, 0.11, 0.12, '#ddd6fe', { axis: 'y', amplitude: 1.2, speed: 1.7, phase: 0.2 }),
+        movingBox(16.5, 120.4, 1.8, 0.11, -0.12, '#ddd6fe', { axis: 'y', amplitude: 1.2, speed: 1.76, phase: 1.2 }),
+      ]
+    ),
+  }),
+];
+
+export const curatedLunchStages: StageDef[] = [
+  curatedCoffeeRushStage,
+  curatedSummerSplashStage,
+  curatedSnackAttackStage,
+  ...curatedLunchVariants,
 ];

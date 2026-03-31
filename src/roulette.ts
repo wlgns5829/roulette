@@ -165,7 +165,7 @@ export class Roulette extends EventTarget {
         marbles: this._marbles,
         stage: this._stage,
         needToZoom: this._goalDist < zoomThreshold,
-        targetIndex: this._winners.length > 0 ? this._winnerRank - this._winners.length : 0,
+        targetIndex: 0,
       });
     }
 
@@ -313,13 +313,17 @@ export class Roulette extends EventTarget {
       }
     }
 
-    const targetIndex = this._winnerRank - this._winners.length;
-    const topY = this._marbles[targetIndex] ? this._marbles[targetIndex].y : 0;
-    this._goalDist = Math.abs(this._stage.zoomY - topY);
-    this._timeScale = this._calcTimeScale();
-    this._maybeTriggerFinalApproach(targetIndex);
+    const focusPack = this._marbles
+      .filter((marble) => marble.y <= this._stage.goalY)
+      .slice()
+      .sort((a, b) => b.y - a.y);
+    const leader = focusPack[0];
 
-    this._marbles = this._marbles.filter((marble) => marble.y <= this._stage?.goalY);
+    this._goalDist = Math.abs(this._stage.zoomY - (leader?.y ?? 0));
+    this._timeScale = this._calcTimeScale(focusPack);
+    this._maybeTriggerFinalApproach(focusPack);
+
+    this._marbles = focusPack;
   }
 
   private _finishRound(marble: Marble) {
@@ -366,18 +370,19 @@ export class Roulette extends EventTarget {
     }, 1000);
   }
 
-  private _maybeTriggerFinalApproach(targetIndex: number) {
+  private _maybeTriggerFinalApproach(focusPack: Marble[]) {
     if (!this._stage || !this._isRunning || this._finalApproachTriggered) {
       return;
     }
 
-    const contender = this._marbles[targetIndex];
+    const contender = focusPack[0];
     if (!contender || this._winners.length >= this._winnerRank + 1) {
       return;
     }
 
-    const packIsTight = Boolean(this._marbles[targetIndex - 1] || this._marbles[targetIndex + 1]);
-    const isNearGoal = contender.y > this._stage.goalY - 12 || this._goalDist < zoomThreshold * 0.55;
+    const runnerUp = focusPack[1];
+    const packIsTight = Boolean(runnerUp && contender.y - runnerUp.y < 6.5);
+    const isNearGoal = contender.y > this._stage.goalY - 18 || this._goalDist < zoomThreshold * 1.15;
     if (!packIsTight || !isNearGoal) {
       return;
     }
@@ -394,18 +399,21 @@ export class Roulette extends EventTarget {
     );
   }
 
-  private _calcTimeScale(): number {
+  private _calcTimeScale(focusPack: Marble[]): number {
     if (!this._stage) return 1;
-    const targetIndex = this._winnerRank - this._winners.length;
-    if (this._winners.length < this._winnerRank + 1 && this._goalDist < zoomThreshold) {
-      if (
-        this._marbles[targetIndex] &&
-        this._marbles[targetIndex].y > this._stage.zoomY - zoomThreshold * 1.2 &&
-        (this._marbles[targetIndex - 1] || this._marbles[targetIndex + 1])
-      ) {
-        return Math.max(0.2, this._goalDist / zoomThreshold);
-      }
+
+    const contender = focusPack[0];
+    const runnerUp = focusPack[1];
+    if (
+      this._winners.length < this._winnerRank + 1 &&
+      contender &&
+      runnerUp &&
+      this._goalDist < zoomThreshold * 1.4 &&
+      contender.y > this._stage.zoomY - zoomThreshold * 1.6
+    ) {
+      return Math.max(0.12, this._goalDist / (zoomThreshold * 1.2));
     }
+
     return 1;
   }
 

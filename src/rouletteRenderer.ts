@@ -404,6 +404,7 @@ export class RouletteRenderer {
 
   private renderMarbles({ marbles, camera, winnerRank, winners, size }: RenderParameters) {
     const winnerIndex = winnerRank - winners.length;
+    const leaderIndex = marbles.length > 0 ? 0 : -1;
     const viewPort = {
       x: camera.x,
       y: camera.toWorldY(camera.y),
@@ -416,7 +417,7 @@ export class RouletteRenderer {
       marble.render(
         this.ctx,
         camera.zoom * initialZoom,
-        i === winnerIndex,
+        i === winnerIndex || i === leaderIndex,
         false,
         this.getMarbleImage(marble.name),
         viewPort,

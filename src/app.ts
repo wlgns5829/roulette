@@ -157,7 +157,7 @@ export function attachApp(roulette: Roulette) {
     };
 
     const syncMobileHudState = () => {
-      const showToggle = roundRunning;
+      const showToggle = roundRunning && mobileLayout.matches;
       mobileHudToggle.hidden = !showToggle;
 
       if (!showToggle) {

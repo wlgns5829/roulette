@@ -18,8 +18,8 @@ const stepLength = 60 / bpm / 2;
 const scheduleAheadTime = 0.18;
 const schedulerInterval = 80;
 const enabledMasterGain = 1.52;
-const defaultBgmGain = 0.52;
-const duckedBgmGain = 0.12;
+const defaultBgmGain = 0.72;
+const duckedBgmGain = 0.18;
 
 type BgmTrack = {
   bassPatterns: number[][];
