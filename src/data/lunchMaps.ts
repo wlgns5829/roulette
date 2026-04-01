@@ -466,7 +466,7 @@ const coffeeRunEntities: MapEntity[] = [
     ],
     '#fff7ed'
   ),
-  ...coffeeShowdownFinale(132.8),
+  ...coffeeShowdownFinale(124.5),
 ];
 
 const summerSplashEntities: MapEntity[] = [
@@ -588,7 +588,7 @@ const summerSplashEntities: MapEntity[] = [
     ],
     '#fff8ef'
   ),
-  ...splashShowdownFinale(132.8),
+  ...splashShowdownFinale(126.4),
 ];
 
 const summerSplashStage: Partial<StageDef> = {
@@ -680,7 +680,7 @@ const snackAttackEntities: MapEntity[] = [
     ],
     '#fff7ed'
   ),
-  ...snackShowdownFinale(143.6),
+  ...snackShowdownFinale(131.8),
 ];
 
 const snackAttackVisibleEntities = recolorEntities(snackAttackEntities, {
@@ -854,8 +854,8 @@ const curatedCoffeeRushStage: StageDef = {
   description: 'Angled ramps, stirrers, and sugar pegs make the opening sprint feel fast right away, then the finale keeps squeezing the lead.',
   flavor: 'Built for late breakaways that still have to survive one more noisy gauntlet.',
   accent: '#f59e0b',
-  goalY: 169,
-  zoomY: 161.5,
+  goalY: 158,
+  zoomY: 151.5,
   eventPool: pool('coffee-spill', 'espresso-shot', 'meeting-call', 'bean-burst', 'bomb-burst', 'shark-rush'),
   entities: coffeeRunEntities,
 };
@@ -865,8 +865,8 @@ const curatedSummerSplashStage: StageDef = {
   description: 'A wave-like lane with flowing ramps, drifting gates, and rotating float bars before a turbulent last surge.',
   flavor: 'The route breathes in wide arcs first, then closes hard enough to make the finish camera feel alive.',
   accent: '#38bdf8',
-  goalY: 170,
-  zoomY: 162.5,
+  goalY: 159,
+  zoomY: 152.5,
   eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'espresso-shot', 'shark-rush'),
   entities: summerSplashEntities,
 };
@@ -876,8 +876,8 @@ const curatedSnackAttackStage: StageDef = {
   description: 'Dense peg fields and late moving gates turn the last third into chaos, and the ending now keeps twisting even longer.',
   flavor: 'If the front-runner slips once, the whole pack can still pile back into the spotlight near the line.',
   accent: '#fb7185',
-  goalY: 180,
-  zoomY: 172,
+  goalY: 166,
+  zoomY: 159,
   eventPool: pool('coffee-spill', 'meeting-call', 'bean-burst', 'bomb-burst', 'sugar-crash', 'shark-rush'),
   entities: snackAttackVisibleEntities,
 };
@@ -1110,8 +1110,8 @@ const curatedLunchVariants: StageDef[] = [
         '#fdba74': '#e9d5ff',
         '#fff7ed': '#f5f3ff',
       }),
-      gatePairs(138, 2, 10, '#ddd6fe', '#c4b5fd'),
-      [spinner(13, 160.6, 3.8, -5.2, '#ddd6fe')]
+      gatePairs(130, 2, 9.6, '#ddd6fe', '#c4b5fd'),
+      [spinner(13, 151.2, 3.8, -5.2, '#ddd6fe')]
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
@@ -1122,10 +1122,10 @@ const curatedLunchVariants: StageDef[] = [
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'bean-burst', 'shark-rush'),
     entities: combineEntities(
       coffeeRunEntities,
-      slalomBars(140, 2, 9.4, '#67e8f9', '#fef3c7'),
+      slalomBars(131.5, 2, 9.2, '#67e8f9', '#fef3c7'),
       [
-        movingBox(13, 158.8, 2.25, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.75, speed: 1.88, phase: 0.7 }),
-        bumper(13, 164.2, 0.34, '#fde68a', 1.38),
+        movingBox(13, 149.6, 2.25, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.75, speed: 1.88, phase: 0.7 }),
+        bumper(13, 153.2, 0.34, '#fde68a', 1.38),
       ]
     ),
   }),
@@ -1137,10 +1137,10 @@ const curatedLunchVariants: StageDef[] = [
     eventPool: pool('ac-draft', 'espresso-shot', 'meeting-call', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
       tuneEntities(summerSplashEntities, { angularScale: 1.08, motionScale: 1.1 }),
-      spinnerLadder(138, 2, 10, '#67e8f9', '#f9a8d4'),
+      spinnerLadder(131, 2, 9.8, '#67e8f9', '#f9a8d4'),
       [
-        movingBox(13, 160.8, 2.2, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.82, speed: 1.82, phase: 0.5 }),
-        spinner(13, 166.4, 2.6, 5.1, '#bae6fd'),
+        movingBox(13, 149.8, 2.2, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.82, speed: 1.82, phase: 0.5 }),
+        spinner(13, 154.2, 2.6, 5.1, '#bae6fd'),
       ]
     ),
   }),
@@ -1152,8 +1152,8 @@ const curatedLunchVariants: StageDef[] = [
     eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
     entities: combineEntities(
       tuneEntities(snackAttackVisibleEntities, { angularScale: 1.06, motionScale: 1.08, restitutionBoost: 0.03 }),
-      gatePairs(150, 2, 10, '#fff1dc', '#ffe7ba'),
-      [spinner(13, 171.6, 3.7, -5.2, '#fff8ec'), ...pegField(9.2, 162.4, 3, 2, 2.15, 2.45, '#fffef6')]
+      gatePairs(141.5, 2, 9.8, '#fff1dc', '#ffe7ba'),
+      [spinner(13, 158.8, 3.7, -5.2, '#fff8ec'), ...pegField(9.2, 151.4, 3, 2, 2.15, 2.45, '#fffef6')]
     ),
   }),
 ];
