@@ -1163,7 +1163,6 @@ const curatedLunchVariants: StageDef[] = [
 ];
 
 export const curatedLunchStages: StageDef[] = [
-  curatedCoffeeRushStage,
   curatedSummerSplashStage,
   curatedSnackAttackStage,
   ...curatedLunchVariants,

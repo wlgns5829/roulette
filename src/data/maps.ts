@@ -3095,11 +3095,9 @@ const baseStages: StageDef[] = [
   },
 ];
 
-export const stages: StageDef[] = [...curatedLunchStages, ...baseStages]
-  .slice(0, 20)
-  .map((stage, index) =>
-    sanitizeStage({
-      ...stage,
-      backdrop: stage.backdrop ?? getStageBackdrop(index),
-    })
-  );
+export const stages: StageDef[] = curatedLunchStages.map((stage, index) =>
+  sanitizeStage({
+    ...stage,
+    backdrop: stage.backdrop ?? getStageBackdrop(index),
+  })
+);
