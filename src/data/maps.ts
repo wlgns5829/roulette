@@ -290,44 +290,136 @@ function createFragileStair(y: number, colorA: string, colorB: string): MapEntit
   return dots.map(([x, dotY, color], index) => createFragileCircle(x, dotY, 0.26 + (index % 3) * 0.02, color));
 }
 
+function createCrissCrossGates(y: number, colorA: string, colorB: string, colorC: string, phase = 0): MapEntity[] {
+  return [
+    createBoxObstacle(7.2, y, 1.5, 0.11, 0.62, colorA, {
+      motion: createMotion('x', 1.08, 1.26, phase),
+    }),
+    createBoxObstacle(18.8, y + 2.1, 1.5, 0.11, -0.62, colorB, {
+      motion: createMotion('x', 1.08, 1.34, phase + 0.85),
+    }),
+    createBoxObstacle(10.1, y + 4.2, 1.35, 0.11, -0.54, colorC, {
+      motion: createMotion('x', 0.95, 1.42, phase + 1.5),
+    }),
+    createBoxObstacle(15.9, y + 6.1, 1.35, 0.11, 0.54, colorA, {
+      motion: createMotion('x', 0.95, 1.5, phase + 2.15),
+    }),
+  ];
+}
+
+function createMazeWalls(y: number, color: string): MapEntity[] {
+  return [
+    createGuideWall(
+      [
+        [4.1, y],
+        [9.4, y + 3.9],
+        [7.2, y + 8.5],
+        [10.8, y + 13.2],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [21.9, y],
+        [16.6, y + 3.9],
+        [18.8, y + 8.5],
+        [15.2, y + 13.2],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [10.7, y + 14.4],
+        [8.9, y + 18.4],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [15.3, y + 14.4],
+        [17.1, y + 18.4],
+      ],
+      color
+    ),
+  ];
+}
+
+function createSpinnerCorridor(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  return [
+    createSpinner(7.9, y, 2.05, 4.2, colorA),
+    createSpinner(trackCenterX, y + 2.7, 4.9, -4.9, colorB),
+    createSpinner(18.1, y + 5.4, 2.05, 4.2, colorC),
+  ];
+}
+
+function createFragileRing(y: number, colorA: string, colorB: string): MapEntity[] {
+  const ring: Array<[number, number, number, string]> = [
+    [9.2, y, 0.27, colorA],
+    [11.4, y - 1.1, 0.24, colorB],
+    [14.6, y - 1.1, 0.24, colorB],
+    [16.8, y, 0.27, colorA],
+    [9.9, y + 2.7, 0.25, colorB],
+    [13, y + 4.1, 0.33, colorA],
+    [16.1, y + 2.7, 0.25, colorB],
+  ];
+
+  return ring.map(([x, dotY, radius, color]) => createFragileCircle(x, dotY, radius, color));
+}
+
+function createDenseTiltStack(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    ...createTiltPair(y, colorA, colorB, false),
+    createBoxObstacle(9.4, y + 7.2, 1.55, 0.11, -0.46, colorB),
+    createBoxObstacle(16.6, y + 8.4, 1.55, 0.11, 0.46, colorA),
+  ];
+}
+
 function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
   const pattern = index % 5;
   const palette = getCoursePalette(stage.accent, index);
   const usableHeight = Math.max(78, stage.goalY - 54);
-  const bandYs = [0.08, 0.24, 0.4, 0.56, 0.72].map((t) => 24 + usableHeight * t);
+  const bandYs = [0.06, 0.17, 0.29, 0.41, 0.53, 0.65, 0.77].map((t) => 24 + usableHeight * t);
   const phase = (index % 4) * 0.55;
   const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, pattern, palette.rail)];
 
   switch (pattern) {
     case 0:
-      entities.push(...createPocketWalls(bandYs[0] - 3.5, palette.rail));
-      entities.push(...createTiltPair(bandYs[0], palette.primary, palette.secondary, index % 2 === 0));
-      entities.push(...createSwingGatePair(bandYs[1], palette.primary, palette.secondary, phase));
-      entities.push(...createSpinnerPair(bandYs[2], palette.secondary, palette.primary));
+      entities.push(...createPocketWalls(bandYs[0] - 2.8, palette.rail));
+      entities.push(...createDenseTiltStack(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createCrissCrossGates(bandYs[1], palette.primary, palette.secondary, palette.tertiary, phase));
+      entities.push(...createSpinnerCorridor(bandYs[2], palette.secondary, palette.primary, palette.tertiary));
       entities.push(...createFragileCluster(bandYs[3], palette.secondary, palette.tertiary));
       entities.push(...createSwingGatePair(bandYs[4], palette.tertiary, palette.primary, phase + 0.8));
+      entities.push(...createFragileRing(bandYs[5], palette.primary, palette.tertiary));
+      entities.push(...createCenterSpinner(bandYs[6], palette.secondary, 4.8, -4.8));
       break;
     case 1:
       entities.push(...createSplitMergeWalls(bandYs[0] - 4.8, palette.rail));
       entities.push(...createCenterSpinner(bandYs[1], palette.primary, 4.8, index % 2 === 0 ? -5 : 5));
-      entities.push(...createSwingGatePair(bandYs[2], palette.secondary, palette.primary, phase + 0.3));
+      entities.push(...createCrissCrossGates(bandYs[2], palette.secondary, palette.primary, palette.tertiary, phase + 0.3));
       entities.push(...createFragileStair(bandYs[3], palette.secondary, palette.tertiary));
-      entities.push(...createTiltPair(bandYs[4], palette.primary, palette.secondary, true));
+      entities.push(...createMazeWalls(bandYs[4] - 2.1, palette.secondary));
+      entities.push(...createTiltPair(bandYs[5], palette.primary, palette.secondary, true));
+      entities.push(...createSwingGatePair(bandYs[6], palette.tertiary, palette.primary, phase + 0.95));
       break;
     case 2:
       entities.push(...createBridgeRails(bandYs[0] - 4.1, palette.rail));
       entities.push(...createSpinnerPair(bandYs[1], palette.primary, palette.secondary));
       entities.push(...createPocketWalls(bandYs[2] - 2.8, palette.secondary));
       entities.push(...createFragileCluster(bandYs[2] + 6.2, palette.tertiary, palette.primary));
-      entities.push(...createSwingGatePair(bandYs[3], palette.secondary, palette.primary, phase + 0.5));
-      entities.push(...createCenterSpinner(bandYs[4], palette.primary, 5.1, -4.7));
+      entities.push(...createCrissCrossGates(bandYs[3], palette.secondary, palette.primary, palette.tertiary, phase + 0.5));
+      entities.push(...createMazeWalls(bandYs[4] - 2.3, palette.rail));
+      entities.push(...createCenterSpinner(bandYs[5], palette.primary, 5.1, -4.7));
+      entities.push(...createFragileRing(bandYs[6], palette.secondary, palette.tertiary));
       break;
     case 3:
-      entities.push(...createTiltPair(bandYs[0], palette.primary, palette.secondary, index % 2 === 1));
+      entities.push(...createDenseTiltStack(bandYs[0], palette.primary, palette.secondary));
       entities.push(...createFragileStair(bandYs[1], palette.tertiary, palette.primary));
       entities.push(...createCenterSpinner(bandYs[2], palette.secondary, 5.2, 5));
-      entities.push(...createSwingGatePair(bandYs[3], palette.primary, palette.tertiary, phase + 0.2));
-      entities.push(...createSpinnerPair(bandYs[4], palette.secondary, palette.primary));
+      entities.push(...createMazeWalls(bandYs[3] - 1.8, palette.tertiary));
+      entities.push(...createSwingGatePair(bandYs[4], palette.primary, palette.tertiary, phase + 0.2));
+      entities.push(...createSpinnerPair(bandYs[5], palette.secondary, palette.primary));
+      entities.push(...createFragileCluster(bandYs[6], palette.primary, palette.secondary));
       break;
     case 4:
     default:
@@ -335,8 +427,10 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
       entities.push(...createSwingGatePair(bandYs[1], palette.primary, palette.secondary, phase + 0.1));
       entities.push(...createPocketWalls(bandYs[2] - 3.4, palette.rail));
       entities.push(...createFragileCluster(bandYs[2] + 5.8, palette.secondary, palette.tertiary));
-      entities.push(...createSpinnerPair(bandYs[3], palette.primary, palette.secondary));
-      entities.push(...createTiltPair(bandYs[4], palette.secondary, palette.primary, index % 2 === 0));
+      entities.push(...createCrissCrossGates(bandYs[3], palette.primary, palette.secondary, palette.tertiary, phase + 0.55));
+      entities.push(...createSpinnerPair(bandYs[4], palette.primary, palette.secondary));
+      entities.push(...createFragileRing(bandYs[5], palette.secondary, palette.tertiary));
+      entities.push(...createTiltPair(bandYs[6], palette.secondary, palette.primary, index % 2 === 0));
       break;
   }
 
