@@ -850,9 +850,9 @@ export const lunchStages: StageDef[] = [
 ];
 
 const curatedCoffeeRushStage: StageDef = {
-  title: 'Coffee Rush',
-  description: 'Angled ramps, stirrers, and sugar pegs make the opening sprint feel fast right away, then the finale keeps squeezing the lead.',
-  flavor: 'Built for late breakaways that still have to survive one more noisy gauntlet.',
+  title: '커피 돌진로',
+  description: '비스듬한 램프와 젓개, 설탕 핀이 초반부터 속도를 붙이고 마지막까지 선두를 압박하는 코스입니다.',
+  flavor: '앞서 나가도 끝까지 안심할 수 없는 추격형 맵입니다.',
   accent: '#f59e0b',
   goalY: 158,
   zoomY: 151.5,
@@ -861,9 +861,9 @@ const curatedCoffeeRushStage: StageDef = {
 };
 
 const curatedSummerSplashStage: StageDef = {
-  title: 'Summer Splash',
-  description: 'A wave-like lane with flowing ramps, drifting gates, and rotating float bars before a turbulent last surge.',
-  flavor: 'The route breathes in wide arcs first, then closes hard enough to make the finish camera feel alive.',
+  title: '파도 미끄럼 수로',
+  description: '흐르는 경사와 떠다니는 관문, 회전 바가 이어지다가 후반에 거센 합류 구간이 열립니다.',
+  flavor: '넓게 퍼지던 대열이 마지막에 다시 조여들어 화면이 살아나는 맵입니다.',
   accent: '#38bdf8',
   goalY: 159,
   zoomY: 152.5,
@@ -872,9 +872,9 @@ const curatedSummerSplashStage: StageDef = {
 };
 
 const curatedSnackAttackStage: StageDef = {
-  title: 'Snack Attack',
-  description: 'Dense peg fields and late moving gates turn the last third into chaos, and the ending now keeps twisting even longer.',
-  flavor: 'If the front-runner slips once, the whole pack can still pile back into the spotlight near the line.',
+  title: '간식 소용돌이',
+  description: '빽빽한 핀과 늦게 움직이는 바가 후반부를 계속 비틀어 혼전으로 몰아넣는 코스입니다.',
+  flavor: '선두가 한 번만 삐끗해도 무리가 다시 달라붙는 난전형 맵입니다.',
   accent: '#fb7185',
   goalY: 166,
   zoomY: 159,
@@ -884,9 +884,9 @@ const curatedSnackAttackStage: StageDef = {
 
 const curatedLunchVariants: StageDef[] = [
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush Mirror',
-    description: 'The same fast lane, but reflected so the rhythm flips from side to side.',
-    flavor: 'Feels familiar for a second, then the angles punish the wrong instincts.',
+    title: '커피 돌진로 반전',
+    description: '같은 속도감을 뒤집어 놓은 반전 코스로, 익숙한 리듬을 반대로 읽어야 합니다.',
+    flavor: '처음엔 익숙하지만 각도를 잘못 읽는 순간 바로 흐름이 꼬입니다.',
     accent: '#f97316',
     entities: combineEntities(
       recolorEntities(mirrorEntities(coffeeRunEntities), {
@@ -899,9 +899,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush Turbo',
-    description: 'Everything spins and slides a little faster, so the lead never sits still for long.',
-    flavor: 'Best when you want a fast broadcast-style opening and a noisy finish.',
+    title: '에스프레소 과속로',
+    description: '회전과 이동 속도가 더 빨라져 선두가 오래 고정되지 않는 고속 코스입니다.',
+    flavor: '초반은 시원하게 치고 나가고 막판은 크게 요동치는 방송형 맵입니다.',
     accent: '#ef4444',
     eventPool: pool('espresso-shot', 'coffee-spill', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
@@ -914,9 +914,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush Crosswind',
-    description: 'The lane is similar, but the event mix favors sideways chaos and re-entries.',
-    flavor: 'Great for races where the leader should keep getting tugged back into traffic.',
+    title: '옆바람 커피 회랑',
+    description: '비슷한 레인이지만 옆바람 변수와 재합류 구간이 더 자주 터지는 코스입니다.',
+    flavor: '앞선 구슬도 계속 무리 속으로 다시 끌려 들어가는 추격형 맵입니다.',
     accent: '#38bdf8',
     eventPool: pool('ac-draft', 'coffee-spill', 'meeting-call', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
@@ -930,9 +930,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush Pinball',
-    description: 'Extra bumpers turn the middle into a pinball pocket before the final spin gate.',
-    flavor: 'The first-place marble looks safe until one strange bounce rewrites the whole finish.',
+    title: '커피 핀볼 홀',
+    description: '중반 범퍼 지대가 핀볼처럼 튕겨내고 마지막 회전문이 승부를 뒤집는 코스입니다.',
+    flavor: '1등이 안전해 보여도 한 번의 이상한 튕김으로 끝이 바뀔 수 있습니다.',
     accent: '#fbbf24',
     eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
     entities: combineEntities(
@@ -947,10 +947,11 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Mirror',
-    description: 'A mirrored tide lane that makes every drift and spinner hit read differently.',
-    flavor: 'Clean to watch, but surprisingly nasty once the field bunches up.',
+    title: '거울 물결 수로 · 좌우 질주',
+    description: '물결 수로를 좌우로 뒤집은 코스로, 드리프트와 스피너 충돌이 다른 타이밍으로 들어옵니다.',
+    flavor: '깔끔하게 보이지만 대열이 뭉치기 시작하면 훨씬 까다롭게 꼬입니다.',
     accent: '#0ea5e9',
+    presentation: 'side-scroll',
     entities: combineEntities(
       recolorEntities(mirrorEntities(summerSplashEntities), {
         '#ff8c5d': '#38bdf8',
@@ -962,9 +963,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Whirlpool',
-    description: 'Extra rotators in the lower half keep the front pack spinning back into each other.',
-    flavor: 'Perfect if you want the camera to stay locked on a messy battle for first.',
+    title: '소용돌이 물결관문',
+    description: '하단 회전 장치를 늘려 선두권이 계속 서로 다시 부딪히게 만든 맵입니다.',
+    flavor: '카메라가 1등 싸움에 오래 붙어 있기 좋은 난전형 코스입니다.',
     accent: '#06b6d4',
     eventPool: pool('ac-draft', 'espresso-shot', 'meeting-call', 'shark-rush'),
     entities: combineEntities(
@@ -974,9 +975,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Tide Shift',
-    description: 'Moving gates stack on top of each other so the racing line keeps changing.',
-    flavor: 'Leaders can still be seen clearly, but they have to keep re-finding the lane.',
+    title: '조류 변속 수로',
+    description: '이동 관문이 겹쳐서 열리고 닫히며 레이싱 라인이 계속 바뀌는 코스입니다.',
+    flavor: '선두가 보여도 계속 길을 다시 찾아야 해서 긴장이 끊기지 않습니다.',
     accent: '#22c55e',
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'sugar-crash', 'shark-rush'),
     entities: combineEntities(
@@ -990,9 +991,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Sunset',
-    description: 'A warmer colorway with a few extra sugar drops near the bottom funnel.',
-    flavor: 'Looks bright and relaxed, then suddenly compresses into a very sharp final sprint.',
+    title: '노을 물결 질주',
+    description: '따뜻한 색감의 수로지만 하단 깔때기 구간에 추가 설탕 핀이 숨어 있는 코스입니다.',
+    flavor: '부드러워 보이다가 마지막에 아주 날카롭게 압축되는 맵입니다.',
     accent: '#fb7185',
     entities: combineEntities(
       recolorEntities(summerSplashEntities, {
@@ -1008,9 +1009,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Moonwave',
-    description: 'Cooler colors, calmer top lane, then a sudden cluster of late bumpers.',
-    flavor: 'It gives the leader room early so the finish rush looks even more dramatic.',
+    title: '달빛 파도길',
+    description: '상단은 비교적 여유롭고 하단에 늦게 범퍼가 몰려 있는 차분한 변형입니다.',
+    flavor: '초반에 벌어진 격차가 끝에서 다시 요란하게 흔들립니다.',
     accent: '#a78bfa',
     eventPool: pool('meeting-call', 'espresso-shot', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
@@ -1028,10 +1029,11 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
-    title: 'Snack Attack Mirror',
-    description: 'Mirrored peg walls and bounce plates make the late chaos arrive from the opposite side.',
-    flavor: 'Simple change, very different feel once the field stacks up near the end.',
+    title: '뒤집힌 간식 미궁 · 좌우 질주',
+    description: '핀벽과 바운스 판을 반대로 뒤집어 후반 혼전이 반대 리듬으로 몰아치는 코스입니다.',
+    flavor: '단순히 뒤집혔을 뿐인데 끝부분 체감이 완전히 달라지는 맵입니다.',
     accent: '#f97316',
+    presentation: 'side-scroll',
     entities: combineEntities(
       recolorEntities(mirrorEntities(snackAttackVisibleEntities), {
         '#ff7a59': '#fb7185',
@@ -1043,9 +1045,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
-    title: 'Snack Attack Crunch',
-    description: 'More spin, more rebound, and one extra mixer gate in the last quarter.',
-    flavor: 'Front-runners still look strong on camera, but they almost never get clean air.',
+    title: '바삭 충돌지대',
+    description: '회전과 반발이 더 늘고 마지막 분기에 믹서 관문이 하나 더 들어간 코스입니다.',
+    flavor: '선두가 강해 보여도 좀처럼 깨끗한 공간을 확보하지 못합니다.',
     accent: '#ef4444',
     eventPool: pool('bean-burst', 'bomb-burst', 'espresso-shot', 'shark-rush'),
     entities: combineEntities(
@@ -1058,9 +1060,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
-    title: 'Snack Attack Sugar Trap',
-    description: 'The lower lane packs in more pegs and mini bumpers to create stubborn traffic.',
-    flavor: 'A perfect stage for suspense right before the winner breaks the line.',
+    title: '설탕 함정지대',
+    description: '하단 레인에 작은 범퍼와 핀을 더 채워 끝까지 답답한 교통 체증을 만드는 코스입니다.',
+    flavor: '결승 직전에 긴장을 길게 끌고 가기 좋은 함정형 맵입니다.',
     accent: '#f59e0b',
     eventPool: pool('coffee-spill', 'meeting-call', 'sugar-crash', 'shark-rush'),
     entities: combineEntities(
@@ -1074,9 +1076,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
-    title: 'Snack Attack Overdrive',
-    description: 'The whole board plays faster and the moving bars cut back and forth more aggressively.',
-    flavor: 'This one is built for volatile late leads and hard-to-trust first places.',
+    title: '간식 폭주 회랑',
+    description: '전체 보드가 더 빠르게 돌아가고 이동 바도 훨씬 공격적으로 왕복하는 코스입니다.',
+    flavor: '막판 선두가 가장 믿기 어려운 변덕형 코스입니다.',
     accent: '#8b5cf6',
     eventPool: pool('espresso-shot', 'ac-draft', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
@@ -1097,10 +1099,11 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush After Hours',
-    description: 'The late gates stay awake longer, so even a clean leader has to survive one more scramble.',
-    flavor: 'Looks controlled until the bottom corridor suddenly starts dragging the pack back together.',
+    title: '심야 커피 회랑 · 좌우 질주',
+    description: '늦은 관문이 더 오래 살아 있어 선두도 마지막에 한 번 더 검문을 당하는 코스입니다.',
+    flavor: '정리된 듯 보이다가 하단 통로가 다시 대열을 끌어모읍니다.',
     accent: '#8b5cf6',
+    presentation: 'side-scroll',
     eventPool: pool('espresso-shot', 'meeting-call', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
       recolorEntities(tuneEntities(coffeeRunEntities, { angularScale: 1.08, motionScale: 1.08 }), {
@@ -1115,9 +1118,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
-    title: 'Coffee Rush Breakpoint',
-    description: 'A cleaner top half gives the field room, then the last stretch piles on one extra decision after another.',
-    flavor: 'It is built to produce that moment where first place feels safe one second too early.',
+    title: '커피 결전 분기점',
+    description: '초반은 비교적 깨끗하지만 후반에는 선택지가 계속 이어져 한순간 방심하기 어려운 코스입니다.',
+    flavor: '안전해 보이는 1등을 한 박자 늦게 무너뜨리도록 만든 맵입니다.',
     accent: '#06b6d4',
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'bean-burst', 'shark-rush'),
     entities: combineEntities(
@@ -1130,10 +1133,11 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
-    title: 'Summer Splash Tempest',
-    description: 'The lane breathes wide early, then the lower tide turns into a fast, churning storm front.',
-    flavor: 'A perfect broadcast map when you want the leader chased through a long moving finish.',
+    title: '폭풍 물결 레인 · 좌우 질주',
+    description: '초반은 넓게 흐르다가 하단에서 거센 폭풍 조류처럼 빠르게 뒤엉키는 코스입니다.',
+    flavor: '선두를 오래 쫓아가며 보는 맛이 살아나는 중계형 맵입니다.',
     accent: '#14b8a6',
+    presentation: 'side-scroll',
     eventPool: pool('ac-draft', 'espresso-shot', 'meeting-call', 'bomb-burst', 'shark-rush'),
     entities: combineEntities(
       tuneEntities(summerSplashEntities, { angularScale: 1.08, motionScale: 1.1 }),
@@ -1145,9 +1149,9 @@ const curatedLunchVariants: StageDef[] = [
     ),
   }),
   buildVariantStage(curatedSnackAttackStage, {
-    title: 'Snack Attack Last Bite',
-    description: 'The lower maze keeps chewing on the field until the very last meters of the race.',
-    flavor: 'Best when you want a winner to earn the finish twice instead of once.',
+    title: '마지막 한입 미궁',
+    description: '하단 미로가 결승선 직전까지 계속 구슬을 물고 늘어지는 집요한 코스입니다.',
+    flavor: '우승자가 결승을 두 번 뚫는 느낌을 주는 집념형 맵입니다.',
     accent: '#f97316',
     eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
     entities: combineEntities(

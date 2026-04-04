@@ -128,6 +128,10 @@ export class RouletteRenderer {
   protected onBeforeEntities(): void {}
   protected onAfterScene(): void {}
 
+  private getSceneRotation(stage: StageDef) {
+    return stage.presentation === 'side-scroll' ? Math.PI / 2 : 0;
+  }
+
   private renderBackdrop(stage: StageDef) {
     switch (stage.backdrop) {
       case 'sunset':
@@ -556,7 +560,7 @@ export class RouletteRenderer {
       this.renderEntities(renderParameters.entities);
       this.renderEffects(renderParameters);
       this.renderMarbles(renderParameters);
-    });
+    }, renderParameters.stage.presentation);
     this.ctx.restore();
     this.onAfterScene();
 
@@ -612,9 +616,10 @@ export class RouletteRenderer {
     effects.forEach((effect) => effect.render(this.ctx, camera.zoom * initialZoom, this._theme));
   }
 
-  private renderMarbles({ marbles, camera, winnerRank, winners, size }: RenderParameters) {
+  private renderMarbles({ marbles, camera, winnerRank, winners, size, stage }: RenderParameters) {
     const winnerIndex = winnerRank - winners.length;
     const leaderIndex = marbles.length > 0 ? 0 : -1;
+    const sceneRotation = this.getSceneRotation(stage);
     const viewPort = {
       x: camera.x,
       y: camera.toWorldY(camera.y),
@@ -631,7 +636,8 @@ export class RouletteRenderer {
         false,
         this.getMarbleImage(marble.name),
         viewPort,
-        this._theme
+        this._theme,
+        sceneRotation
       );
     });
   }

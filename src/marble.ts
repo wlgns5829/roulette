@@ -131,7 +131,8 @@ export class Marble {
     isMinimap: boolean = false,
     skin: CanvasImageSource | undefined,
     viewPort: { x: number; y: number; w: number; h: number; zoom: number },
-    theme: ColorTheme
+    theme: ColorTheme,
+    sceneRotation = 0
   ) {
     this.theme = theme;
     const viewPortHw = viewPort.w / viewPort.zoom / 2;
@@ -150,7 +151,7 @@ export class Marble {
     if (isMinimap) {
       this._renderMinimap(ctx);
     } else {
-      this._renderNormal(ctx, zoom, outline, skin);
+      this._renderNormal(ctx, zoom, outline, skin, sceneRotation);
     }
     ctx.setTransform(transform);
   }
@@ -166,11 +167,33 @@ export class Marble {
     ctx.fill();
   }
 
-  private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
+  private _renderNormal(
+    ctx: CanvasRenderingContext2D,
+    zoom: number,
+    outline: boolean,
+    skin?: CanvasImageSource,
+    sceneRotation = 0
+  ) {
     const hs = this.size / 2;
     const impactRatio = Math.min(1, this.impact / 500);
     const style = options.marbleStyle;
     const visualScale = this._getVisualScale();
+
+    transformGuard(ctx, () => {
+      ctx.translate(this.x, this.y);
+      ctx.scale(1, -1);
+      ctx.strokeStyle = 'rgba(12, 18, 28, 0.72)';
+      ctx.lineWidth = Math.max(0.06, this.size * 0.15);
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 0.78 * visualScale, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 250, 244, 0.52)';
+      ctx.lineWidth = Math.max(0.03, this.size * 0.06);
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 0.72 * visualScale, 0, Math.PI * 2);
+      ctx.stroke();
+    });
 
     if (style === 'sprite' && skin) {
       transformGuard(ctx, () => {
@@ -199,7 +222,7 @@ export class Marble {
 
     ctx.shadowColor = '';
     ctx.shadowBlur = 0;
-    this._drawName(ctx, zoom);
+    this._drawName(ctx, zoom, sceneRotation);
 
     if (outline) {
       this._drawOutline(ctx, 2 / zoom);
@@ -210,16 +233,24 @@ export class Marble {
     }
   }
 
-  private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
+  private _drawName(ctx: CanvasRenderingContext2D, zoom: number, sceneRotation = 0) {
+    const labelColor =
+      this.theme.marbleWinningBorder === 'white' ? 'rgba(255, 248, 239, 0.96)' : 'rgba(45, 28, 18, 0.94)';
+    const strokeColor =
+      this.theme.marbleWinningBorder === 'white' ? 'rgba(17, 24, 39, 0.82)' : 'rgba(255, 251, 244, 0.92)';
+
     transformGuard(ctx, () => {
       ctx.font = `700 11pt 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
       ctx.textAlign = 'center';
-      ctx.strokeStyle = 'rgba(66, 43, 23, 0.58)';
-      ctx.lineWidth = 3;
-      ctx.fillStyle = this.color;
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 3.4;
       ctx.shadowBlur = 0;
       ctx.translate(this.x, this.y - 0.92 * this._getVisualScale());
+      if (sceneRotation) {
+        ctx.rotate(-sceneRotation);
+      }
       ctx.scale(1 / zoom, -1 / zoom);
+      ctx.fillStyle = labelColor;
       ctx.strokeText(this.name, 0, 0);
       ctx.fillText(this.name, 0, 0);
     });

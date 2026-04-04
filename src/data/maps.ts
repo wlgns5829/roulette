@@ -3,17 +3,96 @@ import type { LunchEventId } from '../types/RoundEvent.type';
 import { curatedLunchStages } from './lunchMaps';
 import { getStageBackdrop, type StageBackdropId } from './stageBackdrops';
 
+export type StagePresentation = 'default' | 'side-scroll';
+
 export type StageDef = {
   title: string;
   description?: string;
   flavor?: string;
   accent?: string;
   backdrop?: StageBackdropId;
+  presentation?: StagePresentation;
   eventPool?: LunchEventId[];
   entities?: MapEntity[];
   goalY: number;
   zoomY: number;
+  finishMargin?: number;
 };
+
+function cloneEntity(entity: MapEntity): MapEntity {
+  return {
+    ...entity,
+    position: { ...entity.position },
+    props: { ...entity.props },
+    motion: entity.motion ? { ...entity.motion } : undefined,
+    shape:
+      entity.shape.type === 'polyline'
+        ? {
+            ...entity.shape,
+            points: entity.shape.points.map(([x, y]) => [x, y]),
+          }
+        : { ...entity.shape },
+  };
+}
+
+function createGuideWall(points: [number, number][], color: string): MapEntity {
+  return {
+    position: { x: 0, y: 0 },
+    type: 'static',
+    shape: {
+      type: 'polyline',
+      rotation: 0,
+      points,
+      color,
+      bloomColor: color,
+    },
+    props: { density: 1, angularVelocity: 0, restitution: 0 },
+  };
+}
+
+function isFinishLaneBlocker(entity: MapEntity, safeFromY: number) {
+  if (entity.shape.type === 'polyline') {
+    return false;
+  }
+
+  if (entity.position.y < safeFromY) {
+    return false;
+  }
+
+  return Math.abs(entity.position.x - 13) < 4.6;
+}
+
+function sanitizeStage(stage: StageDef): StageDef {
+  const finishMargin = stage.finishMargin ?? 1.75;
+  const goalGuideColor = stage.accent ?? '#fff8ef';
+  const safeFromY = stage.goalY - 8.4;
+  const entities = (stage.entities ?? []).map(cloneEntity).filter((entity) => !isFinishLaneBlocker(entity, safeFromY));
+
+  entities.push(
+    createGuideWall(
+      [
+        [8.8, stage.goalY - 9.4],
+        [10.6, stage.goalY - 5.2],
+        [11.4, stage.goalY + 1.8],
+      ],
+      goalGuideColor
+    ),
+    createGuideWall(
+      [
+        [17.2, stage.goalY - 9.4],
+        [15.4, stage.goalY - 5.2],
+        [14.6, stage.goalY + 1.8],
+      ],
+      goalGuideColor
+    )
+  );
+
+  return {
+    ...stage,
+    finishMargin,
+    entities,
+  };
+}
 
 const baseStages: StageDef[] = [
   {
@@ -2989,7 +3068,11 @@ const baseStages: StageDef[] = [
   },
 ];
 
-export const stages: StageDef[] = [...curatedLunchStages, ...baseStages].slice(0, 20).map((stage, index) => ({
-  ...stage,
-  backdrop: stage.backdrop ?? getStageBackdrop(index),
-}));
+export const stages: StageDef[] = [...curatedLunchStages, ...baseStages]
+  .slice(0, 20)
+  .map((stage, index) =>
+    sanitizeStage({
+      ...stage,
+      backdrop: stage.backdrop ?? getStageBackdrop(index),
+    })
+  );

@@ -37,6 +37,10 @@ const roundEventWeights: Partial<Record<LunchEventId, number>> = {
   'bomb-burst': 3,
 };
 
+function getFinishLine(stage: StageDef) {
+  return stage.goalY - (stage.finishMargin ?? 0);
+}
+
 export type StageSummary = {
   index: number;
   title: string;
@@ -233,7 +237,7 @@ export class Roulette extends EventTarget {
 
     const leader = ranked[0];
     const runnerUp = ranked[1];
-    const progress = leader.y / this._stage.goalY;
+    const progress = leader.y / getFinishLine(this._stage);
     if (progress < 0.42) {
       return;
     }
@@ -295,7 +299,7 @@ export class Roulette extends EventTarget {
           })
         );
       }
-      if (marble.y > this._stage.goalY) {
+      if (marble.y > getFinishLine(this._stage)) {
         this._winners.push(marble);
         if (this._isRunning && this._winners.length === this._winnerRank + 1) {
           this._finishRound(marble);
@@ -316,7 +320,7 @@ export class Roulette extends EventTarget {
     }
 
     const focusPack = this._marbles
-      .filter((marble) => marble.y <= this._stage.goalY)
+      .filter((marble) => marble.y <= getFinishLine(this._stage))
       .slice()
       .sort((a, b) => b.y - a.y);
     const leader = focusPack[0];
@@ -384,7 +388,7 @@ export class Roulette extends EventTarget {
 
     const runnerUp = focusPack[1];
     const packIsTight = Boolean(runnerUp && contender.y - runnerUp.y < 6.5);
-    const isNearGoal = contender.y > this._stage.goalY - 18 || this._goalDist < zoomThreshold * 1.15;
+    const isNearGoal = contender.y > getFinishLine(this._stage) - 18 || this._goalDist < zoomThreshold * 1.15;
     if (!packIsTight || !isNearGoal) {
       return;
     }

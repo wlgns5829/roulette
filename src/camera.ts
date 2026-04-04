@@ -142,7 +142,11 @@ export class Camera {
     return current + d / 10;
   }
 
-  renderScene(ctx: CanvasRenderingContext2D, callback: (ctx: CanvasRenderingContext2D) => void) {
+  renderScene(
+    ctx: CanvasRenderingContext2D,
+    callback: (ctx: CanvasRenderingContext2D) => void,
+    presentation: StageDef['presentation'] = 'default'
+  ) {
     const zoomFactor = initialZoom * 2 * this._zoom;
     ctx.save();
     ctx.translate(-this.x * this._zoom, -this.y * this._zoom);
@@ -151,6 +155,9 @@ export class Camera {
     if (this._reverseFlow) {
       ctx.translate(0, this._goalY);
       ctx.scale(1, -1);
+    }
+    if (presentation === 'side-scroll') {
+      ctx.rotate(Math.PI / 2);
     }
     callback(ctx);
     ctx.restore();
