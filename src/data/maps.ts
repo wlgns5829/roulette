@@ -19,6 +19,9 @@ export type StageDef = {
   finishMargin?: number;
 };
 
+const trackCenterX = 13;
+const finishRunwayLength = 22;
+
 function cloneEntity(entity: MapEntity): MapEntity {
   return {
     ...entity,
@@ -50,56 +53,119 @@ function createGuideWall(points: [number, number][], color: string): MapEntity {
   };
 }
 
-function isFinishLaneBlocker(entity: MapEntity, safeFromY: number) {
+function getForwardExtent(entity: MapEntity) {
+  switch (entity.shape.type) {
+    case 'box':
+      return entity.position.y + entity.shape.height + 0.6;
+    case 'circle':
+      return entity.position.y + entity.shape.radius + 0.45;
+    case 'polyline':
+    default:
+      return entity.position.y;
+  }
+}
+
+function isLateStageObstacle(entity: MapEntity, runwayStartY: number) {
   if (entity.shape.type === 'polyline') {
     return false;
   }
 
-  if (entity.position.y < safeFromY) {
-    return false;
-  }
-
-  return Math.abs(entity.position.x - 13) < 5.6;
+  return getForwardExtent(entity) >= runwayStartY;
 }
 
-function createFinishGuide(stage: StageDef, color: string): MapEntity[] {
+function interpolatePointAtY(a: [number, number], b: [number, number], y: number): [number, number] {
+  if (Math.abs(b[1] - a[1]) < 0.0001) {
+    return [b[0], y];
+  }
+
+  const ratio = (y - a[1]) / (b[1] - a[1]);
+  return [a[0] + (b[0] - a[0]) * ratio, y];
+}
+
+function trimPolylinePoints(points: [number, number][], maxY: number): [number, number][] | null {
+  if (points.length < 2) {
+    return null;
+  }
+
+  const trimmed: [number, number][] = [];
+  const pushPoint = ([x, y]: [number, number]) => {
+    const last = trimmed[trimmed.length - 1];
+    if (!last || Math.abs(last[0] - x) > 0.001 || Math.abs(last[1] - y) > 0.001) {
+      trimmed.push([x, y]);
+    }
+  };
+
+  for (let index = 0; index < points.length - 1; index++) {
+    const start = points[index];
+    const end = points[index + 1];
+    const startInside = start[1] <= maxY;
+    const endInside = end[1] <= maxY;
+
+    if (startInside) {
+      pushPoint(start);
+    }
+
+    if (startInside !== endInside) {
+      pushPoint(interpolatePointAtY(start, end, maxY));
+    }
+  }
+
+  const last = points[points.length - 1];
+  if (last[1] <= maxY) {
+    pushPoint(last);
+  }
+
+  return trimmed.length >= 2 ? trimmed : null;
+}
+
+function trimFinishPolyline(entity: MapEntity, runwayStartY: number): MapEntity | null {
+  if (entity.shape.type !== 'polyline') {
+    return entity;
+  }
+
+  const trimmedPoints = trimPolylinePoints(entity.shape.points, runwayStartY);
+  if (!trimmedPoints) {
+    return null;
+  }
+
+  return {
+    ...entity,
+    shape: {
+      ...entity.shape,
+      points: trimmedPoints,
+    },
+  };
+}
+
+function createFinishGuide(stage: StageDef, color: string, runwayStartY: number): MapEntity[] {
   const goalY = stage.goalY;
+  const funnelY = goalY - 10.8;
+  const chuteY = goalY - 4.6;
+  const leftOuterStart = 3.4;
+  const rightOuterStart = 22.6;
+  const leftChute = trackCenterX - 1.95;
+  const rightChute = trackCenterX + 1.95;
+
   return [
     createGuideWall(
       [
-        [6.2, goalY - 13.5],
-        [7.9, goalY - 10.4],
-        [9.8, goalY - 7.1],
-        [10.9, goalY - 4.3],
-        [11.3, goalY - 1.2],
-        [11.45, goalY + 2.4],
+        [leftOuterStart, runwayStartY],
+        [4.9, runwayStartY + 4.4],
+        [6.9, runwayStartY + 9.2],
+        [8.9, funnelY],
+        [10.2, chuteY],
+        [leftChute, goalY + 3.4],
       ],
       color
     ),
     createGuideWall(
       [
-        [19.8, goalY - 13.5],
-        [18.1, goalY - 10.4],
-        [16.2, goalY - 7.1],
-        [15.1, goalY - 4.3],
-        [14.7, goalY - 1.2],
-        [14.55, goalY + 2.4],
-      ],
-      color
-    ),
-    createGuideWall(
-      [
-        [8.9, goalY - 8.2],
-        [10.4, goalY - 5.4],
-        [11, goalY - 2.4],
-      ],
-      color
-    ),
-    createGuideWall(
-      [
-        [17.1, goalY - 8.2],
-        [15.6, goalY - 5.4],
-        [15, goalY - 2.4],
+        [rightOuterStart, runwayStartY],
+        [21.1, runwayStartY + 4.4],
+        [19.1, runwayStartY + 9.2],
+        [17.1, funnelY],
+        [15.8, chuteY],
+        [rightChute, goalY + 3.4],
       ],
       color
     ),
@@ -107,12 +173,16 @@ function createFinishGuide(stage: StageDef, color: string): MapEntity[] {
 }
 
 function sanitizeStage(stage: StageDef): StageDef {
-  const finishMargin = stage.finishMargin ?? 1.75;
+  const finishMargin = stage.finishMargin ?? 2.3;
   const goalGuideColor = stage.accent ?? '#fff8ef';
-  const safeFromY = stage.goalY - 12.5;
-  const entities = (stage.entities ?? []).map(cloneEntity).filter((entity) => !isFinishLaneBlocker(entity, safeFromY));
+  const runwayStartY = stage.goalY - finishRunwayLength;
+  const entities = (stage.entities ?? [])
+    .map(cloneEntity)
+    .map((entity) => trimFinishPolyline(entity, runwayStartY))
+    .filter((entity): entity is MapEntity => Boolean(entity))
+    .filter((entity) => !isLateStageObstacle(entity, runwayStartY - 0.8));
 
-  entities.push(...createFinishGuide(stage, goalGuideColor));
+  entities.push(...createFinishGuide(stage, goalGuideColor, runwayStartY));
 
   return {
     ...stage,
