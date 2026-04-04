@@ -59,33 +59,60 @@ function isFinishLaneBlocker(entity: MapEntity, safeFromY: number) {
     return false;
   }
 
-  return Math.abs(entity.position.x - 13) < 4.6;
+  return Math.abs(entity.position.x - 13) < 5.6;
+}
+
+function createFinishGuide(stage: StageDef, color: string): MapEntity[] {
+  const goalY = stage.goalY;
+  return [
+    createGuideWall(
+      [
+        [6.2, goalY - 13.5],
+        [7.9, goalY - 10.4],
+        [9.8, goalY - 7.1],
+        [10.9, goalY - 4.3],
+        [11.3, goalY - 1.2],
+        [11.45, goalY + 2.4],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [19.8, goalY - 13.5],
+        [18.1, goalY - 10.4],
+        [16.2, goalY - 7.1],
+        [15.1, goalY - 4.3],
+        [14.7, goalY - 1.2],
+        [14.55, goalY + 2.4],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [8.9, goalY - 8.2],
+        [10.4, goalY - 5.4],
+        [11, goalY - 2.4],
+      ],
+      color
+    ),
+    createGuideWall(
+      [
+        [17.1, goalY - 8.2],
+        [15.6, goalY - 5.4],
+        [15, goalY - 2.4],
+      ],
+      color
+    ),
+  ];
 }
 
 function sanitizeStage(stage: StageDef): StageDef {
   const finishMargin = stage.finishMargin ?? 1.75;
   const goalGuideColor = stage.accent ?? '#fff8ef';
-  const safeFromY = stage.goalY - 8.4;
+  const safeFromY = stage.goalY - 12.5;
   const entities = (stage.entities ?? []).map(cloneEntity).filter((entity) => !isFinishLaneBlocker(entity, safeFromY));
 
-  entities.push(
-    createGuideWall(
-      [
-        [8.8, stage.goalY - 9.4],
-        [10.6, stage.goalY - 5.2],
-        [11.4, stage.goalY + 1.8],
-      ],
-      goalGuideColor
-    ),
-    createGuideWall(
-      [
-        [17.2, stage.goalY - 9.4],
-        [15.4, stage.goalY - 5.2],
-        [14.6, stage.goalY + 1.8],
-      ],
-      goalGuideColor
-    )
-  );
+  entities.push(...createFinishGuide(stage, goalGuideColor));
 
   return {
     ...stage,

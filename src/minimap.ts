@@ -92,14 +92,16 @@ export class Minimap implements UIObject {
 
   private drawViewport(params: RenderParameters) {
     this.ctx.save();
-    const { camera, size } = params;
+    const { camera, size, stage } = params;
     const zoom = camera.zoom * initialZoom;
-    const w = size.x / zoom;
-    const h = size.y / zoom;
-    const cameraWorldY = camera.toWorldY(camera.y);
+    const cameraWorld = camera.getViewportCenter(stage);
+    const viewW = size.x / zoom;
+    const viewH = size.y / zoom;
+    const w = stage.presentation === 'side-scroll' ? viewH : viewW;
+    const h = stage.presentation === 'side-scroll' ? viewW : viewH;
     this.ctx.strokeStyle = params.theme.minimapViewport;
     this.ctx.lineWidth = 1 / zoom;
-    this.ctx.strokeRect(camera.x - w / 2, cameraWorldY - h / 2, w, h);
+    this.ctx.strokeRect(cameraWorld.x - w / 2, cameraWorld.y - h / 2, w, h);
     this.ctx.restore();
   }
 

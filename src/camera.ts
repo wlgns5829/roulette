@@ -5,6 +5,7 @@ import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
 const finishZoomBoost = 1.8;
+const stageLaneSpan = 26;
 
 export class Camera {
   private _position: VectorLike = { x: 0, y: 0 };
@@ -15,6 +16,7 @@ export class Camera {
   private _shouldFollowMarbles = false;
   private _goalY = 0;
   private _reverseFlow = true;
+  private _presentation: StageDef['presentation'] = 'default';
 
   get zoom() {
     return this._zoom;
@@ -51,9 +53,10 @@ export class Camera {
     this._locked = v;
   }
 
-  setFlow(goalY: number, reverseFlow = true) {
+  setFlow(goalY: number, reverseFlow = true, presentation: StageDef['presentation'] = 'default') {
     this._goalY = goalY;
     this._reverseFlow = reverseFlow;
+    this._presentation = presentation;
   }
 
   toVisualY(y: number) {
@@ -64,13 +67,50 @@ export class Camera {
     return this._reverseFlow ? this._goalY - y : y;
   }
 
+  private _toScenePosition(v: VectorLike, presentation: StageDef['presentation'] = this._presentation) {
+    if (presentation === 'side-scroll') {
+      return {
+        x: v.y,
+        y: stageLaneSpan - v.x,
+      };
+    }
+
+    return {
+      x: v.x,
+      y: this.toVisualY(v.y),
+    };
+  }
+
+  private _toWorldPosition(v: VectorLike, presentation: StageDef['presentation'] = this._presentation) {
+    if (presentation === 'side-scroll') {
+      return {
+        x: stageLaneSpan - v.y,
+        y: v.x,
+      };
+    }
+
+    return {
+      x: v.x,
+      y: this.toWorldY(v.y),
+    };
+  }
+
+  setWorldPosition(v: VectorLike, stage: StageDef, force = false) {
+    this.setPosition(this._toScenePosition(v, stage.presentation), force);
+  }
+
+  getViewportCenter(stage: StageDef) {
+    return this._toWorldPosition(this._position, stage.presentation);
+  }
+
   startFollowingMarbles() {
     this._shouldFollowMarbles = true;
   }
 
-  initializePosition(center?: VectorLike, zoom?: number) {
-    const x = center?.x ?? 12.95;
-    const y = this.toVisualY(center?.y ?? 2);
+  initializePosition(stage: StageDef, center?: VectorLike, zoom?: number) {
+    const sceneCenter = this._toScenePosition(center ?? { x: 12.95, y: 2 }, stage.presentation);
+    const x = sceneCenter.x;
+    const y = sceneCenter.y;
     const z = zoom ?? cruisingZoom;
 
     this._position = { x, y };
@@ -112,11 +152,30 @@ export class Camera {
     if (marbles.length > 0) {
       const targetMarble = marbles[targetIndex] ? marbles[targetIndex] : marbles[0];
       const chaseMarble = marbles[targetIndex + 1] ?? marbles[targetIndex - 1] ?? targetMarble;
-      const leaderVisualY = this.toVisualY(targetMarble.position.y);
       const progress = Math.max(0, Math.min(1, targetMarble.position.y / stage.goalY));
       const finishBias = needToZoom ? Math.max(0, Math.min(1, (progress - 0.58) / 0.42)) : 0;
       const chaseGap = Math.abs(targetMarble.position.y - chaseMarble.position.y);
       const chaseBias = needToZoom ? Math.max(0, 0.18 - chaseGap * 0.03) : 0;
+      if (stage.presentation === 'side-scroll') {
+        const laneBlendX = targetMarble.position.x * (1 - chaseBias) + chaseMarble.position.x * chaseBias;
+        const laneFocus = 13 + (laneBlendX - 13) * 0.58;
+        const remainingDistance = Math.max(0, stage.goalY - targetMarble.position.y);
+        const lookAhead = remainingDistance * (0.14 + finishBias * 0.22);
+        const targetX = Math.min(stage.goalY - 2.2, targetMarble.position.y + lookAhead);
+        const targetY = stageLaneSpan - laneFocus;
+
+        this.setPosition({ x: targetX, y: targetY });
+        if (needToZoom) {
+          const goalDist = Math.abs(stage.zoomY - targetMarble.position.y);
+          const finishRatio = Math.max(0, Math.min(1, 1 - goalDist / zoomThreshold));
+          this.zoom = cruisingZoom + finishRatio * finishZoomBoost;
+        } else {
+          this.zoom = cruisingZoom;
+        }
+        return;
+      }
+
+      const leaderVisualY = this.toVisualY(targetMarble.position.y);
       const targetX = targetMarble.position.x * (1 - chaseBias) + chaseMarble.position.x * chaseBias;
       const targetY = leaderVisualY * (1 - finishBias * 0.42);
 
@@ -152,12 +211,11 @@ export class Camera {
     ctx.translate(-this.x * this._zoom, -this.y * this._zoom);
     ctx.scale(this.zoom, this.zoom);
     ctx.translate(ctx.canvas.width / zoomFactor, ctx.canvas.height / zoomFactor);
-    if (this._reverseFlow) {
+    if (presentation === 'side-scroll') {
+      ctx.transform(0, -1, 1, 0, 0, stageLaneSpan);
+    } else if (this._reverseFlow) {
       ctx.translate(0, this._goalY);
       ctx.scale(1, -1);
-    }
-    if (presentation === 'side-scroll') {
-      ctx.rotate(Math.PI / 2);
     }
     callback(ctx);
     ctx.restore();

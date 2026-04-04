@@ -129,7 +129,7 @@ export class RouletteRenderer {
   protected onAfterScene(): void {}
 
   private getSceneRotation(stage: StageDef) {
-    return stage.presentation === 'side-scroll' ? Math.PI / 2 : 0;
+    return stage.presentation === 'side-scroll' ? -Math.PI / 2 : 0;
   }
 
   private renderBackdrop(stage: StageDef) {
@@ -620,11 +620,13 @@ export class RouletteRenderer {
     const winnerIndex = winnerRank - winners.length;
     const leaderIndex = marbles.length > 0 ? 0 : -1;
     const sceneRotation = this.getSceneRotation(stage);
+    const worldCenter = camera.getViewportCenter(stage);
+    const isSideScroll = stage.presentation === 'side-scroll';
     const viewPort = {
-      x: camera.x,
-      y: camera.toWorldY(camera.y),
-      w: size.x,
-      h: size.y,
+      x: worldCenter.x,
+      y: worldCenter.y,
+      w: isSideScroll ? size.y : size.x,
+      h: isSideScroll ? size.x : size.y,
       zoom: camera.zoom * initialZoom,
     };
 

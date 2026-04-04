@@ -456,14 +456,8 @@ export class Roulette extends EventTarget {
     this.attachEvent();
     const minimap = new Minimap();
     minimap.onViewportChange((pos) => {
-      if (pos) {
-        this._camera.setPosition(
-          {
-            x: pos.x,
-            y: this._stage ? this._camera.toVisualY(pos.y) : pos.y,
-          },
-          false
-        );
+      if (pos && this._stage) {
+        this._camera.setWorldPosition(pos, this._stage, false);
         this._camera.lock(true);
       } else {
         this._camera.lock(false);
@@ -532,8 +526,8 @@ export class Roulette extends EventTarget {
 
     this.physics.createStage(this._stage);
     this.physics.setGravity(getDefaultGravity());
-    this._camera.setFlow(this._stage.goalY, true);
-    this._camera.initializePosition();
+    this._camera.setFlow(this._stage.goalY, true, this._stage.presentation);
+    this._camera.initializePosition(this._stage);
   }
 
   private _resetRoundFlow() {
@@ -903,7 +897,7 @@ export class Roulette extends EventTarget {
         Math.min(Math.min(viewW / (spawnWidth + margin * 2), viewH / (spawnHeight + margin * 2)), 2.25)
       );
 
-      this._camera.initializePosition({ x: centerX, y: centerY }, zoom);
+      this._camera.initializePosition(this._stage ?? stages[this._stageIndex], { x: centerX, y: centerY }, zoom);
     }
   }
 
@@ -944,7 +938,9 @@ export class Roulette extends EventTarget {
     this._stageIndex = Number(index);
     this._stage = stages[this._stageIndex];
     this.setMarbles(names);
-    this._camera.initializePosition();
+    if (this._stage) {
+      this._camera.initializePosition(this._stage);
+    }
     this._notifyStageChange();
   }
 }
