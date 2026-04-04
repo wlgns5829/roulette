@@ -31,7 +31,6 @@ const trackCenterX = 13;
 const trackWidth = 26;
 const finishRunwayLength = 22;
 const trackOuterLeft = 2.2;
-const trackOuterRight = trackWidth - trackOuterLeft;
 const wallProfileCatalog: number[][] = [
   [2.4, 2.4, 5.1, 7.3, 5.2, 6.8, 8.1, 6.5],
   [3.1, 3.1, 4.6, 6.4, 7.7, 5.8, 4.4, 6.6],
@@ -374,7 +373,126 @@ function createDenseTiltStack(y: number, colorA: string, colorB: string): MapEnt
   ];
 }
 
+function createSidePlatform(x: number, y: number, length: number, color: string, motion?: EntityMotion): MapEntity {
+  return createBoxObstacle(x, y, 0.11, length, 0, color, { motion });
+}
+
+function createJumpRamp(x: number, y: number, length: number, color: string, flip = false): MapEntity {
+  return createBoxObstacle(x, y, 0.12, length, flip ? -0.72 : 0.72, color, { restitution: 0.08 });
+}
+
+function createJumpPads(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createFragileCircle(7.6, y, 0.34, colorA, 1.58),
+    createFragileCircle(10.8, y + 1.1, 0.3, colorB, 1.52),
+    createFragileCircle(15.4, y + 0.3, 0.33, colorA, 1.6),
+    createFragileCircle(18.6, y + 1.3, 0.3, colorB, 1.54),
+  ];
+}
+
+function createPipeColumns(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createBoxObstacle(7.5, y, 1.2, 0.12, 0, colorA),
+    createBoxObstacle(18.6, y + 2.1, 1.35, 0.12, 0, colorB),
+    createBoxObstacle(12.7, y + 5.4, 0.78, 0.1, 0, colorA),
+  ];
+}
+
+function createCloudPlatforms(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createSidePlatform(18.1, y, 1.3, colorA),
+    createSidePlatform(14.6, y + 3.2, 1.15, colorB),
+    createSidePlatform(9.2, y + 6.4, 1.35, colorA),
+  ];
+}
+
+function createPlatformStairs(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createSidePlatform(8.1, y, 0.92, colorA),
+    createSidePlatform(10.3, y + 2.4, 0.92, colorB),
+    createSidePlatform(12.9, y + 4.8, 0.92, colorA),
+    createSidePlatform(15.5, y + 7.2, 0.92, colorB),
+  ];
+}
+
+function createBounceBridge(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createJumpRamp(17.6, y, 1.15, colorA, false),
+    createSidePlatform(14.2, y + 3.1, 1.08, colorB),
+    createJumpRamp(9.4, y + 6.5, 1.15, colorA, true),
+    createSidePlatform(12.6, y + 9.7, 1, colorB),
+  ];
+}
+
+function createPlatformTunnel(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createSidePlatform(19.2, y, 1.55, colorA),
+    createSidePlatform(6.8, y + 2.1, 1.55, colorA),
+    createBoxObstacle(13, y + 4.5, 0.95, 0.11, 0, colorB),
+    createSidePlatform(18.1, y + 7, 1.2, colorB),
+    createSidePlatform(7.9, y + 9.1, 1.2, colorB),
+  ];
+}
+
+function createMovingPlatformSet(y: number, colorA: string, colorB: string, phase = 0): MapEntity[] {
+  return [
+    createSidePlatform(17.4, y, 1.22, colorA, createMotion('x', 1.15, 1.2, phase)),
+    createSidePlatform(8.6, y + 3.1, 1.14, colorB, createMotion('x', 1.02, 1.32, phase + 1.2)),
+    createSidePlatform(13, y + 6.8, 1.08, colorA, createMotion('x', 0.7, 1.44, phase + 2.1)),
+  ];
+}
+
+function buildSideScrollEntities(stage: StageDef, index: number): MapEntity[] {
+  const palette = getCoursePalette(stage.accent, index);
+  const usableHeight = Math.max(80, stage.goalY - 56);
+  const bandYs = [0.08, 0.2, 0.33, 0.46, 0.59, 0.71].map((t) => 24 + usableHeight * t);
+  const phase = (index % 4) * 0.6;
+  const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, index, palette.rail)];
+
+  switch (index % 4) {
+    case 0:
+      entities.push(...createPlatformStairs(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createJumpPads(bandYs[1], palette.primary, palette.tertiary));
+      entities.push(...createCloudPlatforms(bandYs[2], palette.tertiary, palette.secondary));
+      entities.push(...createPipeColumns(bandYs[3], palette.primary, palette.secondary));
+      entities.push(...createBounceBridge(bandYs[4], palette.secondary, palette.tertiary));
+      entities.push(...createMovingPlatformSet(bandYs[5], palette.primary, palette.secondary, phase));
+      break;
+    case 1:
+      entities.push(...createBounceBridge(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createPlatformTunnel(bandYs[1], palette.tertiary, palette.secondary));
+      entities.push(...createJumpPads(bandYs[2], palette.primary, palette.tertiary));
+      entities.push(...createCloudPlatforms(bandYs[3], palette.secondary, palette.primary));
+      entities.push(...createPlatformStairs(bandYs[4], palette.tertiary, palette.secondary));
+      entities.push(...createMovingPlatformSet(bandYs[5], palette.primary, palette.tertiary, phase + 0.35));
+      break;
+    case 2:
+      entities.push(...createCloudPlatforms(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createJumpPads(bandYs[1], palette.secondary, palette.tertiary));
+      entities.push(...createPipeColumns(bandYs[2], palette.primary, palette.secondary));
+      entities.push(...createPlatformTunnel(bandYs[3], palette.tertiary, palette.primary));
+      entities.push(...createBounceBridge(bandYs[4], palette.primary, palette.secondary));
+      entities.push(...createMovingPlatformSet(bandYs[5], palette.secondary, palette.tertiary, phase + 0.7));
+      break;
+    case 3:
+    default:
+      entities.push(...createPlatformTunnel(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createPlatformStairs(bandYs[1], palette.secondary, palette.tertiary));
+      entities.push(...createJumpPads(bandYs[2], palette.primary, palette.secondary));
+      entities.push(...createCloudPlatforms(bandYs[3], palette.tertiary, palette.primary));
+      entities.push(...createPipeColumns(bandYs[4], palette.secondary, palette.primary));
+      entities.push(...createMovingPlatformSet(bandYs[5], palette.primary, palette.tertiary, phase + 0.5));
+      break;
+  }
+
+  return entities;
+}
+
 function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
+  if (stage.presentation === 'side-scroll') {
+    return buildSideScrollEntities(stage, index);
+  }
+
   const pattern = index % 5;
   const palette = getCoursePalette(stage.accent, index);
   const usableHeight = Math.max(78, stage.goalY - 54);

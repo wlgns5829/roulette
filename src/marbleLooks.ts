@@ -176,10 +176,107 @@ function drawRetroParody(
   ctx.restore();
 }
 
+function drawMushroomRunner(
+  ctx: CanvasRenderingContext2D,
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
+) {
+  const capHue = Math.round(hue + (seed % 3) * 14);
+  const capLight = `hsl(${capHue} 92% 66%)`;
+  const capBase = `hsl(${capHue} 84% 54%)`;
+  const capShadow = `hsl(${capHue} 72% 38%)`;
+  const stem = 'rgba(255, 246, 228, 0.98)';
+  const stemShade = 'rgba(237, 221, 196, 0.98)';
+  const outline = 'rgba(60, 34, 18, 0.72)';
+  const spot = `hsla(${capHue + 8}, 96%, 94%, 0.96)`;
+  const shoe = `hsl(${capHue + 18} 42% 28%)`;
+  const squash = Math.min(1, bounce);
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (flipY) {
+    ctx.scale(1, -1);
+  }
+  ctx.rotate(rotation * 0.05);
+  ctx.scale(1 + squash * 0.06, 1 - squash * 0.05);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 0.22;
+  }
+
+  ctx.fillStyle = 'rgba(24, 18, 12, 0.18)';
+  ctx.beginPath();
+  ctx.ellipse(0, size * 0.45, size * 0.36, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = shoe;
+  ctx.beginPath();
+  ctx.ellipse(-size * 0.16, size * 0.35, size * 0.12, size * 0.08, -0.18, 0, Math.PI * 2);
+  ctx.ellipse(size * 0.16, size * 0.35, size * 0.12, size * 0.08, 0.18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = stem;
+  ctx.strokeStyle = outline;
+  ctx.lineWidth = size * 0.045;
+  ctx.beginPath();
+  ctx.roundRect(-size * 0.18, -size * 0.02, size * 0.36, size * 0.42, size * 0.18);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = stemShade;
+  ctx.beginPath();
+  ctx.roundRect(-size * 0.04, 0, size * 0.08, size * 0.36, size * 0.05);
+  ctx.fill();
+
+  const capGradient = ctx.createLinearGradient(0, -size * 0.54, 0, size * 0.02);
+  capGradient.addColorStop(0, capLight);
+  capGradient.addColorStop(0.52, capBase);
+  capGradient.addColorStop(1, capShadow);
+  ctx.fillStyle = capGradient;
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.48, -size * 0.02);
+  ctx.quadraticCurveTo(-size * 0.44, -size * 0.52, 0, -size * 0.56);
+  ctx.quadraticCurveTo(size * 0.44, -size * 0.52, size * 0.48, -size * 0.02);
+  ctx.quadraticCurveTo(size * 0.18, size * 0.08, 0, size * 0.06);
+  ctx.quadraticCurveTo(-size * 0.18, size * 0.08, -size * 0.48, -size * 0.02);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = spot;
+  [
+    [-0.22, -0.28, 0.1],
+    [0, -0.36, 0.12],
+    [0.22, -0.22, 0.09],
+  ].forEach(([sx, sy, r]) => {
+    ctx.beginPath();
+    ctx.arc(size * sx, size * sy, size * r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = 'rgba(32, 20, 12, 0.92)';
+  ctx.beginPath();
+  ctx.ellipse(-size * 0.08, size * 0.12, size * 0.032, size * 0.05, 0, 0, Math.PI * 2);
+  ctx.ellipse(size * 0.08, size * 0.12, size * 0.032, size * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(92, 58, 38, 0.82)';
+  ctx.lineWidth = size * 0.022;
+  ctx.beginPath();
+  ctx.arc(0, size * 0.19, size * 0.07, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 export function drawMarbleLook(ctx: CanvasRenderingContext2D, options: MarbleLookOptions, style: MarbleStyle) {
   switch (style) {
     case 'classic':
       drawClassicMarble(ctx, options);
+      break;
+    case 'mushroom':
+      drawMushroomRunner(ctx, options);
       break;
     case 'retro':
       drawRetroParody(ctx, options);

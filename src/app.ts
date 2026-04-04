@@ -10,7 +10,7 @@ type WinnerMode = 'first' | 'last' | 'custom';
 
 const storageKey = 'lunch_roulette_names_v3';
 const audioStorageKey = 'lunch_roulette_audio';
-const marbleStyleStorageKey = 'lunch_roulette_marble_style_v1';
+const marbleStyleStorageKey = 'lunch_roulette_marble_style_v2';
 const fixedRoster = ['Dominic', 'Martin'];
 const sampleRoster = ['도미닉', '회의지박령', '커피예산파괴자', '야근예약센터장', '퇴근눈치챔피언'];
 const rosterAliases: Record<string, string> = {
@@ -380,6 +380,7 @@ export function attachApp(roulette: Roulette) {
     if (
       savedMarbleStyle === 'classic' ||
       savedMarbleStyle === 'cute' ||
+      savedMarbleStyle === 'mushroom' ||
       savedMarbleStyle === 'retro' ||
       savedMarbleStyle === 'sprite'
     ) {
@@ -466,6 +467,7 @@ export function attachApp(roulette: Roulette) {
       const styleLabels: Record<MarbleStyle, string> = {
         classic: '기본 공',
         cute: '귀여운 몬스터',
+        mushroom: '버섯 러너',
         retro: '레트로 패러디',
         sprite: '스프라이트',
       };

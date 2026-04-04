@@ -10,6 +10,7 @@ import { bound } from './utils/bound.decorator';
 export class Minimap implements UIObject {
   private ctx!: CanvasRenderingContext2D;
   private lastParams: RenderParameters | null = null;
+  private readonly _trackWidth = 26;
 
   private _onViewportChangeHandler: ((pos?: VectorLike) => void) | null = null;
   private boundingBox: Rect;
@@ -51,10 +52,19 @@ export class Minimap implements UIObject {
       y: e.y,
     };
     if (this._onViewportChangeHandler) {
-      this._onViewportChangeHandler({
-        x: this.mousePosition.x / 4,
-        y: this.lastParams.camera.toWorldY(this.mousePosition.y / 4),
-      });
+      const scale = 4;
+      const isSideScroll = this.lastParams.stage.presentation === 'side-scroll';
+      this._onViewportChangeHandler(
+        isSideScroll
+          ? {
+              x: this._trackWidth - this.mousePosition.y / scale,
+              y: this.mousePosition.x / scale,
+            }
+          : {
+              x: this.mousePosition.x / scale,
+              y: this.lastParams.camera.toWorldY(this.mousePosition.y / scale),
+            }
+      );
     }
   }
 
@@ -62,7 +72,9 @@ export class Minimap implements UIObject {
     if (!ctx) return;
     const { stage } = params;
     if (!stage) return;
-    this.boundingBox.h = stage.goalY * 4;
+    const isSideScroll = stage.presentation === 'side-scroll';
+    this.boundingBox.w = (isSideScroll ? stage.goalY : this._trackWidth) * 4;
+    this.boundingBox.h = (isSideScroll ? this._trackWidth : stage.goalY) * 4;
 
     this.lastParams = params;
 
@@ -71,11 +83,13 @@ export class Minimap implements UIObject {
     ctx.fillStyle = params.theme.minimapBackground;
     ctx.translate(10, 10);
     ctx.scale(4, 4);
-    if (Math.abs(params.camera.toVisualY(0)) > 0.001) {
+    if (isSideScroll) {
+      ctx.transform(0, -1, 1, 0, 0, this._trackWidth);
+    } else if (Math.abs(params.camera.toVisualY(0)) > 0.001) {
       ctx.translate(0, stage.goalY);
       ctx.scale(1, -1);
     }
-    ctx.fillRect(0, 0, 26, stage.goalY);
+    ctx.fillRect(0, 0, this._trackWidth, stage.goalY);
 
     this.ctx.lineWidth = 3 / (params.camera.zoom + initialZoom);
     this.drawEntities(params.entities, params.theme);

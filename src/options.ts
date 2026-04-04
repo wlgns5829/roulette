@@ -6,7 +6,7 @@ class Options {
   autoRecording: boolean = false;
   darkMode: boolean = false;
   audioEnabled: boolean = true;
-  marbleStyle: MarbleStyle = 'cute';
+  marbleStyle: MarbleStyle = 'mushroom';
 }
 
 const options = new Options();
