@@ -4,31 +4,38 @@ import type { ColorTheme } from './types/ColorTheme';
 const lifetime = 1550;
 
 export type SeaCreatureKind = 'shark' | 'starfish' | 'octopus' | 'nakji' | 'jjukkumi' | 'mackerel' | 'beltfish';
+export type SeaCreatureSweepAxis = 'horizontal' | 'vertical';
 
 export class SharkRushEffect implements GameObject {
   public isDestroy = false;
   private _elapsed = 0;
-  private _startX: number;
-  private _endX: number;
-  private _y: number;
+  private _start: number;
+  private _end: number;
+  private _fixed: number;
   private _direction: -1 | 1;
   private _accent: string;
   private _creature: SeaCreatureKind;
+  private _axis: SeaCreatureSweepAxis;
+  private _rotation: number;
 
   constructor(
-    startX: number,
-    endX: number,
-    y: number,
+    start: number,
+    end: number,
+    fixed: number,
     direction: -1 | 1,
     accent = '#60a5fa',
-    creature: SeaCreatureKind = 'shark'
+    creature: SeaCreatureKind = 'shark',
+    axis: SeaCreatureSweepAxis = 'horizontal',
+    rotation = 0
   ) {
-    this._startX = startX;
-    this._endX = endX;
-    this._y = y;
+    this._start = start;
+    this._end = end;
+    this._fixed = fixed;
     this._direction = direction;
     this._accent = accent;
     this._creature = creature;
+    this._axis = axis;
+    this._rotation = rotation;
   }
 
   update(deltaTime: number) {
@@ -41,13 +48,18 @@ export class SharkRushEffect implements GameObject {
   render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
     const rate = Math.min(1, this._elapsed / lifetime);
     const eased = 1 - (1 - rate) ** 3;
-    const x = this._startX + (this._endX - this._startX) * eased;
-    const y = this._y + Math.sin(rate * Math.PI * 3.2) * 0.4;
+    const primary = this._start + (this._end - this._start) * eased;
+    const secondary = this._fixed + Math.sin(rate * Math.PI * 3.2) * 0.4;
+    const x = this._axis === 'horizontal' ? primary : secondary;
+    const y = this._axis === 'horizontal' ? secondary : primary;
     const alpha = Math.sin(Math.PI * Math.min(1, rate * 1.05));
     const bodyColor = this._accent;
 
     ctx.save();
     ctx.translate(x, y);
+    if (this._rotation !== 0) {
+      ctx.rotate(this._rotation);
+    }
     ctx.scale(this._direction, 1);
     ctx.globalAlpha = alpha;
     ctx.lineWidth = 0.09 / zoom;

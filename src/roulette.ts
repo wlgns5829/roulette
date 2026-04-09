@@ -571,6 +571,30 @@ export class Roulette extends EventTarget {
     return seaCreatureRushCatalog[Math.floor(Math.random() * seaCreatureRushCatalog.length)] ?? seaCreatureRushCatalog[0];
   }
 
+  private _getCameraViewportWorldBounds() {
+    const stage = this._stage ?? stages[this._stageIndex];
+    const zoom = this._camera.zoom * initialZoom;
+    const cameraWorld = this._camera.getViewportCenter(stage);
+    const viewW = this._renderer.width / zoom;
+    const viewH = this._renderer.height / zoom;
+
+    if (stage.presentation === 'side-scroll') {
+      return {
+        minX: cameraWorld.x - viewH / 2,
+        maxX: cameraWorld.x + viewH / 2,
+        minY: cameraWorld.y - viewW / 2,
+        maxY: cameraWorld.y + viewW / 2,
+      };
+    }
+
+    return {
+      minX: cameraWorld.x - viewW / 2,
+      maxX: cameraWorld.x + viewW / 2,
+      minY: cameraWorld.y - viewH / 2,
+      maxY: cameraWorld.y + viewH / 2,
+    };
+  }
+
   private _launchWinnerCelebration(marble: Marble, accent: string) {
     const palette = [accent, '#fef08a', '#ffffff', '#fde68a', `hsl(${marble.hue} 100% 62%)`];
     const centerX = this._renderer.width / 2;
@@ -782,7 +806,15 @@ export class Roulette extends EventTarget {
       }
       case 'shark-rush': {
         const creature = this._pickSeaCreatureRush();
-        const ranked = activeMarbles.slice().sort((a, b) => b.y - a.y);
+        const viewport = this._getCameraViewportWorldBounds();
+        const visibleMarbles = activeMarbles.filter(
+          (marble) =>
+            marble.x >= viewport.minX - 1.4 &&
+            marble.x <= viewport.maxX + 1.4 &&
+            marble.y >= viewport.minY - 1.8 &&
+            marble.y <= viewport.maxY + 1.8
+        );
+        const ranked = (visibleMarbles.length > 0 ? visibleMarbles : activeMarbles).slice().sort((a, b) => b.y - a.y);
         const lowerPool = ranked.slice(0, Math.max(1, Math.ceil(ranked.length * 0.45)));
         const upperPool = ranked.slice(Math.max(1, Math.floor(ranked.length * 0.45)));
         const lowerBias = this._roundElapsed > 8500 ? 0.82 : 0.6;
@@ -792,13 +824,64 @@ export class Roulette extends EventTarget {
         if (!candidate) return;
 
         const direction = Math.random() < 0.5 ? 1 : -1;
+        if (this._stage?.presentation === 'side-scroll') {
+          const lanePadding = 1.1;
+          const effectPadding = 4.2;
+          const laneBand = Math.min(creature.band, Math.max(2.8, (viewport.maxX - viewport.minX) * 0.42));
+          const sweepX = Math.max(
+            viewport.minX + lanePadding,
+            Math.min(viewport.maxX - lanePadding, candidate.x + (Math.random() - 0.5) * 3.4)
+          );
+          const startY = direction > 0 ? viewport.minY - effectPadding : viewport.maxY + effectPadding;
+          const endY = direction > 0 ? viewport.maxY + effectPadding : viewport.minY - effectPadding;
+          const impacted = ranked.filter((marble) => Math.abs(marble.x - sweepX) < laneBand);
+          const primary = impacted[0] ?? candidate;
+
+          this._effects.push(
+            new SharkRushEffect(
+              startY,
+              endY,
+              sweepX,
+              direction > 0 ? 1 : -1,
+              creature.accent,
+              creature.kind,
+              'vertical',
+              Math.PI / 2
+            )
+          );
+
+          impacted.forEach((marble, index) => {
+            const distanceWeight = 1 - Math.min(1, Math.abs(marble.x - sweepX) / laneBand);
+            const laneSpread = (Math.random() - 0.5) * 0.78;
+            const progressImpulse =
+              direction * (creature.lateralPower + distanceWeight * 1.82 + Math.random() * 0.48);
+            const laneImpulse =
+              (Math.random() - 0.12) * creature.verticalPower + (index === 0 ? 0.28 : 0.06);
+            this.physics.nudgeMarble(marble.id, {
+              x: laneImpulse + laneSpread,
+              y: progressImpulse,
+            });
+            marble.impact = Math.max(marble.impact, 240 + distanceWeight * 210);
+          });
+
+          this._effects.push(new SkillEffect(primary.x, primary.y));
+          notice = {
+            ...notice,
+            title: `${creature.label} 난입`,
+            accent: creature.accent,
+            description: `${direction > 0 ? '왼쪽' : '오른쪽'}에서 ${creature.label}가 튀어나와 ${primary.name}님 주변 대열을 거칠게 흔들었습니다.`,
+          };
+          break;
+        }
+
         const sweepY = Math.max(
-          24,
-          Math.min((this._stage?.goalY ?? candidate.y + 10) - 5.5, candidate.y + (Math.random() - 0.5) * 6.5)
+          viewport.minY + 1.6,
+          Math.min(viewport.maxY - 1.6, candidate.y + (Math.random() - 0.5) * Math.min(5.8, viewport.maxY - viewport.minY))
         );
-        const band = creature.band;
-        const startX = direction > 0 ? -2.8 : 28.4;
-        const endX = direction > 0 ? 28.4 : -2.8;
+        const band = Math.min(creature.band, Math.max(3.4, (viewport.maxY - viewport.minY) * 0.34));
+        const effectPadding = 4.2;
+        const startX = direction > 0 ? viewport.minX - effectPadding : viewport.maxX + effectPadding;
+        const endX = direction > 0 ? viewport.maxX + effectPadding : viewport.minX - effectPadding;
         const impacted = ranked.filter((marble) => Math.abs(marble.y - sweepY) < band);
         const primary = impacted[0] ?? candidate;
 
