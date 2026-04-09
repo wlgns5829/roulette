@@ -5,7 +5,6 @@ import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
 const finishZoomBoost = 1.8;
-const winnerSpotlightZoomBoost = 2.56;
 const stageLaneSpan = 26;
 
 export class Camera {
@@ -127,16 +126,18 @@ export class Camera {
     needToZoom,
     targetIndex,
     winnerSpotlight,
+    winnerSpotlightElapsed = 0,
   }: {
     marbles: Marble[];
     stage: StageDef;
     needToZoom: boolean;
     targetIndex: number;
     winnerSpotlight?: Marble | null;
+    winnerSpotlightElapsed?: number;
   }) {
     // set target position
     if (!this._locked) {
-      this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex, winnerSpotlight);
+      this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex, winnerSpotlight, winnerSpotlightElapsed);
     }
 
     // interpolate position
@@ -152,7 +153,8 @@ export class Camera {
     stage: StageDef,
     needToZoom: boolean,
     targetIndex: number,
-    winnerSpotlight?: Marble | null
+    winnerSpotlight?: Marble | null,
+    winnerSpotlightElapsed = 0
   ) {
     if (!this._shouldFollowMarbles) {
       return;
@@ -161,12 +163,16 @@ export class Camera {
     const targetMarble = winnerSpotlight ?? (marbles[targetIndex] ? marbles[targetIndex] : marbles[0]);
     if (targetMarble) {
       if (winnerSpotlight) {
+        const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1600) / 520));
+        const zoomOutProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 2520) / 760));
+        const spotlightZoom =
+          cruisingZoom + 0.82 + zoomInProgress * 1.08 - zoomOutProgress * 0.94;
         if (stage.presentation === 'side-scroll') {
           const laneFocus = 13 + (winnerSpotlight.position.x - 13) * 0.34;
           const targetX = Math.min(stage.goalY + 0.5, winnerSpotlight.position.y + 1.4);
           const targetY = stageLaneSpan - laneFocus;
           this.setPosition({ x: targetX, y: targetY });
-          this.zoom = cruisingZoom + winnerSpotlightZoomBoost;
+          this.zoom = spotlightZoom;
           return;
         }
 
@@ -175,7 +181,7 @@ export class Camera {
           x: winnerSpotlight.position.x,
           y: Math.max(-1.4, spotlightVisualY - 0.95),
         });
-        this.zoom = cruisingZoom + winnerSpotlightZoomBoost;
+        this.zoom = spotlightZoom;
         return;
       }
 

@@ -119,8 +119,12 @@ export function attachApp(roulette: Roulette) {
     let resetTimer = 0;
     let goalOverlayTimer = 0;
     let winnerShowcaseTimer = 0;
+    let winnerRevealTimer = 0;
     let bgmStopTimer = 0;
     let roundRunning = false;
+    const winnerRevealDelayMs = 2720;
+    const bgmStopDelayMs = 3480;
+    const roundResetDelayMs = 5600;
 
     const getRosterTokens = () => {
       const merged = new Map<string, number>();
@@ -206,6 +210,13 @@ export function attachApp(roulette: Roulette) {
       document.body.classList.remove('winner-showcase');
     };
 
+    const clearWinnerReveal = () => {
+      if (winnerRevealTimer) {
+        window.clearTimeout(winnerRevealTimer);
+        winnerRevealTimer = 0;
+      }
+    };
+
     const showWinnerShowcase = (winner: string, stageTitle: string, accent: string) => {
       document.documentElement.style.setProperty('--goal-accent', accent);
       winnerShowcaseLabel.textContent = '오늘의 커피 당첨자';
@@ -222,6 +233,17 @@ export function attachApp(roulette: Roulette) {
         winnerShowcase.hidden = true;
         document.body.classList.remove('winner-showcase');
       }, 3000);
+    };
+
+    const revealWinner = (winner: string, stageTitle: string, accent: string) => {
+      winnerName.textContent = winner;
+      winnerLine.textContent = randomOf(winnerLines);
+      resultPanel.hidden = false;
+      setStatus('우승 연출', '골인 공이 하늘 위로 솟아오르고 있습니다.');
+      showWinnerShowcase(winner, stageTitle, accent);
+      setStatus('오늘의 당첨', `${winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
+      appendFeedItem('당첨', `${winner}님이 ${stageTitle}을 통과해 오늘의 커피 당첨자가 됐습니다.`, accent);
+      winnerRevealTimer = 0;
     };
 
     const triggerGoalOverlay = (accent: string) => {
@@ -362,6 +384,7 @@ export function attachApp(roulette: Roulette) {
         bgmStopTimer = 0;
       }
 
+      clearWinnerReveal();
       hideWinnerShowcase();
 
       resultPanel.hidden = true;
@@ -542,7 +565,27 @@ export function attachApp(roulette: Roulette) {
       setRoundFocus(false);
       ready = false;
       startButton.disabled = true;
-      winnerName.textContent = detail.winner;
+      clearWinnerReveal();
+      resultPanel.hidden = true;
+      setStatus('우승 연출', '골인 공이 하늘 위로 솟아오르고 있습니다.');
+      triggerGoalOverlay(detail.accent);
+      audio.playGoal();
+      winnerRevealTimer = window.setTimeout(() => {
+        revealWinner(detail.winner, detail.stageTitle, detail.accent);
+      }, winnerRevealDelayMs);
+      if (bgmStopTimer) {
+        window.clearTimeout(bgmStopTimer);
+      }
+      bgmStopTimer = window.setTimeout(() => {
+        audio.stopBgm();
+        bgmStopTimer = 0;
+      }, bgmStopDelayMs);
+
+      resetTimer = window.setTimeout(() => {
+        refreshBoard();
+      }, roundResetDelayMs);
+      return;
+      clearWinnerReveal();
       winnerLine.textContent = randomOf(winnerLines);
       resultPanel.hidden = false;
       showWinnerShowcase(detail.winner, detail.stageTitle, detail.accent);

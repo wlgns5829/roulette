@@ -561,7 +561,9 @@ export class RouletteRenderer {
       this.onBeforeEntities();
       this.renderEntities(renderParameters.entities);
       this.renderEffects(renderParameters);
-      this.renderMarbles(renderParameters);
+      if (!renderParameters.winner) {
+        this.renderMarbles(renderParameters);
+      }
     }, renderParameters.stage.presentation);
     this.ctx.restore();
     this.onAfterScene();
@@ -736,11 +738,14 @@ export class RouletteRenderer {
     const landPauseProgress = this.clamp((elapsed - 1120) / 620);
     const skyLaunchProgress = this.clamp((elapsed - 1740) / 900);
     const burstProgress = this.clamp((elapsed - 2520) / 1180);
-    const textProgress = this.clamp((elapsed - 2920) / 760);
+    const zoomInProgress = this.clamp((elapsed - 1780) / 520);
+    const zoomOutProgress = this.clamp((elapsed - 2520) / 760);
+    const textProgress = this.clamp((elapsed - 2580) / 720);
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
     const burstEase = this.easeOutCubic(burstProgress);
+    const focusScale = 1 + this.easeOutCubic(zoomInProgress) * 0.4 - this.easeInOutCubic(zoomOutProgress) * 0.24;
     const textEase = this.easeOutCubic(textProgress);
     const centerX = this._canvas.width / 2;
     const width = this._canvas.width;
@@ -760,6 +765,7 @@ export class RouletteRenderer {
     const subSize = Math.max(20, Math.min(32, this._canvas.width * 0.025));
     const marbleImage = options.marbleStyle === 'sprite' ? this.getMarbleImage(winner.name) : undefined;
     const marbleSize = Math.max(96, Math.min(148, this._canvas.width * 0.105));
+    const marbleVisualSize = marbleSize * focusScale;
     const marbleCenterX = centerX;
     const marbleStartY = height + marbleSize * 1.55;
     const marbleLandY = islandY - marbleSize * 1.02;
@@ -830,34 +836,41 @@ export class RouletteRenderer {
     this.ctx.stroke();
     this.ctx.restore();
 
-    const islandGlow = this.ctx.createRadialGradient(centerX, islandY + marbleSize * 0.4, marbleSize * 0.2, centerX, islandY + marbleSize * 0.45, width * 0.24);
+    const islandGlow = this.ctx.createRadialGradient(
+      centerX,
+      islandY + marbleVisualSize * 0.34,
+      marbleVisualSize * 0.18,
+      centerX,
+      islandY + marbleVisualSize * 0.38,
+      width * 0.24
+    );
     islandGlow.addColorStop(0, `rgba(255, 243, 201, ${0.16 + islandAlpha * 0.16})`);
     islandGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.fillStyle = islandGlow;
-    this.ctx.fillRect(0, islandY - marbleSize, width, height - islandY + marbleSize);
+    this.ctx.fillRect(0, islandY - marbleVisualSize, width, height - islandY + marbleVisualSize);
 
     this.ctx.save();
     this.ctx.globalAlpha = islandAlpha;
     this.ctx.fillStyle = '#6c5137';
     this.ctx.beginPath();
-    this.ctx.ellipse(centerX, islandY + marbleSize * 0.52, width * 0.16, marbleSize * 0.56, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.46, width * 0.16, marbleVisualSize * 0.46, 0, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.fillStyle = '#9ac55a';
     this.ctx.beginPath();
-    this.ctx.ellipse(centerX, islandY + marbleSize * 0.28, width * 0.145, marbleSize * 0.24, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.22, width * 0.145, marbleVisualSize * 0.2, 0, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.restore();
 
-    const beamWidth = marbleSize * (0.56 + landPauseEase * 0.14 + skyLaunchEase * 0.18);
-    const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY - marbleSize * 0.6, 0, height);
+    const beamWidth = marbleVisualSize * (0.56 + landPauseEase * 0.14 + skyLaunchEase * 0.18);
+    const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY - marbleVisualSize * 0.6, 0, height);
     beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
     beamGradient.addColorStop(0.24, `rgba(255, 255, 255, ${0.16 + landPauseEase * 0.18})`);
     beamGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.fillStyle = beamGradient;
     this.ctx.beginPath();
     this.ctx.moveTo(centerX - beamWidth * 0.64, height);
-    this.ctx.lineTo(centerX - beamWidth * 0.18, marbleCenterY + marbleSize * 0.2);
-    this.ctx.lineTo(centerX + beamWidth * 0.18, marbleCenterY + marbleSize * 0.2);
+    this.ctx.lineTo(centerX - beamWidth * 0.18, marbleCenterY + marbleVisualSize * 0.2);
+    this.ctx.lineTo(centerX + beamWidth * 0.18, marbleCenterY + marbleVisualSize * 0.2);
     this.ctx.lineTo(centerX + beamWidth * 0.64, height);
     this.ctx.closePath();
     this.ctx.fill();
@@ -866,7 +879,7 @@ export class RouletteRenderer {
     for (let i = 0; i < trailCount; i++) {
       const travel = (landPauseEase * 0.35 + skyLaunchEase * 0.95 + i / trailCount) % 1;
       const sparkX = centerX + Math.sin(time * 3.4 + i * 1.25) * beamWidth * (0.14 + travel * 0.18);
-      const sparkY = height - travel * (height - marbleCenterY - marbleSize * 0.1);
+      const sparkY = height - travel * (height - marbleCenterY - marbleVisualSize * 0.1);
       const sparkSize = 2 + (1 - travel) * 4;
       this.ctx.save();
       this.ctx.globalAlpha = 0.18 + (1 - travel) * 0.3;
@@ -879,8 +892,8 @@ export class RouletteRenderer {
 
     for (let i = 0; i < 10; i++) {
       const bubbleProgress = (oceanRiseEase * 1.1 + i / 10) % 1;
-      const bubbleX = centerX + Math.sin(time * 3 + i * 1.7) * marbleSize * 0.42;
-      const bubbleY = seaSurfaceY + marbleSize * 0.7 + (1 - bubbleProgress) * (height - seaSurfaceY + marbleSize * 0.9);
+      const bubbleX = centerX + Math.sin(time * 3 + i * 1.7) * marbleVisualSize * 0.42;
+      const bubbleY = seaSurfaceY + marbleVisualSize * 0.7 + (1 - bubbleProgress) * (height - seaSurfaceY + marbleVisualSize * 0.9);
       this.ctx.save();
       this.ctx.globalAlpha = (1 - skyLaunchProgress) * (0.08 + bubbleProgress * 0.18);
       this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
@@ -943,31 +956,31 @@ export class RouletteRenderer {
 
     this.ctx.beginPath();
     this.ctx.fillStyle = `rgba(255, 255, 255, ${0.24 + landPauseEase * 0.14 + burstEase * 0.12})`;
-    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (0.72 + burstEase * 0.12), 0, Math.PI * 2);
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleVisualSize * (0.72 + burstEase * 0.12), 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.beginPath();
     this.ctx.fillStyle = `rgba(255, 247, 220, ${0.14 + burstEase * 0.16})`;
-    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (1.02 + Math.sin(time * 6.4) * 0.04), 0, Math.PI * 2);
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleVisualSize * (1.02 + Math.sin(time * 6.4) * 0.04), 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
     if (marbleImage) {
-      this.ctx.drawImage(
-        marbleImage,
-        -marbleSize / 2,
-        -marbleSize / 2,
-        marbleSize,
-        marbleSize
-      );
+        this.ctx.drawImage(
+          marbleImage,
+          -marbleVisualSize / 2,
+          -marbleVisualSize / 2,
+          marbleVisualSize,
+          marbleVisualSize
+        );
     } else {
       drawMarbleLook(
         this.ctx,
         {
           x: 0,
           y: 0,
-          size: marbleSize,
+          size: marbleVisualSize,
           hue: winner.hue,
           seed: winner.id,
           bounce: 0.42,
@@ -980,7 +993,7 @@ export class RouletteRenderer {
 
     for (let i = 0; i < 8; i++) {
       const orbitAngle = elapsed * 0.0038 + i * ((Math.PI * 2) / 8);
-      const orbitRadius = marbleSize * (1.06 + (i % 3) * 0.15 + burstEase * 0.08);
+      const orbitRadius = marbleVisualSize * (1.06 + (i % 3) * 0.15 + burstEase * 0.08);
       this.drawSpark(
         marbleCenterX + Math.cos(orbitAngle) * orbitRadius,
         marbleCenterY + Math.sin(orbitAngle) * orbitRadius * 0.62,

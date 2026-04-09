@@ -33,9 +33,9 @@ function getDefaultGravity() {
 }
 
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
-  'shark-rush': 24,
-  'bomb-burst': 2.5,
-  'bean-burst': 1.4,
+  'shark-rush': 56,
+  'bomb-burst': 1.8,
+  'bean-burst': 1.1,
 };
 
 const seaCreatureRushCatalog: Array<{
@@ -117,6 +117,7 @@ export class Roulette extends EventTarget {
   private _finalApproachTriggered = false;
   private _closeRaceAssistCooldown = 0;
   private _celebrationTimeouts: number[] = [];
+  private _winnerCelebrationElapsed = 0;
 
   get isReady() {
     return this._isReady;
@@ -177,6 +178,9 @@ export class Roulette extends EventTarget {
       this._updateMarbles(this._updateInterval);
       this._particleManager.update(this._updateInterval);
       this._updateEffects(this._updateInterval);
+      if (this._winner) {
+        this._winnerCelebrationElapsed += this._updateInterval;
+      }
       this._elapsed -= this._updateInterval;
       this._uiObjects.forEach((obj) => obj.update(this._updateInterval));
     }
@@ -192,6 +196,7 @@ export class Roulette extends EventTarget {
         needToZoom: this._goalDist < zoomThreshold,
         targetIndex: 0,
         winnerSpotlight: this._isRunning ? null : this._winner,
+        winnerSpotlightElapsed: this._winnerCelebrationElapsed,
       });
     }
 
@@ -355,6 +360,7 @@ export class Roulette extends EventTarget {
   private _finishRound(marble: Marble) {
     this._effects.push(new GoalCelebrationEffect(marble.x, marble.y, this._stage?.accent));
     this._winner = marble;
+    this._winnerCelebrationElapsed = 0;
     this._isRunning = false;
     this._clearRoundEffects();
 
@@ -619,12 +625,12 @@ export class Roulette extends EventTarget {
 
   private _scheduleRoundEvents() {
     const pace = isCompactViewport() ? 1.18 : 1;
-    const totalEvents = Math.max(8, Math.min(14, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 1.8 : 1.6))));
+    const totalEvents = Math.max(12, Math.min(20, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 1.35 : 1.2))));
     const schedule: number[] = [];
-    let nextAt = (1180 + Math.random() * 620) * pace;
+    let nextAt = (820 + Math.random() * 420) * pace;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += (1420 + Math.random() * 980) * pace;
+      nextAt += (920 + Math.random() * 640) * pace;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -635,23 +641,28 @@ export class Roulette extends EventTarget {
 
     const pool =
       this._stage.eventPool && this._stage.eventPool.length > 0 ? this._stage.eventPool : defaultLunchEventPool;
+    const prioritizeSeaRush = pool.includes('shark-rush') && Math.random() < 0.6;
     const weights = pool.map((id) => {
       const baseWeight = roundEventWeights[id] ?? 1;
       if (id !== this._lastRoundEventId) {
         return baseWeight;
       }
-      return id === 'shark-rush' ? baseWeight * 0.92 : baseWeight * 0.2;
+      return id === 'shark-rush' ? baseWeight * 1.06 : baseWeight * 0.2;
     });
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     if (totalWeight <= 0) return;
 
-    let draw = Math.random() * totalWeight;
     let eventId: LunchEventId | undefined;
-    for (let i = 0; i < pool.length; i++) {
-      draw -= weights[i];
-      if (draw <= 0) {
-        eventId = pool[i];
-        break;
+    if (prioritizeSeaRush) {
+      eventId = 'shark-rush';
+    } else {
+      let draw = Math.random() * totalWeight;
+      for (let i = 0; i < pool.length; i++) {
+        draw -= weights[i];
+        if (draw <= 0) {
+          eventId = pool[i];
+          break;
+        }
       }
     }
     eventId ??= pool[pool.length - 1];
@@ -845,6 +856,7 @@ export class Roulette extends EventTarget {
     this._isRunning = false;
     this.physics.clearMarbles();
     this._winner = null;
+    this._winnerCelebrationElapsed = 0;
     this._winners = [];
     this._marbles = [];
     this._resetRoundFlow();
@@ -862,6 +874,7 @@ export class Roulette extends EventTarget {
     }
 
     this._winner = null;
+    this._winnerCelebrationElapsed = 0;
     this._winners = [];
     this._goalDist = Infinity;
     this._camera.startFollowingMarbles();
