@@ -122,9 +122,9 @@ export function attachApp(roulette: Roulette) {
     let winnerRevealTimer = 0;
     let bgmStopTimer = 0;
     let roundRunning = false;
-    const winnerRevealDelayMs = 2720;
-    const bgmStopDelayMs = 3480;
-    const roundResetDelayMs = 5600;
+    const winnerRevealDelayMs = 3220;
+    const bgmStopDelayMs = 4260;
+    const roundResetDelayMs = 6580;
 
     const getRosterTokens = () => {
       const merged = new Map<string, number>();

@@ -163,8 +163,8 @@ export class Camera {
     const targetMarble = winnerSpotlight ?? (marbles[targetIndex] ? marbles[targetIndex] : marbles[0]);
     if (targetMarble) {
       if (winnerSpotlight) {
-        const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1600) / 520));
-        const zoomOutProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 2520) / 760));
+        const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1820) / 620));
+        const zoomOutProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 2940) / 840));
         const spotlightZoom =
           cruisingZoom + 0.82 + zoomInProgress * 1.08 - zoomOutProgress * 0.94;
         if (stage.presentation === 'side-scroll') {
