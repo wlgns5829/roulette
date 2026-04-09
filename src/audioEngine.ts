@@ -440,6 +440,8 @@ export class AudioEngine {
         pan: -0.2 + index * 0.2,
       });
     });
+
+    this._playWinnerBurstTheme(start);
   }
 
   public playFinalApproach() {
@@ -687,6 +689,89 @@ export class AudioEngine {
         'bgm'
       );
     }
+  }
+
+  private _playWinnerBurstTheme(start: number) {
+    const ctx = this._ctx;
+    if (!ctx || !this._bgmGain) return;
+
+    const chargeStart = start + 1.96;
+    const coreBurst = start + 2.56;
+    const barrageOffsets = [2.86, 3.01, 3.16, 3.31, 3.46, 3.61, 3.76, 3.91, 4.05];
+
+    this._bgmGain.gain.cancelScheduledValues(chargeStart);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.78, chargeStart, 0.08);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 1.04, coreBurst, 0.05);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.92, start + 4.2, 0.12);
+
+    [48, 55, 60].forEach((note, index) => {
+      this._playTone(midiToFreq(note), chargeStart + index * 0.08, 0.74, {
+        type: 'sine',
+        gain: 0.035 + index * 0.006,
+        attack: 0.03,
+        release: 0.28,
+        filter: 680 + index * 120,
+        pan: -0.18 + index * 0.18,
+      }, 'bgm');
+    });
+
+    [67, 71, 76, 79].forEach((note, index) => {
+      this._playTone(midiToFreq(note), chargeStart + 0.24 + index * 0.07, 0.42, {
+        type: 'triangle',
+        gain: 0.03 + index * 0.006,
+        attack: 0.02,
+        release: 0.22,
+        filter: 1500 + index * 160,
+        pan: -0.26 + index * 0.16,
+      }, 'bgm');
+    });
+
+    this._playNoise(chargeStart + 0.36, 0.44, 0.035, 2200, 0.9, 'bandpass', 'bgm');
+
+    this._playKick(coreBurst, 0.22, 188, 32);
+    this._playKick(coreBurst + 0.07, 0.16, 156, 28);
+    this._playNoise(coreBurst + 0.01, 0.22, 0.24, 1200, 1.6, 'bandpass');
+    this._playNoise(coreBurst + 0.02, 0.28, 0.12, 4200, 0.7, 'highpass');
+
+    [60, 67, 72, 76].forEach((note, index) => {
+      this._playTone(midiToFreq(note), coreBurst + index * 0.012, 0.86, {
+        type: 'sawtooth',
+        gain: 0.054 + index * 0.008,
+        attack: 0.01,
+        release: 0.48,
+        filter: 1320 + index * 180,
+        pan: -0.24 + index * 0.16,
+      }, 'bgm');
+    });
+
+    [79, 83, 88, 91].forEach((note, index) => {
+      this._playTone(midiToFreq(note), coreBurst + 0.08 + index * 0.018, 0.6, {
+        type: 'triangle',
+        gain: 0.05 + index * 0.007,
+        attack: 0.01,
+        release: 0.32,
+        filter: 2100 + index * 150,
+        pan: -0.3 + index * 0.18,
+      }, 'bgm');
+    });
+
+    barrageOffsets.forEach((offset, index) => {
+      const hitTime = start + offset;
+      this._playKick(hitTime, index % 3 === 0 ? 0.15 : 0.11, 170 - (index % 3) * 12, 30);
+      this._playNoise(hitTime + 0.01, 0.12, 0.11, 3200 + (index % 3) * 380, 0.82, 'highpass');
+
+      const chordRoots = [72, 76, 79];
+      chordRoots.forEach((note, chordIndex) => {
+        this._playTone(midiToFreq(note + (index % 2 === 0 ? 0 : 2)), hitTime + chordIndex * 0.02, 0.24, {
+          type: chordIndex === 0 ? 'sawtooth' : 'triangle',
+          gain: 0.03 + chordIndex * 0.009,
+          attack: 0.01,
+          release: 0.14,
+          filter: 1800 + chordIndex * 240,
+          pan: -0.22 + chordIndex * 0.22,
+        }, 'bgm');
+      });
+    });
   }
 
   private _playKick(time: number, gainAmount: number, startFreq: number, endFreq: number, target: ToneTarget = 'sfx') {
