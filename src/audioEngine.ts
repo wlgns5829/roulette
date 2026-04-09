@@ -695,81 +695,121 @@ export class AudioEngine {
     const ctx = this._ctx;
     if (!ctx || !this._bgmGain) return;
 
-    const chargeStart = start + 1.96;
-    const coreBurst = start + 2.56;
-    const barrageOffsets = [2.86, 3.01, 3.16, 3.31, 3.46, 3.61, 3.76, 3.91, 4.05];
+    const chargeStart = start + 1.84;
+    const surgeTime = start + 2.24;
+    const coreBurst = start + 2.74;
+    const barrageOffsets = [3.02, 3.14, 3.26, 3.38, 3.5, 3.62, 3.74, 3.86, 3.98, 4.1, 4.22];
 
     this._bgmGain.gain.cancelScheduledValues(chargeStart);
-    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.78, chargeStart, 0.08);
-    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 1.04, coreBurst, 0.05);
-    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.92, start + 4.2, 0.12);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.66, chargeStart, 0.06);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.84, surgeTime, 0.05);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 1.18, coreBurst, 0.04);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.94, start + 4.4, 0.14);
 
-    [48, 55, 60].forEach((note, index) => {
-      this._playTone(midiToFreq(note), chargeStart + index * 0.08, 0.74, {
-        type: 'sine',
-        gain: 0.035 + index * 0.006,
-        attack: 0.03,
-        release: 0.28,
-        filter: 680 + index * 120,
-        pan: -0.18 + index * 0.18,
-      }, 'bgm');
+    [36, 43, 48, 55].forEach((note, index) => {
+      this._playTone(
+        midiToFreq(note),
+        chargeStart + index * 0.06,
+        0.96,
+        {
+          type: index % 2 === 0 ? 'sawtooth' : 'sine',
+          gain: 0.04 + index * 0.007,
+          attack: 0.02,
+          release: 0.34,
+          filter: 520 + index * 90,
+          pan: -0.24 + index * 0.16,
+        },
+        'bgm'
+      );
     });
 
-    [67, 71, 76, 79].forEach((note, index) => {
-      this._playTone(midiToFreq(note), chargeStart + 0.24 + index * 0.07, 0.42, {
-        type: 'triangle',
-        gain: 0.03 + index * 0.006,
-        attack: 0.02,
-        release: 0.22,
-        filter: 1500 + index * 160,
-        pan: -0.26 + index * 0.16,
-      }, 'bgm');
+    [67, 71, 74, 79, 83, 86].forEach((note, index) => {
+      this._playTone(
+        midiToFreq(note),
+        chargeStart + 0.18 + index * 0.065,
+        0.48,
+        {
+          type: index < 3 ? 'triangle' : 'sawtooth',
+          gain: 0.028 + index * 0.007,
+          attack: 0.01,
+          release: 0.24,
+          filter: 1500 + index * 190,
+          pan: -0.32 + index * 0.12,
+          detune: index % 2 === 0 ? -5 : 7,
+        },
+        'bgm'
+      );
     });
 
-    this._playNoise(chargeStart + 0.36, 0.44, 0.035, 2200, 0.9, 'bandpass', 'bgm');
+    this._playNoise(chargeStart + 0.28, 0.38, 0.045, 1800, 1.2, 'bandpass', 'bgm');
+    this._playNoise(surgeTime - 0.04, 0.34, 0.055, 2600, 1.1, 'highpass', 'bgm');
+    this._playKick(coreBurst - 0.18, 0.12, 126, 36, 'bgm');
+    this._playKick(coreBurst - 0.07, 0.14, 144, 34, 'bgm');
 
-    this._playKick(coreBurst, 0.22, 188, 32);
-    this._playKick(coreBurst + 0.07, 0.16, 156, 28);
-    this._playNoise(coreBurst + 0.01, 0.22, 0.24, 1200, 1.6, 'bandpass');
-    this._playNoise(coreBurst + 0.02, 0.28, 0.12, 4200, 0.7, 'highpass');
+    this._playKick(coreBurst, 0.28, 196, 30);
+    this._playKick(coreBurst + 0.06, 0.22, 172, 28);
+    this._playKick(coreBurst + 0.13, 0.16, 158, 26);
+    this._playNoise(coreBurst + 0.01, 0.24, 0.28, 1100, 1.7, 'bandpass');
+    this._playNoise(coreBurst + 0.02, 0.32, 0.16, 4600, 0.75, 'highpass');
 
-    [60, 67, 72, 76].forEach((note, index) => {
-      this._playTone(midiToFreq(note), coreBurst + index * 0.012, 0.86, {
-        type: 'sawtooth',
-        gain: 0.054 + index * 0.008,
-        attack: 0.01,
-        release: 0.48,
-        filter: 1320 + index * 180,
-        pan: -0.24 + index * 0.16,
-      }, 'bgm');
+    [48, 60, 67, 72, 79, 84].forEach((note, index) => {
+      this._playTone(
+        midiToFreq(note),
+        coreBurst + index * 0.01,
+        0.92,
+        {
+          type: index < 2 ? 'square' : 'sawtooth',
+          gain: 0.052 + index * 0.008,
+          attack: 0.008,
+          release: 0.52,
+          filter: 1080 + index * 170,
+          pan: -0.34 + index * 0.13,
+          detune: index % 2 === 0 ? -8 : 9,
+        },
+        'bgm'
+      );
     });
 
-    [79, 83, 88, 91].forEach((note, index) => {
-      this._playTone(midiToFreq(note), coreBurst + 0.08 + index * 0.018, 0.6, {
-        type: 'triangle',
-        gain: 0.05 + index * 0.007,
-        attack: 0.01,
-        release: 0.32,
-        filter: 2100 + index * 150,
-        pan: -0.3 + index * 0.18,
-      }, 'bgm');
+    [84, 88, 91, 96].forEach((note, index) => {
+      this._playTone(
+        midiToFreq(note),
+        coreBurst + 0.08 + index * 0.016,
+        0.72,
+        {
+          type: 'triangle',
+          gain: 0.056 + index * 0.008,
+          attack: 0.008,
+          release: 0.36,
+          filter: 2200 + index * 180,
+          pan: -0.22 + index * 0.14,
+        },
+        'bgm'
+      );
     });
 
     barrageOffsets.forEach((offset, index) => {
       const hitTime = start + offset;
-      this._playKick(hitTime, index % 3 === 0 ? 0.15 : 0.11, 170 - (index % 3) * 12, 30);
-      this._playNoise(hitTime + 0.01, 0.12, 0.11, 3200 + (index % 3) * 380, 0.82, 'highpass');
+      const chordRoots = index % 3 === 0 ? [72, 79, 84] : index % 3 === 1 ? [74, 81, 86] : [76, 83, 88];
 
-      const chordRoots = [72, 76, 79];
+      this._playKick(hitTime, index % 2 === 0 ? 0.17 : 0.13, 178 - (index % 3) * 10, 28);
+      this._playNoise(hitTime + 0.01, 0.13, 0.12, 3400 + (index % 3) * 320, 0.84, 'highpass');
+      this._playNoise(hitTime + 0.03, 0.09, 0.08, 1400 + (index % 2) * 240, 1.1, 'bandpass', 'bgm');
+
       chordRoots.forEach((note, chordIndex) => {
-        this._playTone(midiToFreq(note + (index % 2 === 0 ? 0 : 2)), hitTime + chordIndex * 0.02, 0.24, {
-          type: chordIndex === 0 ? 'sawtooth' : 'triangle',
-          gain: 0.03 + chordIndex * 0.009,
-          attack: 0.01,
-          release: 0.14,
-          filter: 1800 + chordIndex * 240,
-          pan: -0.22 + chordIndex * 0.22,
-        }, 'bgm');
+        this._playTone(
+          midiToFreq(note),
+          hitTime + chordIndex * 0.016,
+          0.28,
+          {
+            type: chordIndex === 0 ? 'sawtooth' : 'triangle',
+            gain: 0.036 + chordIndex * 0.011,
+            attack: 0.008,
+            release: 0.16,
+            filter: 1850 + chordIndex * 260,
+            pan: -0.24 + chordIndex * 0.24,
+          },
+          'bgm'
+        );
       });
     });
   }

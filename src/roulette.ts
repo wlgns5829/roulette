@@ -471,21 +471,27 @@ export class Roulette extends EventTarget {
         effect.markHitMarble(marble.id);
         const offsetX = marble.x - position.x;
         const offsetY = marble.y - position.y;
-        const offsetDistance = Math.max(0.001, Math.hypot(offsetX, offsetY));
-        const outward = { x: offsetX / offsetDistance, y: offsetY / offsetDistance };
-        const forwardPower = creature.lateralPower * (0.9 + contactStrength * 1.15 + Math.random() * 0.22);
+        const offsetDistance = Math.hypot(offsetX, offsetY);
+        const outward =
+          offsetDistance > 0.08 ? { x: offsetX / offsetDistance, y: offsetY / offsetDistance } : { ...normal };
+        const forwardPower = creature.lateralPower * (1.55 + contactStrength * 2.05 + Math.random() * 0.34);
         const crossDot = outward.x * normal.x + outward.y * normal.y;
-        const sidePower = (crossDot * 0.52 + (Math.random() - 0.5) * 0.38) * creature.verticalPower;
-        const liftPower = Math.max(0.04, outward.y * 0.18);
-
-        this.physics.nudgeMarble(marble.id, {
-          x: heading.x * forwardPower + normal.x * sidePower + outward.x * 0.16,
+        const sidePower = (crossDot * 0.86 + (Math.random() - 0.5) * 0.26) * creature.verticalPower * 1.35;
+        const liftPower = Math.max(0.1, outward.y * 0.26 + 0.12);
+        const push = {
+          x: heading.x * forwardPower + normal.x * sidePower + outward.x * (0.42 + contactStrength * 0.36),
           y:
             heading.y * forwardPower +
             normal.y * sidePower +
-            outward.y * (creature.verticalPower * 0.14 + liftPower),
+            outward.y * (creature.verticalPower * 0.28 + liftPower + contactStrength * 0.18),
+        };
+
+        this.physics.nudgeMarble(marble.id, push);
+        this.physics.nudgeMarble(marble.id, {
+          x: push.x * 0.42,
+          y: push.y * 0.42,
         });
-        marble.impact = Math.max(marble.impact, 260 + contactStrength * 260);
+        marble.impact = Math.max(marble.impact, 320 + contactStrength * 340);
       });
     });
   }

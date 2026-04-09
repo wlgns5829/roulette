@@ -12,6 +12,7 @@ export class SharkRushEffect implements GameObject {
   private _elapsed = 0;
   private _start: VectorLike;
   private _end: VectorLike;
+  private _previousPosition: VectorLike;
   private _direction: VectorLike;
   private _normal: VectorLike;
   private _accent: string;
@@ -56,11 +57,13 @@ export class SharkRushEffect implements GameObject {
     const deltaX = this._end.x - this._start.x;
     const deltaY = this._end.y - this._start.y;
     const distance = Math.hypot(deltaX, deltaY) || 1;
+    this._previousPosition = { ...this._start };
     this._direction = { x: deltaX / distance, y: deltaY / distance };
     this._normal = { x: -this._direction.y, y: this._direction.x };
   }
 
   update(deltaTime: number) {
+    this._previousPosition = this.getPosition();
     this._elapsed += deltaTime;
     if (this._elapsed >= lifetime) {
       this.isDestroy = true;
@@ -90,22 +93,36 @@ export class SharkRushEffect implements GameObject {
   }
 
   getContactStrength(point: VectorLike, marbleRadius = 0.25) {
-    const center = this.getPosition();
     const profile = this.getCollisionProfile();
-    const offsetX = point.x - center.x;
-    const offsetY = point.y - center.y;
-    const along = offsetX * this._direction.x + offsetY * this._direction.y;
-    const across = offsetX * this._normal.x + offsetY * this._normal.y;
-    const halfLength = profile.length / 2;
-    const clampedAlong = Math.max(-halfLength, Math.min(halfLength, along));
-    const capsuleDx = along - clampedAlong;
-    const capsuleDistance = Math.hypot(capsuleDx, across);
-    const threshold = profile.width / 2 + marbleRadius;
-    if (capsuleDistance >= threshold) {
-      return 0;
+    const currentPosition = this.getPosition();
+    const movement = Math.hypot(
+      currentPosition.x - this._previousPosition.x,
+      currentPosition.y - this._previousPosition.y
+    );
+    const directStrength = this.getCapsuleContactStrength(
+      point,
+      marbleRadius,
+      currentPosition,
+      profile.length,
+      profile.width
+    );
+    if (movement <= 0.02) {
+      return directStrength;
     }
-    const centerBias = 1 - Math.min(1, Math.abs(along) / Math.max(0.001, halfLength + marbleRadius));
-    return Math.max(0.18, 1 - capsuleDistance / threshold) * (0.55 + centerBias * 0.45);
+
+    const sweptCenter = {
+      x: (currentPosition.x + this._previousPosition.x) / 2,
+      y: (currentPosition.y + this._previousPosition.y) / 2,
+    };
+    const sweptStrength = this.getCapsuleContactStrength(
+      point,
+      marbleRadius,
+      sweptCenter,
+      profile.length + movement * 1.5,
+      profile.width + Math.min(0.48, movement * 0.8)
+    );
+
+    return Math.max(directStrength, sweptStrength);
   }
 
   render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
@@ -173,21 +190,44 @@ export class SharkRushEffect implements GameObject {
   private getCollisionProfile() {
     switch (this._creature) {
       case 'starfish':
-        return { length: 2.2, width: 1.85 };
+        return { length: 2.35, width: 2.05 };
       case 'octopus':
-        return { length: 2.35, width: 1.7 };
+        return { length: 2.55, width: 1.9 };
       case 'nakji':
-        return { length: 2.15, width: 1.52 };
+        return { length: 2.3, width: 1.72 };
       case 'jjukkumi':
-        return { length: 1.95, width: 1.36 };
+        return { length: 2.08, width: 1.54 };
       case 'mackerel':
-        return { length: 2.7, width: 1.02 };
+        return { length: 2.92, width: 1.18 };
       case 'beltfish':
-        return { length: 3.2, width: 0.86 };
+        return { length: 3.46, width: 1.04 };
       case 'shark':
       default:
-        return { length: 3.25, width: 1.18 };
+        return { length: 3.6, width: 1.36 };
     }
+  }
+
+  private getCapsuleContactStrength(
+    point: VectorLike,
+    marbleRadius: number,
+    center: VectorLike,
+    bodyLength: number,
+    bodyWidth: number
+  ) {
+    const offsetX = point.x - center.x;
+    const offsetY = point.y - center.y;
+    const along = offsetX * this._direction.x + offsetY * this._direction.y;
+    const across = offsetX * this._normal.x + offsetY * this._normal.y;
+    const halfLength = bodyLength / 2;
+    const clampedAlong = Math.max(-halfLength, Math.min(halfLength, along));
+    const capsuleDx = along - clampedAlong;
+    const capsuleDistance = Math.hypot(capsuleDx, across);
+    const threshold = bodyWidth / 2 + marbleRadius;
+    if (capsuleDistance >= threshold) {
+      return 0;
+    }
+    const centerBias = 1 - Math.min(1, Math.abs(along) / Math.max(0.001, halfLength + marbleRadius));
+    return Math.max(0.22, 1 - capsuleDistance / threshold) * (0.62 + centerBias * 0.48);
   }
 
   private drawTrail(ctx: CanvasRenderingContext2D, rate: number, alpha: number) {
