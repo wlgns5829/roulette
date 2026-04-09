@@ -285,11 +285,19 @@ export function attachApp(roulette: Roulette) {
       eventFeed.innerHTML = '';
     };
 
+    const setShufflePreviewFocus = (active: boolean) => {
+      document.body.classList.toggle('shuffle-preview', active);
+      if (active) {
+        document.body.classList.remove('mobile-hud-open');
+      }
+    };
+
     const clearShufflePreview = () => {
       shufflePreviewTimers.forEach((timerId) => {
         window.clearTimeout(timerId);
       });
       shufflePreviewTimers = [];
+      setShufflePreviewFocus(false);
     };
 
     const normalizeRoster = () => {
@@ -307,6 +315,7 @@ export function attachApp(roulette: Roulette) {
 
       if (!roundRunning && finalTokens.length > 0) {
         clearShufflePreview();
+        setShufflePreviewFocus(true);
         const previewFrames = Array.from({ length: 5 }, (_, index) =>
           index === 4 ? finalTokens : [...fixedTokens, ...shuffle(customTokens)]
         );
