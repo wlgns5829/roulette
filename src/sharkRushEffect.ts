@@ -1,5 +1,6 @@
 import type { GameObject } from './gameObject';
 import type { ColorTheme } from './types/ColorTheme';
+import type { VectorLike } from './types/VectorLike';
 
 const lifetime = 1550;
 
@@ -9,33 +10,54 @@ export type SeaCreatureSweepAxis = 'horizontal' | 'vertical';
 export class SharkRushEffect implements GameObject {
   public isDestroy = false;
   private _elapsed = 0;
-  private _start: number;
-  private _end: number;
-  private _fixed: number;
-  private _direction: -1 | 1;
+  private _start: VectorLike;
+  private _end: VectorLike;
+  private _direction: VectorLike;
+  private _normal: VectorLike;
   private _accent: string;
   private _creature: SeaCreatureKind;
-  private _axis: SeaCreatureSweepAxis;
-  private _rotation: number;
+  private _hitMarbles = new Set<number>();
 
+  constructor(start: VectorLike, end: VectorLike, accent?: string, creature?: SeaCreatureKind);
   constructor(
     start: number,
     end: number,
     fixed: number,
     direction: -1 | 1,
-    accent = '#60a5fa',
-    creature: SeaCreatureKind = 'shark',
-    axis: SeaCreatureSweepAxis = 'horizontal',
-    rotation = 0
+    accent?: string,
+    creature?: SeaCreatureKind,
+    axis?: SeaCreatureSweepAxis,
+    rotation?: number
+  );
+  constructor(
+    start: number | VectorLike,
+    end: number | VectorLike,
+    third?: number | string,
+    fourth?: -1 | 1 | SeaCreatureKind,
+    fifth = '#60a5fa',
+    sixth: SeaCreatureKind = 'shark',
+    seventh: SeaCreatureSweepAxis = 'horizontal',
+    _eighth = 0
   ) {
-    this._start = start;
-    this._end = end;
-    this._fixed = fixed;
-    this._direction = direction;
-    this._accent = accent;
-    this._creature = creature;
-    this._axis = axis;
-    this._rotation = rotation;
+    void _eighth;
+    if (typeof start === 'number' && typeof end === 'number' && typeof third === 'number' && (fourth === -1 || fourth === 1)) {
+      const fixed = third;
+      this._start = seventh === 'horizontal' ? { x: start, y: fixed } : { x: fixed, y: start };
+      this._end = seventh === 'horizontal' ? { x: end, y: fixed } : { x: fixed, y: end };
+      this._accent = fifth;
+      this._creature = sixth;
+    } else {
+      this._start = start as VectorLike;
+      this._end = end as VectorLike;
+      this._accent = typeof third === 'string' ? third : '#60a5fa';
+      this._creature = typeof fourth === 'string' ? fourth : 'shark';
+    }
+
+    const deltaX = this._end.x - this._start.x;
+    const deltaY = this._end.y - this._start.y;
+    const distance = Math.hypot(deltaX, deltaY) || 1;
+    this._direction = { x: deltaX / distance, y: deltaY / distance };
+    this._normal = { x: -this._direction.y, y: this._direction.x };
   }
 
   update(deltaTime: number) {
@@ -45,22 +67,57 @@ export class SharkRushEffect implements GameObject {
     }
   }
 
-  render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
-    const rate = Math.min(1, this._elapsed / lifetime);
+  getPosition(): VectorLike {
+    const rate = this.getRate();
     const eased = 1 - (1 - rate) ** 3;
-    const primary = this._start + (this._end - this._start) * eased;
-    const secondary = this._fixed + Math.sin(rate * Math.PI * 3.2) * 0.4;
-    const x = this._axis === 'horizontal' ? primary : secondary;
-    const y = this._axis === 'horizontal' ? secondary : primary;
+    const bob = Math.sin(rate * Math.PI * 3.2) * this.getBobAmplitude();
+    return {
+      x: this._start.x + (this._end.x - this._start.x) * eased + this._normal.x * bob,
+      y: this._start.y + (this._end.y - this._start.y) * eased + this._normal.y * bob,
+    };
+  }
+
+  getHeading(): VectorLike {
+    return this._direction;
+  }
+
+  hasHitMarble(id: number) {
+    return this._hitMarbles.has(id);
+  }
+
+  markHitMarble(id: number) {
+    this._hitMarbles.add(id);
+  }
+
+  getContactStrength(point: VectorLike, marbleRadius = 0.25) {
+    const center = this.getPosition();
+    const profile = this.getCollisionProfile();
+    const offsetX = point.x - center.x;
+    const offsetY = point.y - center.y;
+    const along = offsetX * this._direction.x + offsetY * this._direction.y;
+    const across = offsetX * this._normal.x + offsetY * this._normal.y;
+    const halfLength = profile.length / 2;
+    const clampedAlong = Math.max(-halfLength, Math.min(halfLength, along));
+    const capsuleDx = along - clampedAlong;
+    const capsuleDistance = Math.hypot(capsuleDx, across);
+    const threshold = profile.width / 2 + marbleRadius;
+    if (capsuleDistance >= threshold) {
+      return 0;
+    }
+    const centerBias = 1 - Math.min(1, Math.abs(along) / Math.max(0.001, halfLength + marbleRadius));
+    return Math.max(0.18, 1 - capsuleDistance / threshold) * (0.55 + centerBias * 0.45);
+  }
+
+  render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
+    const rate = this.getRate();
+    const position = this.getPosition();
     const alpha = Math.sin(Math.PI * Math.min(1, rate * 1.05));
     const bodyColor = this._accent;
+    const angle = Math.atan2(this._direction.y, this._direction.x);
 
     ctx.save();
-    ctx.translate(x, y);
-    if (this._rotation !== 0) {
-      ctx.rotate(this._rotation);
-    }
-    ctx.scale(this._direction, 1);
+    ctx.translate(position.x, position.y);
+    ctx.rotate(angle);
     ctx.globalAlpha = alpha;
     ctx.lineWidth = 0.09 / zoom;
     ctx.lineJoin = 'round';
@@ -96,6 +153,41 @@ export class SharkRushEffect implements GameObject {
     }
 
     ctx.restore();
+  }
+
+  private getRate() {
+    return Math.min(1, this._elapsed / lifetime);
+  }
+
+  private getBobAmplitude() {
+    switch (this._creature) {
+      case 'starfish':
+        return 0.28;
+      case 'beltfish':
+        return 0.22;
+      default:
+        return 0.38;
+    }
+  }
+
+  private getCollisionProfile() {
+    switch (this._creature) {
+      case 'starfish':
+        return { length: 2.2, width: 1.85 };
+      case 'octopus':
+        return { length: 2.35, width: 1.7 };
+      case 'nakji':
+        return { length: 2.15, width: 1.52 };
+      case 'jjukkumi':
+        return { length: 1.95, width: 1.36 };
+      case 'mackerel':
+        return { length: 2.7, width: 1.02 };
+      case 'beltfish':
+        return { length: 3.2, width: 0.86 };
+      case 'shark':
+      default:
+        return { length: 3.25, width: 1.18 };
+    }
   }
 
   private drawTrail(ctx: CanvasRenderingContext2D, rate: number, alpha: number) {

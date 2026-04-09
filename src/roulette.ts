@@ -19,6 +19,7 @@ import { SkillEffect } from './skillEffect';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MouseEventHandlerName, MouseEventName } from './types/mouseEvents.type';
 import type { LunchEventId, LunchEventNotice } from './types/RoundEvent.type';
+import type { VectorLike } from './types/VectorLike';
 import type { UIObject } from './UIObject';
 import { bound } from './utils/bound.decorator';
 import { parseName, shuffle } from './utils/utils';
@@ -37,6 +38,18 @@ const roundEventWeights: Partial<Record<LunchEventId, number>> = {
   'bomb-burst': 1.8,
   'bean-burst': 1.1,
 };
+
+type SeaCreatureRushSpec = {
+  kind: SeaCreatureKind;
+  label: string;
+  accent: string;
+  band: number;
+  lateralPower: number;
+  verticalPower: number;
+};
+
+const seaCreatureRushAngles = [-2.58, -2.18, -1.82, -1.36, -0.98, -0.54, -0.24, 0.24, 0.54, 0.98, 1.36, 1.82, 2.18, 2.58];
+const sideScrollSeaCreatureRushAngles = [-2.76, -2.28, -1.86, -1.42, -1.02, -0.56, -0.18, 0.18, 0.56, 1.02, 1.42, 1.86, 2.28, 2.76];
 
 const seaCreatureRushCatalog: Array<{
   kind: SeaCreatureKind;
@@ -118,6 +131,7 @@ export class Roulette extends EventTarget {
   private _closeRaceAssistCooldown = 0;
   private _celebrationTimeouts: number[] = [];
   private _winnerCelebrationElapsed = 0;
+  private _seaCreatureRushEffects: Array<{ effect: SharkRushEffect; creature: SeaCreatureRushSpec }> = [];
 
   get isReady() {
     return this._isReady;
@@ -430,7 +444,50 @@ export class Roulette extends EventTarget {
 
   private _updateEffects(deltaTime: number) {
     this._effects.forEach((effect) => effect.update(deltaTime));
+    this._updateSeaCreatureRushContacts();
     this._effects = this._effects.filter((effect) => !effect.isDestroy);
+    this._seaCreatureRushEffects = this._seaCreatureRushEffects.filter(({ effect }) => !effect.isDestroy);
+  }
+
+  private _updateSeaCreatureRushContacts() {
+    if (this._seaCreatureRushEffects.length === 0) return;
+
+    const activeMarbles = this._marbles.filter((marble) => marble.isActive);
+    if (activeMarbles.length === 0) return;
+
+    this._seaCreatureRushEffects.forEach(({ effect, creature }) => {
+      if (effect.isDestroy) return;
+
+      const position = effect.getPosition();
+      const heading = effect.getHeading();
+      const normal = { x: -heading.y, y: heading.x };
+
+      activeMarbles.forEach((marble) => {
+        if (effect.hasHitMarble(marble.id)) return;
+
+        const contactStrength = effect.getContactStrength(marble.position, 0.25);
+        if (contactStrength <= 0) return;
+
+        effect.markHitMarble(marble.id);
+        const offsetX = marble.x - position.x;
+        const offsetY = marble.y - position.y;
+        const offsetDistance = Math.max(0.001, Math.hypot(offsetX, offsetY));
+        const outward = { x: offsetX / offsetDistance, y: offsetY / offsetDistance };
+        const forwardPower = creature.lateralPower * (0.9 + contactStrength * 1.15 + Math.random() * 0.22);
+        const crossDot = outward.x * normal.x + outward.y * normal.y;
+        const sidePower = (crossDot * 0.52 + (Math.random() - 0.5) * 0.38) * creature.verticalPower;
+        const liftPower = Math.max(0.04, outward.y * 0.18);
+
+        this.physics.nudgeMarble(marble.id, {
+          x: heading.x * forwardPower + normal.x * sidePower + outward.x * 0.16,
+          y:
+            heading.y * forwardPower +
+            normal.y * sidePower +
+            outward.y * (creature.verticalPower * 0.14 + liftPower),
+        });
+        marble.impact = Math.max(marble.impact, 260 + contactStrength * 260);
+      });
+    });
   }
 
   private _render() {
@@ -550,6 +607,7 @@ export class Roulette extends EventTarget {
       window.clearTimeout(timeoutId);
     });
     this._celebrationTimeouts = [];
+    this._seaCreatureRushEffects = [];
     this._roundSpeedMultiplier = 1;
     this._speedEffectRemaining = 0;
     this._gravityEffectRemaining = 0;
@@ -592,6 +650,35 @@ export class Roulette extends EventTarget {
       maxX: cameraWorld.x + viewW / 2,
       minY: cameraWorld.y - viewH / 2,
       maxY: cameraWorld.y + viewH / 2,
+    };
+  }
+
+  private _pickSeaCreatureRushAngle() {
+    const angles =
+      this._stage?.presentation === 'side-scroll' ? sideScrollSeaCreatureRushAngles : seaCreatureRushAngles;
+    const baseAngle = angles[Math.floor(Math.random() * angles.length)] ?? 0;
+    return baseAngle + (Math.random() - 0.5) * 0.16;
+  }
+
+  private _buildSeaCreatureRushPath(
+    anchor: Marble,
+    creature: SeaCreatureRushSpec,
+    viewport: { minX: number; maxX: number; minY: number; maxY: number }
+  ) {
+    const spanX = viewport.maxX - viewport.minX;
+    const spanY = viewport.maxY - viewport.minY;
+    const angle = this._pickSeaCreatureRushAngle();
+    const heading: VectorLike = { x: Math.cos(angle), y: Math.sin(angle) };
+    const travel = Math.hypot(spanX, spanY) * 0.72 + creature.band + 3.8;
+    return {
+      start: {
+        x: anchor.x - heading.x * travel,
+        y: anchor.y - heading.y * travel,
+      },
+      end: {
+        x: anchor.x + heading.x * travel,
+        y: anchor.y + heading.y * travel,
+      },
     };
   }
 
@@ -844,6 +931,20 @@ export class Roulette extends EventTarget {
           Math.random() < lowerBias && lowerPool.length > 0 ? lowerPool : upperPool.length > 0 ? upperPool : ranked;
         const candidate = candidatePool[Math.floor(Math.random() * candidatePool.length)];
         if (!candidate) return;
+
+        const rushPath = this._buildSeaCreatureRushPath(candidate, creature, viewport);
+        const rushEffect = new SharkRushEffect(rushPath.start, rushPath.end, creature.accent, creature.kind);
+
+        this._effects.push(rushEffect);
+        this._seaCreatureRushEffects.push({ effect: rushEffect, creature });
+        this._effects.push(new SkillEffect(candidate.x, candidate.y));
+        notice = {
+          ...notice,
+          title: `${creature.label} ?ì’–ì—¯`,
+          accent: creature.accent,
+          description: `${creature.label}åª›Â€ ${candidate.name} äºŒì‡° ìœ„ì¹˜ë¥¼ ë¹„ìŠ¤ë“¬í•œ ê°ë„ë¡œ íŒŒê³ ë“œëŠ” ì¶©ëŒ ê¶¤ì ì„ ì‹œìž‘í–ˆìŠµë‹ˆë‹¤.`,
+        };
+        break;
 
         const direction = Math.random() < 0.5 ? 1 : -1;
         if (this._stage?.presentation === 'side-scroll') {
