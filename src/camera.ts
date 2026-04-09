@@ -5,7 +5,7 @@ import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
 const finishZoomBoost = 1.8;
-const winnerSpotlightZoomBoost = 2.32;
+const winnerSpotlightZoomBoost = 2.56;
 const stageLaneSpan = 26;
 
 export class Camera {

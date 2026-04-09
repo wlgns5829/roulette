@@ -37,8 +37,8 @@ const eventCatalog: Record<LunchEventId, Omit<LunchEventNotice, 'id'>> = {
     accent: '#a78bfa',
   },
   'shark-rush': {
-    title: '상어 난입',
-    description: '귀여운 상어가 옆 라인에서 튀어나와 구슬 흐름을 휘젓습니다.',
+    title: '바다 생물 난입',
+    description: '상어, 불가사리, 문어 떼가 옆 라인에서 튀어나와 구슬 흐름을 거칠게 흔듭니다.',
     accent: '#60a5fa',
   },
 };

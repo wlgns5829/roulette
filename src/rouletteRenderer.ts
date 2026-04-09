@@ -673,6 +673,14 @@ export class RouletteRenderer {
     return 1 + c3 * (value - 1) ** 3 + c1 * (value - 1) ** 2;
   }
 
+  private easeInOutCubic(value: number) {
+    return value < 0.5 ? 4 * value ** 3 : 1 - (-2 * value + 2) ** 3 / 2;
+  }
+
+  private lerp(start: number, end: number, amount: number) {
+    return start + (end - start) * amount;
+  }
+
   private drawSpark(x: number, y: number, radius: number, color: string, alpha = 1) {
     this.ctx.save();
     this.ctx.translate(x, y);
@@ -693,6 +701,19 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawCloudPuff(x: number, y: number, size: number, alpha = 1) {
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    this.ctx.beginPath();
+    this.ctx.arc(x - size * 0.42, y + size * 0.08, size * 0.3, 0, Math.PI * 2);
+    this.ctx.arc(x, y - size * 0.06, size * 0.42, 0, Math.PI * 2);
+    this.ctx.arc(x + size * 0.46, y + size * 0.1, size * 0.34, 0, Math.PI * 2);
+    this.ctx.arc(x + size * 0.08, y + size * 0.2, size * 0.32, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
   private renderWinner({ winner, stage }: RenderParameters) {
     if (!winner) {
       this._winnerRevealKey = null;
@@ -710,16 +731,24 @@ export class RouletteRenderer {
     }
 
     const elapsed = now - this._winnerRevealStartedAt;
-    const riseProgress = this.clamp(elapsed / 1900);
-    const tensionProgress = this.clamp((elapsed - 980) / 560);
-    const fireworksProgress = this.clamp((elapsed - 1480) / 1650);
-    const textProgress = this.clamp((elapsed - 1060) / 980);
-    const finaleProgress = this.clamp((elapsed - 480) / 2400);
-    const riseEase = this.easeOutBack(riseProgress);
-    const tensionEase = this.easeOutCubic(tensionProgress);
+    const time = elapsed * 0.001;
+    const oceanRiseProgress = this.clamp(elapsed / 1220);
+    const landPauseProgress = this.clamp((elapsed - 1120) / 620);
+    const skyLaunchProgress = this.clamp((elapsed - 1740) / 900);
+    const burstProgress = this.clamp((elapsed - 2520) / 1180);
+    const textProgress = this.clamp((elapsed - 2920) / 760);
+    const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
+    const landPauseEase = this.easeInOutCubic(landPauseProgress);
+    const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
+    const burstEase = this.easeOutCubic(burstProgress);
     const textEase = this.easeOutCubic(textProgress);
     const centerX = this._canvas.width / 2;
-    const centerY = this._canvas.height * 0.48;
+    const width = this._canvas.width;
+    const height = this._canvas.height;
+    const seaSurfaceY = height * 0.78;
+    const islandY = height * 0.58;
+    const cloudY = height * 0.23;
+    const centerY = height * 0.48;
     const maxNameWidth = this._canvas.width * 0.82;
     const nameSize = this.fitTextSize(
       winner.name,
@@ -732,136 +761,115 @@ export class RouletteRenderer {
     const marbleImage = options.marbleStyle === 'sprite' ? this.getMarbleImage(winner.name) : undefined;
     const marbleSize = Math.max(96, Math.min(148, this._canvas.width * 0.105));
     const marbleCenterX = centerX;
-    const marbleStartY = this._canvas.height + marbleSize * 1.45;
-    const marbleTargetY = centerY - nameSize * 1.58 - this._canvas.height * 0.12;
+    const marbleStartY = height + marbleSize * 1.55;
+    const marbleLandY = islandY - marbleSize * 1.02;
+    const marbleSkyY = cloudY + marbleSize * 0.06;
     const marbleCenterY =
-      marbleStartY + (marbleTargetY - marbleStartY) * riseEase - Math.sin(elapsed * 0.0054) * 8 * tensionEase;
-    const platformY = marbleTargetY + marbleSize * 0.9;
-    const nameY = centerY + nameSize * 0.18;
+      skyLaunchProgress > 0
+        ? this.lerp(marbleLandY, marbleSkyY, skyLaunchEase) - Math.sin(time * 8.4) * 6 * (1 - skyLaunchProgress)
+        : this.lerp(marbleStartY, marbleLandY, oceanRiseEase) - Math.sin(time * 7.6) * 4 * landPauseEase;
+    const islandAlpha = Math.max(0, 1 - skyLaunchProgress * 1.25);
+    const nameY = centerY + nameSize * 0.14;
     const textOffsetY = (1 - textEase) * 42;
+    const showText = textProgress > 0.01;
 
     this.ctx.save();
 
-    const gradient = this.ctx.createRadialGradient(
-      centerX,
-      centerY - this._canvas.height * 0.12,
-      24,
-      centerX,
-      centerY,
-      this._canvas.width * 0.62
-    );
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.54)');
-    gradient.addColorStop(0.24, 'rgba(255, 244, 214, 0.48)');
-    gradient.addColorStop(0.55, 'rgba(251, 191, 36, 0.24)');
-    gradient.addColorStop(1, 'rgba(255, 248, 235, 0.08)');
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+    const skyGradient = this.ctx.createLinearGradient(0, 0, 0, height);
+    skyGradient.addColorStop(0, '#dff6ff');
+    skyGradient.addColorStop(0.24, '#9fe8ff');
+    skyGradient.addColorStop(0.48, '#f8deb3');
+    skyGradient.addColorStop(0.64, '#6fc8ea');
+    skyGradient.addColorStop(1, '#0f4f72');
+    this.ctx.fillStyle = skyGradient;
+    this.ctx.fillRect(0, 0, width, height);
 
-    const skyGlow = this.ctx.createLinearGradient(0, 0, 0, this._canvas.height);
-    skyGlow.addColorStop(0, 'rgba(255, 248, 235, 0.2)');
-    skyGlow.addColorStop(0.4, 'rgba(255, 231, 181, 0.08)');
-    skyGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    this.ctx.fillStyle = skyGlow;
-    this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+    const sunGlow = this.ctx.createRadialGradient(centerX, height * 0.16, width * 0.02, centerX, height * 0.16, width * 0.22);
+    sunGlow.addColorStop(0, 'rgba(255, 251, 229, 0.96)');
+    sunGlow.addColorStop(0.28, 'rgba(255, 241, 199, 0.54)');
+    sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = sunGlow;
+    this.ctx.fillRect(0, 0, width, height * 0.46);
 
-    this.ctx.globalAlpha = 0.15 + finaleProgress * 0.1;
-    this.ctx.fillStyle = accent;
-    for (let i = 0; i < 8; i++) {
-      const spread = this._canvas.width * (0.11 + i * 0.024);
-      this.ctx.beginPath();
-      this.ctx.arc(
-        centerX + Math.cos(i * 0.9) * spread,
-        centerY - nameSize * 0.92 + Math.sin(i * 1.1 + elapsed * 0.0016) * 52,
-        28 + i * 9,
-        0,
-        Math.PI * 2
-      );
-      this.ctx.fill();
-    }
-    this.ctx.globalAlpha = 1;
+    this.drawCloudPuff(width * 0.18, height * 0.17, width * 0.07, 0.56);
+    this.drawCloudPuff(width * 0.79, height * 0.2, width * 0.09, 0.58);
+    this.drawCloudPuff(width * 0.56, height * 0.12, width * 0.06, 0.46 + burstEase * 0.2);
+    this.drawCloudPuff(width * 0.34, height * 0.26, width * 0.08, 0.42 + burstEase * 0.18);
 
-    for (let i = 0; i < 6; i++) {
-      const burstProgress = this.clamp((elapsed - 1480 - i * 190) / 940);
-      if (burstProgress <= 0) continue;
-      const burstAlpha = (1 - burstProgress) * (0.44 + fireworksProgress * 0.34);
-      const burstX = this._canvas.width * (0.16 + (i % 3) * 0.24) + (i >= 3 ? this._canvas.width * 0.08 : 0);
-      const burstY = this._canvas.height * (i % 2 === 0 ? 0.16 : 0.26);
-      const burstRadius = this._canvas.width * (0.04 + (i % 3) * 0.01) * (0.6 + burstProgress * 1.1);
-
-      this.ctx.save();
-      this.ctx.translate(burstX, burstY);
-      this.ctx.rotate(i * 0.36 + burstProgress * 0.4);
-      this.ctx.strokeStyle = i % 2 === 0 ? accent : '#fff7d6';
-      this.ctx.lineWidth = 3.5;
-      this.ctx.globalAlpha = burstAlpha;
-      for (let ray = 0; ray < 14; ray++) {
-        const angle = (Math.PI * 2 * ray) / 14;
-        this.ctx.beginPath();
-        this.ctx.moveTo(Math.cos(angle) * burstRadius * 0.2, Math.sin(angle) * burstRadius * 0.2);
-        this.ctx.lineTo(Math.cos(angle) * burstRadius, Math.sin(angle) * burstRadius);
-        this.ctx.stroke();
-      }
-      this.ctx.globalAlpha = burstAlpha * 0.45;
-      this.ctx.beginPath();
-      this.ctx.arc(0, 0, burstRadius * 0.72, 0, Math.PI * 2);
-      this.ctx.stroke();
-      this.ctx.restore();
-
-      for (let spark = 0; spark < 5; spark++) {
-        const sparkAngle = (Math.PI * 2 * spark) / 5 + i * 0.4;
-        this.drawSpark(
-          burstX + Math.cos(sparkAngle) * burstRadius * 0.82,
-          burstY + Math.sin(sparkAngle) * burstRadius * 0.82,
-          5 + burstProgress * 8,
-          spark % 2 === 0 ? '#ffffff' : accent,
-          burstAlpha * 0.95
-        );
-      }
-    }
-
-    const beamWidth = marbleSize * (0.64 + tensionEase * 0.16 + fireworksProgress * 0.08);
-    const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY, 0, this._canvas.height);
-    beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.52)');
-    beamGradient.addColorStop(0.28, `rgba(255, 255, 255, ${0.14 + tensionEase * 0.14 + fireworksProgress * 0.06})`);
-    beamGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    this.ctx.fillStyle = beamGradient;
+    const oceanGradient = this.ctx.createLinearGradient(0, seaSurfaceY, 0, height);
+    oceanGradient.addColorStop(0, 'rgba(67, 191, 233, 0.92)');
+    oceanGradient.addColorStop(0.22, 'rgba(33, 137, 183, 0.96)');
+    oceanGradient.addColorStop(1, 'rgba(7, 48, 79, 0.98)');
+    this.ctx.fillStyle = oceanGradient;
     this.ctx.beginPath();
-    this.ctx.moveTo(centerX - beamWidth * 0.5, this._canvas.height);
-    this.ctx.lineTo(centerX - beamWidth * 0.18, marbleCenterY + marbleSize * 0.16);
-    this.ctx.lineTo(centerX + beamWidth * 0.18, marbleCenterY + marbleSize * 0.16);
-    this.ctx.lineTo(centerX + beamWidth * 0.5, this._canvas.height);
+    this.ctx.moveTo(0, seaSurfaceY);
+    for (let i = 0; i <= 9; i++) {
+      const x = (width / 9) * i;
+      const waveY = seaSurfaceY + Math.sin(time * 2.2 + i * 0.7) * height * 0.008;
+      this.ctx.lineTo(x, waveY);
+    }
+    this.ctx.lineTo(width, height);
+    this.ctx.lineTo(0, height);
     this.ctx.closePath();
     this.ctx.fill();
 
     this.ctx.save();
-    this.ctx.globalAlpha = 0.26 + tensionEase * 0.26;
-    this.ctx.fillStyle = 'rgba(255, 248, 235, 0.62)';
-    this.ctx.beginPath();
-    this.ctx.ellipse(centerX, platformY + marbleSize * 0.28, marbleSize * 1.35, marbleSize * 0.28, 0, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.globalAlpha = 0.34 + tensionEase * 0.18;
-    this.ctx.fillStyle = accent;
-    this.ctx.beginPath();
-    this.ctx.ellipse(centerX, platformY, marbleSize * 1.18, marbleSize * 0.18, 0, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.restore();
-
-    this.ctx.save();
-    this.ctx.globalAlpha = Math.max(0, 0.55 - fireworksProgress * 0.24) * (0.42 + tensionEase * 0.5);
-    this.ctx.strokeStyle = '#fff7d6';
+    this.ctx.globalAlpha = 0.22;
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
     this.ctx.lineWidth = 3.2;
     this.ctx.beginPath();
-    this.ctx.arc(centerX, marbleCenterY, marbleSize * (1.16 + tensionEase * 0.22 + Math.sin(elapsed * 0.011) * 0.03), 0, Math.PI * 2);
+    for (let i = 0; i <= 9; i++) {
+      const x = (width / 9) * i;
+      const waveY = seaSurfaceY + Math.sin(time * 2.2 + i * 0.7) * height * 0.008;
+      if (i === 0) {
+        this.ctx.moveTo(x, waveY);
+      } else {
+        this.ctx.lineTo(x, waveY);
+      }
+    }
     this.ctx.stroke();
     this.ctx.restore();
 
-    for (let i = 0; i < 14; i++) {
-      const travel = (finaleProgress * 1.2 + i / 14) % 1;
-      const sparkX = centerX + Math.sin(elapsed * 0.0032 + i * 1.3) * beamWidth * (0.18 + travel * 0.16);
-      const sparkY = this._canvas.height - travel * (this._canvas.height - marbleCenterY - marbleSize * 0.1);
-      const sparkSize = 2.6 + (1 - travel) * 4.2;
+    const islandGlow = this.ctx.createRadialGradient(centerX, islandY + marbleSize * 0.4, marbleSize * 0.2, centerX, islandY + marbleSize * 0.45, width * 0.24);
+    islandGlow.addColorStop(0, `rgba(255, 243, 201, ${0.16 + islandAlpha * 0.16})`);
+    islandGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = islandGlow;
+    this.ctx.fillRect(0, islandY - marbleSize, width, height - islandY + marbleSize);
+
+    this.ctx.save();
+    this.ctx.globalAlpha = islandAlpha;
+    this.ctx.fillStyle = '#6c5137';
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, islandY + marbleSize * 0.52, width * 0.16, marbleSize * 0.56, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.fillStyle = '#9ac55a';
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, islandY + marbleSize * 0.28, width * 0.145, marbleSize * 0.24, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+
+    const beamWidth = marbleSize * (0.56 + landPauseEase * 0.14 + skyLaunchEase * 0.18);
+    const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY - marbleSize * 0.6, 0, height);
+    beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+    beamGradient.addColorStop(0.24, `rgba(255, 255, 255, ${0.16 + landPauseEase * 0.18})`);
+    beamGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = beamGradient;
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX - beamWidth * 0.64, height);
+    this.ctx.lineTo(centerX - beamWidth * 0.18, marbleCenterY + marbleSize * 0.2);
+    this.ctx.lineTo(centerX + beamWidth * 0.18, marbleCenterY + marbleSize * 0.2);
+    this.ctx.lineTo(centerX + beamWidth * 0.64, height);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    const trailCount = 18;
+    for (let i = 0; i < trailCount; i++) {
+      const travel = (landPauseEase * 0.35 + skyLaunchEase * 0.95 + i / trailCount) % 1;
+      const sparkX = centerX + Math.sin(time * 3.4 + i * 1.25) * beamWidth * (0.14 + travel * 0.18);
+      const sparkY = height - travel * (height - marbleCenterY - marbleSize * 0.1);
+      const sparkSize = 2 + (1 - travel) * 4;
       this.ctx.save();
-      this.ctx.globalAlpha = (0.24 + (1 - travel) * 0.42) * (0.45 + tensionEase * 0.55);
+      this.ctx.globalAlpha = 0.18 + (1 - travel) * 0.3;
       this.ctx.fillStyle = i % 2 === 0 ? '#ffffff' : accent;
       this.ctx.beginPath();
       this.ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
@@ -869,32 +877,87 @@ export class RouletteRenderer {
       this.ctx.restore();
     }
 
+    for (let i = 0; i < 10; i++) {
+      const bubbleProgress = (oceanRiseEase * 1.1 + i / 10) % 1;
+      const bubbleX = centerX + Math.sin(time * 3 + i * 1.7) * marbleSize * 0.42;
+      const bubbleY = seaSurfaceY + marbleSize * 0.7 + (1 - bubbleProgress) * (height - seaSurfaceY + marbleSize * 0.9);
+      this.ctx.save();
+      this.ctx.globalAlpha = (1 - skyLaunchProgress) * (0.08 + bubbleProgress * 0.18);
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
+      this.ctx.lineWidth = 1.4;
+      this.ctx.beginPath();
+      this.ctx.arc(bubbleX, bubbleY, 3 + bubbleProgress * 5, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
+    for (let i = 0; i < 6; i++) {
+      const localBurst = this.clamp((elapsed - 2520 - i * 170) / 900);
+      if (localBurst <= 0) continue;
+      const burstAlpha = (1 - localBurst) * (0.48 + burstEase * 0.36);
+      const burstX = i === 0 ? centerX : width * (0.17 + (i % 3) * 0.22) + (i >= 3 ? width * 0.08 : 0);
+      const burstY = i === 0 ? cloudY : height * (i % 2 === 0 ? 0.18 : 0.28);
+      const burstRadius = width * (0.045 + (i % 3) * 0.011) * (0.56 + localBurst * 1.26);
+
+      this.ctx.save();
+      this.ctx.translate(burstX, burstY);
+      this.ctx.rotate(i * 0.34 + localBurst * 0.55);
+      this.ctx.strokeStyle = i % 2 === 0 ? accent : '#fff7d6';
+      this.ctx.lineWidth = 3.8;
+      this.ctx.globalAlpha = burstAlpha;
+      for (let ray = 0; ray < 16; ray++) {
+        const angle = (Math.PI * 2 * ray) / 16;
+        this.ctx.beginPath();
+        this.ctx.moveTo(Math.cos(angle) * burstRadius * 0.18, Math.sin(angle) * burstRadius * 0.18);
+        this.ctx.lineTo(Math.cos(angle) * burstRadius, Math.sin(angle) * burstRadius);
+        this.ctx.stroke();
+      }
+      this.ctx.globalAlpha = burstAlpha * 0.42;
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, burstRadius * 0.72, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+
+      for (let spark = 0; spark < 5; spark++) {
+        const sparkAngle = (Math.PI * 2 * spark) / 5 + i * 0.38;
+        this.drawSpark(
+          burstX + Math.cos(sparkAngle) * burstRadius * 0.84,
+          burstY + Math.sin(sparkAngle) * burstRadius * 0.84,
+          6 + localBurst * 8,
+          spark % 2 === 0 ? '#ffffff' : accent,
+          burstAlpha * 0.95
+        );
+      }
+    }
+
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
-    for (let i = 0; i < 16; i++) {
-      const angle = (Math.PI * 2 * i) / 16;
+    for (let i = 0; i < 18; i++) {
+      const angle = (Math.PI * 2 * i) / 18 + burstEase * 0.16;
       this.ctx.rotate(angle);
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${0.24 - i * 0.007 + finaleProgress * 0.06})`;
-      this.ctx.fillRect(58, -3.5, 56, 7);
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${0.18 + burstEase * 0.08 - i * 0.006})`;
+      this.ctx.fillRect(64, -3.5, 62, 7);
       this.ctx.rotate(-angle);
     }
     this.ctx.restore();
 
     this.ctx.beginPath();
-    this.ctx.fillStyle = `rgba(255, 255, 255, ${0.28 + finaleProgress * 0.14})`;
-    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (0.74 + finaleProgress * 0.08), 0, Math.PI * 2);
+    this.ctx.fillStyle = `rgba(255, 255, 255, ${0.24 + landPauseEase * 0.14 + burstEase * 0.12})`;
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (0.72 + burstEase * 0.12), 0, Math.PI * 2);
     this.ctx.fill();
 
     this.ctx.beginPath();
-    this.ctx.fillStyle = `rgba(255, 247, 220, ${0.14 + finaleProgress * 0.12})`;
-    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (1.06 + Math.sin(elapsed * 0.005) * 0.04), 0, Math.PI * 2);
+    this.ctx.fillStyle = `rgba(255, 247, 220, ${0.14 + burstEase * 0.16})`;
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleSize * (1.02 + Math.sin(time * 6.4) * 0.04), 0, Math.PI * 2);
     this.ctx.fill();
 
+    this.ctx.save();
+    this.ctx.translate(marbleCenterX, marbleCenterY);
     if (marbleImage) {
       this.ctx.drawImage(
         marbleImage,
-        marbleCenterX - marbleSize / 2,
-        marbleCenterY - marbleSize / 2,
+        -marbleSize / 2,
+        -marbleSize / 2,
         marbleSize,
         marbleSize
       );
@@ -902,27 +965,28 @@ export class RouletteRenderer {
       drawMarbleLook(
         this.ctx,
         {
-          x: marbleCenterX,
-          y: marbleCenterY,
+          x: 0,
+          y: 0,
           size: marbleSize,
           hue: winner.hue,
           seed: winner.id,
-          bounce: 0.35,
+          bounce: 0.42,
           glow: accent,
         },
         options.marbleStyle === 'sprite' ? 'retro' : options.marbleStyle
       );
     }
+    this.ctx.restore();
 
     for (let i = 0; i < 8; i++) {
-      const orbitAngle = elapsed * 0.0036 + i * ((Math.PI * 2) / 8);
-      const orbitRadius = marbleSize * (1.12 + (i % 3) * 0.16);
+      const orbitAngle = elapsed * 0.0038 + i * ((Math.PI * 2) / 8);
+      const orbitRadius = marbleSize * (1.06 + (i % 3) * 0.15 + burstEase * 0.08);
       this.drawSpark(
         marbleCenterX + Math.cos(orbitAngle) * orbitRadius,
         marbleCenterY + Math.sin(orbitAngle) * orbitRadius * 0.62,
-        4 + (i % 3) * 3 + finaleProgress * 2,
+        4 + (i % 3) * 3 + burstEase * 3,
         i % 2 === 0 ? '#ffffff' : accent,
-        0.38 + finaleProgress * 0.32
+        0.2 + burstEase * 0.5
       );
     }
 
@@ -930,28 +994,30 @@ export class RouletteRenderer {
     this.ctx.textBaseline = 'middle';
     this.ctx.lineJoin = 'round';
 
-    this.ctx.globalAlpha = 0.18 + textEase * 0.82;
-    this.ctx.font = `700 ${labelSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
-    this.ctx.fillStyle = '#6f451f';
-    this.ctx.shadowBlur = 18;
-    this.ctx.shadowColor = 'rgba(255, 255, 255, 0.48)';
-    this.ctx.fillText('오늘의 당첨자', centerX, nameY - nameSize * 0.82 + textOffsetY);
+    if (showText) {
+      this.ctx.globalAlpha = 0.16 + textEase * 0.84;
+      this.ctx.font = `700 ${labelSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+      this.ctx.fillStyle = '#6f451f';
+      this.ctx.shadowBlur = 18;
+      this.ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+      this.ctx.fillText('오늘의 당첨자', centerX, nameY - nameSize * 0.82 + textOffsetY);
 
-    this.ctx.font = `700 ${nameSize}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
-    this.ctx.strokeStyle = 'rgba(93, 56, 26, 0.46)';
-    this.ctx.lineWidth = 11;
-    this.ctx.strokeText(winner.name, centerX, nameY + textOffsetY * 0.32);
-    this.ctx.fillStyle = palette.detail;
-    this.ctx.shadowBlur = 36;
-    this.ctx.shadowColor = accent;
-    this.ctx.fillText(winner.name, centerX, nameY + textOffsetY * 0.32);
+      this.ctx.font = `700 ${nameSize}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
+      this.ctx.strokeStyle = 'rgba(93, 56, 26, 0.46)';
+      this.ctx.lineWidth = 11;
+      this.ctx.strokeText(winner.name, centerX, nameY + textOffsetY * 0.28);
+      this.ctx.fillStyle = palette.detail;
+      this.ctx.shadowBlur = 36;
+      this.ctx.shadowColor = accent;
+      this.ctx.fillText(winner.name, centerX, nameY + textOffsetY * 0.28);
 
-    this.ctx.font = `600 ${subSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
-    this.ctx.shadowBlur = 0;
-    this.ctx.fillStyle = '#77491d';
-    this.ctx.fillText(`${stage.title} 돌파`, centerX, nameY + nameSize * 0.65 + textOffsetY * 0.2);
-    this.ctx.fillStyle = accent;
-    this.ctx.fillText('지상 위로 솟아오른 뒤, 숨 고른 폭죽으로 승리 확정!', centerX, nameY + nameSize * 0.95 + textOffsetY * 0.16);
+      this.ctx.font = `600 ${subSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+      this.ctx.shadowBlur = 0;
+      this.ctx.fillStyle = '#77491d';
+      this.ctx.fillText(`${stage.title} 돌파`, centerX, nameY + nameSize * 0.64 + textOffsetY * 0.18);
+      this.ctx.fillStyle = accent;
+      this.ctx.fillText('바다를 뚫고 지상을 지나 구름 하늘에서 승리 폭발!', centerX, nameY + nameSize * 0.94 + textOffsetY * 0.16);
+    }
     this.ctx.restore();
   }
 }

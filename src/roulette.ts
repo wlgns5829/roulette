@@ -14,7 +14,7 @@ import { ParticleManager } from './particleManager';
 import { Box2dPhysics } from './physics-box2d';
 import { RankRenderer } from './rankRenderer';
 import { RouletteRenderer } from './rouletteRenderer';
-import { SharkRushEffect } from './sharkRushEffect';
+import { SharkRushEffect, type SeaCreatureKind } from './sharkRushEffect';
 import { SkillEffect } from './skillEffect';
 import type { ColorTheme } from './types/ColorTheme';
 import type { MouseEventHandlerName, MouseEventName } from './types/mouseEvents.type';
@@ -33,9 +33,27 @@ function getDefaultGravity() {
 }
 
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
-  'shark-rush': 12,
-  'bomb-burst': 3,
+  'shark-rush': 24,
+  'bomb-burst': 2.5,
+  'bean-burst': 1.4,
 };
+
+const seaCreatureRushCatalog: Array<{
+  kind: SeaCreatureKind;
+  label: string;
+  accent: string;
+  band: number;
+  lateralPower: number;
+  verticalPower: number;
+}> = [
+  { kind: 'shark', label: '상어', accent: '#60a5fa', band: 5.8, lateralPower: 1.8, verticalPower: 1.12 },
+  { kind: 'starfish', label: '불가사리', accent: '#fb923c', band: 4.7, lateralPower: 1.18, verticalPower: 0.92 },
+  { kind: 'octopus', label: '문어', accent: '#c084fc', band: 5.3, lateralPower: 1.46, verticalPower: 1.22 },
+  { kind: 'nakji', label: '낙지', accent: '#f472b6', band: 4.9, lateralPower: 1.38, verticalPower: 1.16 },
+  { kind: 'jjukkumi', label: '쭈꾸미', accent: '#fb7185', band: 4.8, lateralPower: 1.34, verticalPower: 1.1 },
+  { kind: 'mackerel', label: '고등어', accent: '#34d399', band: 5.4, lateralPower: 1.62, verticalPower: 0.98 },
+  { kind: 'beltfish', label: '갈치', accent: '#e2e8f0', band: 6.1, lateralPower: 1.92, verticalPower: 1.04 },
+];
 
 function getFinishLine(stage: StageDef) {
   return stage.goalY - (stage.finishMargin ?? 0);
@@ -352,7 +370,7 @@ export class Roulette extends EventTarget {
         },
       })
     );
-    this._scheduleCelebration(3200, () => {
+    this._scheduleCelebration(4700, () => {
       this._recorder.stop();
     });
   }
@@ -543,31 +561,35 @@ export class Roulette extends EventTarget {
     this._celebrationTimeouts.push(timeoutId);
   }
 
+  private _pickSeaCreatureRush() {
+    return seaCreatureRushCatalog[Math.floor(Math.random() * seaCreatureRushCatalog.length)] ?? seaCreatureRushCatalog[0];
+  }
+
   private _launchWinnerCelebration(marble: Marble, accent: string) {
     const palette = [accent, '#fef08a', '#ffffff', '#fde68a', `hsl(${marble.hue} 100% 62%)`];
     const centerX = this._renderer.width / 2;
     const width = this._renderer.width;
     const height = this._renderer.height;
     const bursts = [
-      { delay: 760, x: centerX, y: height * 0.18, count: 188, sizeRange: [6, 18] as [number, number], speedRange: [95, 270] as [number, number] },
-      { delay: 980, x: centerX - width * 0.18, y: height * 0.24, count: 132, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
-      { delay: 1160, x: centerX + width * 0.2, y: height * 0.22, count: 132, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
-      { delay: 1380, x: centerX - width * 0.08, y: height * 0.12, count: 118, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
-      { delay: 1540, x: centerX + width * 0.1, y: height * 0.1, count: 118, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
-      { delay: 1760, x: centerX, y: height * 0.15, count: 156, sizeRange: [5, 16] as [number, number], speedRange: [88, 245] as [number, number] },
+      { delay: 2480, x: centerX, y: height * 0.22, count: 196, sizeRange: [6, 18] as [number, number], speedRange: [95, 270] as [number, number] },
+      { delay: 2700, x: centerX - width * 0.18, y: height * 0.27, count: 138, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 2860, x: centerX + width * 0.2, y: height * 0.25, count: 138, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 3080, x: centerX - width * 0.08, y: height * 0.14, count: 122, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 3240, x: centerX + width * 0.1, y: height * 0.12, count: 122, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 3440, x: centerX, y: height * 0.18, count: 164, sizeRange: [5, 16] as [number, number], speedRange: [88, 245] as [number, number] },
     ];
 
     this._particleManager.shot(centerX, height * 0.58, {
-      count: 108,
+      count: 82,
       palette,
       sizeRange: [4, 12],
-      speedRange: [135, 320],
-      lifeRange: [1100, 1700],
+      speedRange: [145, 340],
+      lifeRange: [1200, 1900],
     });
 
-    this._scheduleCelebration(360, () => {
+    this._scheduleCelebration(620, () => {
       this._particleManager.shot(centerX, height * 0.48, {
-        count: 72,
+        count: 64,
         palette: ['#ffffff', '#fff7d6', accent],
         sizeRange: [3, 9],
         speedRange: [82, 180],
@@ -596,13 +618,13 @@ export class Roulette extends EventTarget {
   }
 
   private _scheduleRoundEvents() {
-    const pace = isCompactViewport() ? 1.34 : 1;
-    const totalEvents = Math.max(5, Math.min(9, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 2.4 : 2.2))));
+    const pace = isCompactViewport() ? 1.18 : 1;
+    const totalEvents = Math.max(8, Math.min(14, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 1.8 : 1.6))));
     const schedule: number[] = [];
-    let nextAt = (1750 + Math.random() * 850) * pace;
+    let nextAt = (1180 + Math.random() * 620) * pace;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += (2250 + Math.random() * 1350) * pace;
+      nextAt += (1420 + Math.random() * 980) * pace;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -748,10 +770,11 @@ export class Roulette extends EventTarget {
         break;
       }
       case 'shark-rush': {
+        const creature = this._pickSeaCreatureRush();
         const ranked = activeMarbles.slice().sort((a, b) => b.y - a.y);
         const lowerPool = ranked.slice(0, Math.max(1, Math.ceil(ranked.length * 0.45)));
         const upperPool = ranked.slice(Math.max(1, Math.floor(ranked.length * 0.45)));
-        const lowerBias = this._roundElapsed > 8500 ? 0.78 : 0.52;
+        const lowerBias = this._roundElapsed > 8500 ? 0.82 : 0.6;
         const candidatePool =
           Math.random() < lowerBias && lowerPool.length > 0 ? lowerPool : upperPool.length > 0 ? upperPool : ranked;
         const candidate = candidatePool[Math.floor(Math.random() * candidatePool.length)];
@@ -762,31 +785,33 @@ export class Roulette extends EventTarget {
           24,
           Math.min((this._stage?.goalY ?? candidate.y + 10) - 5.5, candidate.y + (Math.random() - 0.5) * 6.5)
         );
-        const band = 5.5;
+        const band = creature.band;
         const startX = direction > 0 ? -2.8 : 28.4;
         const endX = direction > 0 ? 28.4 : -2.8;
         const impacted = ranked.filter((marble) => Math.abs(marble.y - sweepY) < band);
         const primary = impacted[0] ?? candidate;
 
-        this._effects.push(new SharkRushEffect(startX, endX, sweepY, direction > 0 ? 1 : -1, notice.accent));
+        this._effects.push(new SharkRushEffect(startX, endX, sweepY, direction > 0 ? 1 : -1, creature.accent, creature.kind));
 
         impacted.forEach((marble, index) => {
           const distanceWeight = 1 - Math.min(1, Math.abs(marble.y - sweepY) / band);
           const spread = (Math.random() - 0.5) * 0.9;
-          const sideImpulse = direction * (1.4 + distanceWeight * 1.7 + Math.random() * 0.45);
-          const verticalImpulse = (Math.random() - 0.15) * 1.1 + (index === 0 ? 0.3 : 0);
+          const sideImpulse = direction * (creature.lateralPower + distanceWeight * 1.95 + Math.random() * 0.48);
+          const verticalImpulse = (Math.random() - 0.12) * creature.verticalPower + (index === 0 ? 0.34 : 0.08);
           this.physics.nudgeMarble(marble.id, {
             x: sideImpulse + spread,
             y: verticalImpulse,
           });
-          marble.impact = Math.max(marble.impact, 220 + distanceWeight * 180);
+          marble.impact = Math.max(marble.impact, 240 + distanceWeight * 210);
         });
 
         if (primary) {
           this._effects.push(new SkillEffect(primary.x, primary.y));
           notice = {
             ...notice,
-            description: `${direction > 0 ? '왼쪽' : '오른쪽'}에서 상어가 난입해 ${primary.name}님 주변 순위를 뒤흔들었습니다.`,
+            title: `${creature.label} 난입`,
+            accent: creature.accent,
+            description: `${direction > 0 ? '왼쪽' : '오른쪽'}에서 ${creature.label}가 튀어나와 ${primary.name}님 주변 대열을 거칠게 흔들었습니다.`,
           };
         }
         break;
