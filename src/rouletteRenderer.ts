@@ -716,6 +716,73 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawWinnerSmileFace(x: number, y: number, size: number, time: number, joy: number, accent: string) {
+    const blink = 0.45 + Math.sin(time * 6.2) * 0.08;
+    const cheekAlpha = 0.14 + joy * 0.22;
+    const smileLift = Math.sin(time * 7.4) * size * 0.01;
+    const mouthOpen = 0.46 + Math.sin(time * 5.8) * 0.06 + joy * 0.12;
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+
+    this.ctx.fillStyle = `rgba(255, 233, 214, ${cheekAlpha})`;
+    this.ctx.beginPath();
+    this.ctx.ellipse(-size * 0.19, size * 0.08, size * 0.1, size * 0.072, -0.18, 0, Math.PI * 2);
+    this.ctx.ellipse(size * 0.19, size * 0.08, size * 0.1, size * 0.072, 0.18, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.strokeStyle = 'rgba(63, 35, 22, 0.78)';
+    this.ctx.lineWidth = Math.max(3, size * 0.035);
+    this.ctx.beginPath();
+    this.ctx.arc(-size * 0.17, -size * 0.03, size * 0.07, Math.PI * (0.14 + blink * 0.04), Math.PI * (0.88 - blink * 0.05));
+    this.ctx.arc(size * 0.17, -size * 0.03, size * 0.07, Math.PI * (0.14 + blink * 0.04), Math.PI * (0.88 - blink * 0.05));
+    this.ctx.stroke();
+
+    this.ctx.save();
+    this.ctx.translate(0, size * 0.12 + smileLift);
+    this.ctx.strokeStyle = 'rgba(74, 38, 22, 0.86)';
+    this.ctx.lineWidth = Math.max(3.4, size * 0.042);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, size * (0.15 + joy * 0.03), Math.PI * 0.12, Math.PI * 0.88);
+    this.ctx.stroke();
+
+    this.ctx.globalAlpha = 0.84;
+    this.ctx.fillStyle = 'rgba(137, 41, 53, 0.88)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, size * 0.01, size * 0.092, size * mouthOpen * 0.22, 0, 0, Math.PI);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = `rgba(255, 247, 235, ${0.22 + joy * 0.22})`;
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, -size * 0.01, size * 0.08, size * 0.03, 0, 0, Math.PI);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = `rgba(255, 171, 194, ${0.38 + joy * 0.22})`;
+    this.ctx.beginPath();
+    this.ctx.ellipse(0, size * 0.04, size * 0.055, size * 0.032, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+
+    this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.16 + joy * 0.2})`;
+    this.ctx.lineWidth = Math.max(1.8, size * 0.02);
+    this.ctx.beginPath();
+    this.ctx.moveTo(-size * 0.08, -size * 0.18);
+    this.ctx.lineTo(size * 0.08, -size * 0.23);
+    this.ctx.stroke();
+
+    this.ctx.shadowColor = accent;
+    this.ctx.shadowBlur = size * 0.12;
+    this.ctx.fillStyle = `rgba(255, 255, 255, ${0.16 + joy * 0.12})`;
+    this.ctx.beginPath();
+    this.ctx.arc(-size * 0.1, -size * 0.16, size * 0.02, 0, Math.PI * 2);
+    this.ctx.arc(size * 0.1, -size * 0.18, size * 0.018, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.restore();
+  }
+
   private renderWinner({ winner, stage }: RenderParameters) {
     if (!winner) {
       this._winnerRevealKey = null;
@@ -746,9 +813,12 @@ export class RouletteRenderer {
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
+    const seaToLandEase = this.easeInOutCubic(this.clamp((elapsed - 220) / 1880));
+    const landToSkyEase = this.easeInOutCubic(this.clamp((elapsed - 1880) / 2240));
     const gatherEase = this.easeInOutCubic(gatherProgress);
     const coreBurstEase = this.easeOutCubic(coreBurstProgress);
     const burstEase = this.easeOutCubic(burstProgress);
+    const joyEase = this.easeOutCubic(this.clamp((elapsed - 1740) / 2580));
     const focusScale = 1 + this.easeOutCubic(zoomInProgress) * 0.4 - this.easeInOutCubic(zoomOutProgress) * 0.24;
     const textEase = this.easeOutCubic(textProgress);
     const centerX = this._canvas.width / 2;
@@ -779,33 +849,93 @@ export class RouletteRenderer {
       skyLaunchProgress > 0
         ? this.lerp(landHoverY, marbleSkyY, skyLaunchEase) - Math.sin(time * 8.4) * 9 * (1 - skyLaunchProgress)
         : this.lerp(marbleStartY, landHoverY, oceanRiseEase) - Math.sin(time * 7.2) * (3.5 + landPauseEase * 2.8);
-    const islandAlpha = Math.max(0, 1 - skyLaunchProgress * 1.1);
+    const islandAlpha = seaToLandEase * Math.max(0, 1 - skyLaunchProgress * 1.08);
     const nameY = centerY + nameSize * 0.14;
     const textOffsetY = (1 - textEase) * 42;
     const showText = textProgress > 0.01;
 
     this.ctx.save();
 
-    const skyGradient = this.ctx.createLinearGradient(0, 0, 0, height);
-    skyGradient.addColorStop(0, '#dff6ff');
-    skyGradient.addColorStop(0.24, '#9fe8ff');
-    skyGradient.addColorStop(0.48, '#f8deb3');
-    skyGradient.addColorStop(0.64, '#6fc8ea');
-    skyGradient.addColorStop(1, '#0f4f72');
-    this.ctx.fillStyle = skyGradient;
+    const oceanBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    oceanBackdrop.addColorStop(0, '#08233d');
+    oceanBackdrop.addColorStop(0.24, '#0d4263');
+    oceanBackdrop.addColorStop(0.6, '#16719a');
+    oceanBackdrop.addColorStop(1, '#0a2f4c');
+    this.ctx.fillStyle = oceanBackdrop;
     this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.2 + oceanRiseEase * 0.24;
+    for (let i = 0; i < 7; i++) {
+      const beamX = width * (0.1 + i * 0.14);
+      const beamWidth = width * 0.045;
+      const beamGradient = this.ctx.createLinearGradient(beamX, 0, beamX, height);
+      beamGradient.addColorStop(0, 'rgba(201, 247, 255, 0.3)');
+      beamGradient.addColorStop(0.55, 'rgba(123, 220, 241, 0.08)');
+      beamGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      this.ctx.fillStyle = beamGradient;
+      this.ctx.fillRect(beamX - beamWidth / 2, 0, beamWidth, height * 0.84);
+    }
+    this.ctx.restore();
+
+    const landRevealY = height - seaToLandEase * (height * 0.96);
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(0, landRevealY, width, height - landRevealY);
+    this.ctx.clip();
+    const landBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    landBackdrop.addColorStop(0, '#fde6b1');
+    landBackdrop.addColorStop(0.24, '#ffc89f');
+    landBackdrop.addColorStop(0.48, '#ffa97b');
+    landBackdrop.addColorStop(0.72, '#5ec6df');
+    landBackdrop.addColorStop(1, '#0f4f72');
+    this.ctx.fillStyle = landBackdrop;
+    this.ctx.fillRect(0, 0, width, height);
+    this.ctx.restore();
+
+    const skyRevealHeight = height * (0.18 + landToSkyEase * 0.94);
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.rect(0, 0, width, skyRevealHeight);
+    this.ctx.clip();
+    const skyBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
+    skyBackdrop.addColorStop(0, '#f6fdff');
+    skyBackdrop.addColorStop(0.2, '#d9f7ff');
+    skyBackdrop.addColorStop(0.46, '#97e8ff');
+    skyBackdrop.addColorStop(0.78, '#7bcdf0');
+    skyBackdrop.addColorStop(1, 'rgba(123, 205, 240, 0)');
+    this.ctx.fillStyle = skyBackdrop;
+    this.ctx.fillRect(0, 0, width, height);
+    this.ctx.restore();
+
+    const landTransitionGlow = this.ctx.createLinearGradient(0, landRevealY - height * 0.08, 0, landRevealY + height * 0.08);
+    landTransitionGlow.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    landTransitionGlow.addColorStop(0.5, `rgba(255, 229, 181, ${0.12 + seaToLandEase * 0.22})`);
+    landTransitionGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = landTransitionGlow;
+    this.ctx.fillRect(0, landRevealY - height * 0.08, width, height * 0.16);
+
+    const skyTransitionGlow = this.ctx.createLinearGradient(0, skyRevealHeight - height * 0.06, 0, skyRevealHeight + height * 0.08);
+    skyTransitionGlow.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    skyTransitionGlow.addColorStop(0.5, `rgba(226, 248, 255, ${0.08 + landToSkyEase * 0.24})`);
+    skyTransitionGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = skyTransitionGlow;
+    this.ctx.fillRect(0, skyRevealHeight - height * 0.06, width, height * 0.14);
 
     const sunGlow = this.ctx.createRadialGradient(centerX, height * 0.16, width * 0.02, centerX, height * 0.16, width * 0.22);
     sunGlow.addColorStop(0, 'rgba(255, 251, 229, 0.96)');
     sunGlow.addColorStop(0.28, 'rgba(255, 241, 199, 0.54)');
     sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.12 + seaToLandEase * 0.32 + landToSkyEase * 0.34;
     this.ctx.fillStyle = sunGlow;
     this.ctx.fillRect(0, 0, width, height * 0.46);
+    this.ctx.restore();
 
-    this.drawCloudPuff(width * 0.18, height * 0.17, width * 0.07, 0.56);
-    this.drawCloudPuff(width * 0.79, height * 0.2, width * 0.09, 0.58);
-    this.drawCloudPuff(width * 0.56, height * 0.12, width * 0.06, 0.46 + burstEase * 0.2);
-    this.drawCloudPuff(width * 0.34, height * 0.26, width * 0.08, 0.42 + burstEase * 0.18);
+    this.drawCloudPuff(width * 0.18, height * 0.17, width * 0.07, 0.16 + landToSkyEase * 0.52);
+    this.drawCloudPuff(width * 0.79, height * 0.2, width * 0.09, 0.18 + landToSkyEase * 0.54);
+    this.drawCloudPuff(width * 0.56, height * 0.12, width * 0.06, 0.12 + landToSkyEase * 0.46 + burstEase * 0.2);
+    this.drawCloudPuff(width * 0.34, height * 0.26, width * 0.08, 0.1 + landToSkyEase * 0.42 + burstEase * 0.18);
 
     const oceanGradient = this.ctx.createLinearGradient(0, seaSurfaceY, 0, height);
     oceanGradient.addColorStop(0, 'rgba(67, 191, 233, 0.92)');
@@ -1158,6 +1288,7 @@ export class RouletteRenderer {
       );
     }
     this.ctx.restore();
+    this.drawWinnerSmileFace(marbleCenterX, marbleCenterY, marbleVisualSize, time, joyEase, accent);
 
     for (let i = 0; i < 8; i++) {
       const orbitAngle = elapsed * 0.0038 + i * ((Math.PI * 2) / 8);
