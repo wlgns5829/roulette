@@ -737,6 +737,7 @@ export class RouletteRenderer {
     const oceanRiseProgress = this.clamp(elapsed / 1220);
     const landPauseProgress = this.clamp((elapsed - 1120) / 620);
     const skyLaunchProgress = this.clamp((elapsed - 1720) / 1120);
+    const gatherProgress = this.clamp((elapsed - 2060) / 820);
     const coreBurstProgress = this.clamp((elapsed - 2480) / 560);
     const burstProgress = this.clamp((elapsed - 2860) / 1320);
     const zoomInProgress = this.clamp((elapsed - 1960) / 620);
@@ -745,6 +746,7 @@ export class RouletteRenderer {
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
+    const gatherEase = this.easeInOutCubic(gatherProgress);
     const coreBurstEase = this.easeOutCubic(coreBurstProgress);
     const burstEase = this.easeOutCubic(burstProgress);
     const focusScale = 1 + this.easeOutCubic(zoomInProgress) * 0.4 - this.easeInOutCubic(zoomOutProgress) * 0.24;
@@ -906,6 +908,61 @@ export class RouletteRenderer {
       this.ctx.restore();
     }
 
+    if (gatherProgress > 0 && coreBurstProgress < 1) {
+      const gatherAlpha = (1 - coreBurstProgress * 0.7) * (0.14 + gatherEase * 0.56);
+      const chargeRadius = marbleVisualSize * (0.22 + gatherEase * 0.44);
+      const chargeGlow = this.ctx.createRadialGradient(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * 0.08,
+        marbleCenterX,
+        marbleCenterY,
+        chargeRadius * 2.4
+      );
+      chargeGlow.addColorStop(0, `rgba(255, 255, 255, ${0.18 + gatherEase * 0.24})`);
+      chargeGlow.addColorStop(0.28, `rgba(255, 245, 196, ${0.16 + gatherEase * 0.24})`);
+      chargeGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      this.ctx.fillStyle = chargeGlow;
+      this.ctx.beginPath();
+      this.ctx.arc(marbleCenterX, marbleCenterY, chargeRadius * 2.4, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      for (let i = 0; i < 24; i++) {
+        const angle = time * (1.6 + (i % 3) * 0.22) + i * 0.52;
+        const outerRadius = marbleVisualSize * (1.8 + (i % 4) * 0.16);
+        const innerRadius = marbleVisualSize * (0.32 + (i % 3) * 0.07);
+        const pullRadius = this.lerp(outerRadius, innerRadius, gatherEase);
+        const sway = Math.sin(time * 4.6 + i * 0.8) * marbleVisualSize * 0.06 * (1 - gatherEase);
+        const px = marbleCenterX + Math.cos(angle) * pullRadius;
+        const py = marbleCenterY + Math.sin(angle) * pullRadius * 0.62 + sway;
+        const sparkRadius = 4 + (i % 3) * 1.6 + gatherEase * 3;
+        this.drawSpark(px, py, sparkRadius, i % 2 === 0 ? '#ffffff' : accent, gatherAlpha);
+
+        if (gatherEase > 0.2) {
+          this.ctx.save();
+          this.ctx.globalAlpha = gatherAlpha * 0.22;
+          this.ctx.strokeStyle = i % 2 === 0 ? '#fff7d6' : accent;
+          this.ctx.lineWidth = 1.4 + (i % 2) * 0.3;
+          this.ctx.beginPath();
+          this.ctx.moveTo(px, py);
+          this.ctx.lineTo(
+            marbleCenterX + (px - marbleCenterX) * 0.26,
+            marbleCenterY + (py - marbleCenterY) * 0.26
+          );
+          this.ctx.stroke();
+          this.ctx.restore();
+        }
+      }
+
+      this.ctx.save();
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.14 + gatherEase * 0.3})`;
+      this.ctx.lineWidth = 3.4;
+      this.ctx.beginPath();
+      this.ctx.arc(marbleCenterX, marbleCenterY, chargeRadius, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
     if (coreBurstProgress > 0) {
       const coreRadius = marbleVisualSize * (0.24 + coreBurstEase * 0.5);
       const coreOuterRadius = marbleVisualSize * (0.46 + coreBurstEase * 0.98);
@@ -929,15 +986,15 @@ export class RouletteRenderer {
       this.ctx.translate(marbleCenterX, marbleCenterY);
       this.ctx.rotate(coreBurstEase * 0.35);
       this.ctx.lineCap = 'round';
-      for (let ray = 0; ray < 22; ray++) {
-        const angle = (Math.PI * 2 * ray) / 22;
+      for (let ray = 0; ray < 30; ray++) {
+        const angle = (Math.PI * 2 * ray) / 30;
         const innerRadius = marbleVisualSize * (0.08 + (ray % 3) * 0.02);
         const outerRadius = coreOuterRadius * (0.72 + (ray % 4) * 0.08);
         this.ctx.save();
         this.ctx.rotate(angle);
         this.ctx.strokeStyle = ray % 2 === 0 ? '#ffffff' : accent;
         this.ctx.globalAlpha = 0.24 + coreBurstEase * 0.52 - (ray % 5) * 0.018;
-        this.ctx.lineWidth = 2.8 + (ray % 3) * 0.55;
+        this.ctx.lineWidth = 3.1 + (ray % 3) * 0.65;
         this.ctx.beginPath();
         this.ctx.moveTo(innerRadius, 0);
         this.ctx.lineTo(outerRadius, 0);
@@ -947,21 +1004,42 @@ export class RouletteRenderer {
       this.ctx.restore();
 
       this.ctx.save();
+      this.ctx.globalAlpha = (1 - coreBurstProgress) * 0.18;
+      this.ctx.fillStyle = '#fffdf5';
+      this.ctx.fillRect(0, 0, width, height);
+      this.ctx.restore();
+
+      this.ctx.save();
       this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.26 + coreBurstEase * 0.38})`;
       this.ctx.lineWidth = 4;
       this.ctx.beginPath();
       this.ctx.arc(marbleCenterX, marbleCenterY, coreRadius, 0, Math.PI * 2);
       this.ctx.stroke();
+      this.ctx.beginPath();
+      this.ctx.arc(marbleCenterX, marbleCenterY, coreOuterRadius * (0.92 + coreBurstEase * 0.24), 0, Math.PI * 2);
+      this.ctx.stroke();
       this.ctx.restore();
     }
 
-    for (let i = 0; i < 6; i++) {
-      const localBurst = this.clamp((elapsed - 2920 - i * 170) / 960);
+    const burstAnchors = [
+      { x: centerX, y: cloudY },
+      { x: centerX, y: height * 0.18 },
+      { x: width * 0.24, y: height * 0.27 },
+      { x: width * 0.76, y: height * 0.25 },
+      { x: width * 0.4, y: height * 0.14 },
+      { x: width * 0.62, y: height * 0.12 },
+      { x: width * 0.14, y: height * 0.2 },
+      { x: width * 0.86, y: height * 0.18 },
+      { x: centerX, y: height * 0.16 },
+    ];
+
+    for (let i = 0; i < burstAnchors.length; i++) {
+      const localBurst = this.clamp((elapsed - 2860 - i * 145) / 980);
       if (localBurst <= 0) continue;
       const burstAlpha = (1 - localBurst) * (0.48 + burstEase * 0.36);
-      const burstX = i === 0 ? centerX : width * (0.17 + (i % 3) * 0.22) + (i >= 3 ? width * 0.08 : 0);
-      const burstY = i === 0 ? cloudY : height * (i % 2 === 0 ? 0.18 : 0.28);
-      const burstRadius = width * (0.045 + (i % 3) * 0.011) * (0.56 + localBurst * 1.26);
+      const burstX = burstAnchors[i].x;
+      const burstY = burstAnchors[i].y;
+      const burstRadius = width * (0.042 + (i % 4) * 0.01) * (0.6 + localBurst * 1.34);
 
       this.ctx.save();
       this.ctx.translate(burstX, burstY);
@@ -969,8 +1047,8 @@ export class RouletteRenderer {
       this.ctx.strokeStyle = i % 2 === 0 ? accent : '#fff7d6';
       this.ctx.lineWidth = 3.8;
       this.ctx.globalAlpha = burstAlpha;
-      for (let ray = 0; ray < 16; ray++) {
-        const angle = (Math.PI * 2 * ray) / 16;
+      for (let ray = 0; ray < 20; ray++) {
+        const angle = (Math.PI * 2 * ray) / 20;
         this.ctx.beginPath();
         this.ctx.moveTo(Math.cos(angle) * burstRadius * 0.18, Math.sin(angle) * burstRadius * 0.18);
         this.ctx.lineTo(Math.cos(angle) * burstRadius, Math.sin(angle) * burstRadius);
@@ -982,8 +1060,8 @@ export class RouletteRenderer {
       this.ctx.stroke();
       this.ctx.restore();
 
-      for (let spark = 0; spark < 5; spark++) {
-        const sparkAngle = (Math.PI * 2 * spark) / 5 + i * 0.38;
+      for (let spark = 0; spark < 7; spark++) {
+        const sparkAngle = (Math.PI * 2 * spark) / 7 + i * 0.38;
         this.drawSpark(
           burstX + Math.cos(sparkAngle) * burstRadius * 0.84,
           burstY + Math.sin(sparkAngle) * burstRadius * 0.84,

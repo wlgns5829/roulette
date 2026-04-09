@@ -601,17 +601,30 @@ export class Roulette extends EventTarget {
     const width = this._renderer.width;
     const height = this._renderer.height;
     const bursts = [
-      { delay: 2920, x: centerX, y: height * 0.22, count: 208, sizeRange: [6, 18] as [number, number], speedRange: [110, 290] as [number, number] },
-      { delay: 3160, x: centerX - width * 0.18, y: height * 0.27, count: 152, sizeRange: [5, 15] as [number, number], speedRange: [88, 236] as [number, number] },
-      { delay: 3320, x: centerX + width * 0.2, y: height * 0.25, count: 152, sizeRange: [5, 15] as [number, number], speedRange: [88, 236] as [number, number] },
-      { delay: 3520, x: centerX - width * 0.08, y: height * 0.14, count: 134, sizeRange: [4, 13] as [number, number], speedRange: [82, 224] as [number, number] },
-      { delay: 3680, x: centerX + width * 0.1, y: height * 0.12, count: 134, sizeRange: [4, 13] as [number, number], speedRange: [82, 224] as [number, number] },
-      { delay: 3880, x: centerX, y: height * 0.18, count: 178, sizeRange: [5, 16] as [number, number], speedRange: [96, 255] as [number, number] },
+      { delay: 2860, x: centerX, y: height * 0.21, count: 286, sizeRange: [7, 20] as [number, number], speedRange: [138, 348] as [number, number] },
+      { delay: 3010, x: centerX, y: height * 0.19, count: 196, sizeRange: [6, 18] as [number, number], speedRange: [112, 294] as [number, number] },
+      { delay: 3180, x: centerX - width * 0.18, y: height * 0.27, count: 176, sizeRange: [5, 16] as [number, number], speedRange: [92, 246] as [number, number] },
+      { delay: 3300, x: centerX + width * 0.2, y: height * 0.25, count: 176, sizeRange: [5, 16] as [number, number], speedRange: [92, 246] as [number, number] },
+      { delay: 3460, x: centerX - width * 0.1, y: height * 0.14, count: 152, sizeRange: [4, 14] as [number, number], speedRange: [86, 232] as [number, number] },
+      { delay: 3600, x: centerX + width * 0.12, y: height * 0.12, count: 152, sizeRange: [4, 14] as [number, number], speedRange: [86, 232] as [number, number] },
+      { delay: 3740, x: centerX - width * 0.26, y: height * 0.2, count: 144, sizeRange: [4, 13] as [number, number], speedRange: [84, 220] as [number, number] },
+      { delay: 3880, x: centerX + width * 0.28, y: height * 0.18, count: 144, sizeRange: [4, 13] as [number, number], speedRange: [84, 220] as [number, number] },
+      { delay: 4040, x: centerX, y: height * 0.16, count: 214, sizeRange: [5, 17] as [number, number], speedRange: [100, 270] as [number, number] },
     ];
+
+    this._scheduleCelebration(1860, () => {
+      this._particleManager.shot(centerX, height * 0.34, {
+        count: 42,
+        palette: ['#ffffff', '#fff7d6', accent],
+        sizeRange: [2, 7],
+        speedRange: [42, 108],
+        lifeRange: [760, 1180],
+      });
+    });
 
     this._scheduleCelebration(2140, () => {
       this._particleManager.shot(centerX, height * 0.36, {
-        count: 54,
+        count: 68,
         palette: ['#ffffff', '#fff7d6', accent],
         sizeRange: [2, 8],
         speedRange: [54, 132],
@@ -621,14 +634,14 @@ export class Roulette extends EventTarget {
 
     this._scheduleCelebration(2540, () => {
       this._particleManager.shot(centerX, height * 0.27, {
-        count: 118,
+        count: 136,
         palette,
         sizeRange: [4, 12],
         speedRange: [110, 260],
         lifeRange: [1100, 1800],
       });
       this._particleManager.shot(centerX, height * 0.27, {
-        count: 74,
+        count: 94,
         palette: ['#ffffff', '#fff7d6', accent],
         sizeRange: [3, 9],
         speedRange: [72, 165],
