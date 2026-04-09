@@ -841,14 +841,20 @@ export class RouletteRenderer {
     const marbleSize = Math.max(96, Math.min(148, this._canvas.width * 0.105));
     const marbleVisualSize = marbleSize * focusScale;
     const marbleCenterX = centerX;
-    const marbleStartY = height + marbleSize * 1.55;
-    const marbleLandY = islandY - marbleSize * 1.02;
-    const marbleSkyY = cloudY - marbleSize * 0.12;
-    const landHoverY = marbleLandY - Math.sin(time * 5.2) * 3.2 * (0.5 + (1 - skyLaunchProgress) * 0.5);
+    const marbleDeepSeaY = height + marbleSize * 2.85;
+    const marbleSurfaceY = seaSurfaceY - marbleSize * 0.96;
+    const marbleLandY = islandY - marbleSize * 1.18;
+    const marbleSkyY = height * 0.1;
+    const oceanLegY = this.lerp(marbleDeepSeaY, marbleSurfaceY, oceanRiseEase);
+    const shoreLegY = this.lerp(marbleSurfaceY, marbleLandY, landPauseEase);
+    const landHoverY = shoreLegY - Math.sin(time * 5.2) * 4.4 * (0.5 + (1 - skyLaunchProgress) * 0.5);
+    const skyLegY = this.lerp(marbleLandY, marbleSkyY, skyLaunchEase);
     const marbleCenterY =
       skyLaunchProgress > 0
-        ? this.lerp(landHoverY, marbleSkyY, skyLaunchEase) - Math.sin(time * 8.4) * 9 * (1 - skyLaunchProgress)
-        : this.lerp(marbleStartY, landHoverY, oceanRiseEase) - Math.sin(time * 7.2) * (3.5 + landPauseEase * 2.8);
+        ? this.lerp(landHoverY, skyLegY, skyLaunchEase) - Math.sin(time * 8.4) * 12 * (1 - skyLaunchProgress)
+        : landPauseProgress > 0
+          ? this.lerp(oceanLegY, landHoverY, landPauseEase) - Math.sin(time * 7.6) * (4.4 + landPauseEase * 3.6)
+          : oceanLegY - Math.sin(time * 7.4) * (5.6 + oceanRiseEase * 3.4);
     const islandAlpha = seaToLandEase * Math.max(0, 1 - skyLaunchProgress * 1.08);
     const nameY = centerY + nameSize * 0.14;
     const textOffsetY = (1 - textEase) * 42;
