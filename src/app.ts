@@ -123,9 +123,9 @@ export function attachApp(roulette: Roulette) {
     let bgmStopTimer = 0;
     let shufflePreviewTimers: number[] = [];
     let roundRunning = false;
-    const winnerRevealDelayMs = 3220;
-    const bgmStopDelayMs = 4260;
-    const roundResetDelayMs = 6580;
+    const winnerRevealDelayMs = 4320;
+    const bgmStopDelayMs = 5480;
+    const roundResetDelayMs = 7920;
 
     const getRosterTokens = () => {
       const merged = new Map<string, number>();

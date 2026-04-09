@@ -1173,6 +1173,7 @@ export class Roulette extends EventTarget {
         }
       }
     });
+    this._marbles.sort((a, b) => a.id - b.id);
     this._totalMarbleCount = totalCount;
 
     if (totalCount > 0) {

@@ -414,7 +414,7 @@ export class AudioEngine {
     const start = ctx.currentTime + 0.02;
     this._bgmGain.gain.cancelScheduledValues(start);
     this._bgmGain.gain.setTargetAtTime(duckedBgmGain, start, 0.03);
-    this._bgmGain.gain.setTargetAtTime(defaultBgmGain, start + 2.2, 0.18);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain, start + 3.8, 0.18);
 
     this._playKick(start, 0.18, 180, 38);
     this._playNoise(start + 0.02, 0.32, 0.1, 3800, 0.9, 'highpass');
@@ -695,16 +695,16 @@ export class AudioEngine {
     const ctx = this._ctx;
     if (!ctx || !this._bgmGain) return;
 
-    const chargeStart = start + 1.84;
-    const surgeTime = start + 2.24;
-    const coreBurst = start + 2.74;
-    const barrageOffsets = [3.02, 3.14, 3.26, 3.38, 3.5, 3.62, 3.74, 3.86, 3.98, 4.1, 4.22];
+    const chargeStart = start + 2.34;
+    const surgeTime = start + 2.88;
+    const coreBurst = start + 3.52;
+    const barrageOffsets = [3.84, 3.98, 4.12, 4.26, 4.4, 4.54, 4.68, 4.82, 4.96, 5.1, 5.24];
 
     this._bgmGain.gain.cancelScheduledValues(chargeStart);
     this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.66, chargeStart, 0.06);
     this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.84, surgeTime, 0.05);
     this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 1.18, coreBurst, 0.04);
-    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.94, start + 4.4, 0.14);
+    this._bgmGain.gain.setTargetAtTime(defaultBgmGain * 0.94, start + 5.5, 0.14);
 
     [36, 43, 48, 55].forEach((note, index) => {
       this._playTone(

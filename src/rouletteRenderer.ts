@@ -734,15 +734,15 @@ export class RouletteRenderer {
 
     const elapsed = now - this._winnerRevealStartedAt;
     const time = elapsed * 0.001;
-    const oceanRiseProgress = this.clamp(elapsed / 1220);
-    const landPauseProgress = this.clamp((elapsed - 1120) / 620);
-    const skyLaunchProgress = this.clamp((elapsed - 1720) / 1120);
-    const gatherProgress = this.clamp((elapsed - 2060) / 820);
-    const coreBurstProgress = this.clamp((elapsed - 2480) / 560);
-    const burstProgress = this.clamp((elapsed - 2860) / 1320);
-    const zoomInProgress = this.clamp((elapsed - 1960) / 620);
-    const zoomOutProgress = this.clamp((elapsed - 2940) / 840);
-    const textProgress = this.clamp((elapsed - 3220) / 720);
+    const oceanRiseProgress = this.clamp(elapsed / 1580);
+    const landPauseProgress = this.clamp((elapsed - 1460) / 940);
+    const skyLaunchProgress = this.clamp((elapsed - 2320) / 1480);
+    const gatherProgress = this.clamp((elapsed - 2860) / 980);
+    const coreBurstProgress = this.clamp((elapsed - 3440) / 640);
+    const burstProgress = this.clamp((elapsed - 3880) / 1600);
+    const zoomInProgress = this.clamp((elapsed - 2760) / 760);
+    const zoomOutProgress = this.clamp((elapsed - 4040) / 980);
+    const textProgress = this.clamp((elapsed - 4320) / 760);
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
@@ -774,11 +774,12 @@ export class RouletteRenderer {
     const marbleStartY = height + marbleSize * 1.55;
     const marbleLandY = islandY - marbleSize * 1.02;
     const marbleSkyY = cloudY - marbleSize * 0.12;
+    const landHoverY = marbleLandY - Math.sin(time * 5.2) * 3.2 * (0.5 + (1 - skyLaunchProgress) * 0.5);
     const marbleCenterY =
       skyLaunchProgress > 0
-        ? this.lerp(marbleLandY, marbleSkyY, skyLaunchEase) - Math.sin(time * 8.4) * 9 * (1 - skyLaunchProgress)
-        : this.lerp(marbleStartY, marbleLandY, oceanRiseEase) - Math.sin(time * 7.6) * 4 * landPauseEase;
-    const islandAlpha = Math.max(0, 1 - skyLaunchProgress * 1.25);
+        ? this.lerp(landHoverY, marbleSkyY, skyLaunchEase) - Math.sin(time * 8.4) * 9 * (1 - skyLaunchProgress)
+        : this.lerp(marbleStartY, landHoverY, oceanRiseEase) - Math.sin(time * 7.2) * (3.5 + landPauseEase * 2.8);
+    const islandAlpha = Math.max(0, 1 - skyLaunchProgress * 1.1);
     const nameY = centerY + nameSize * 0.14;
     const textOffsetY = (1 - textEase) * 42;
     const showText = textProgress > 0.01;
@@ -837,6 +838,30 @@ export class RouletteRenderer {
         this.ctx.lineTo(x, waveY);
       }
     }
+    this.ctx.stroke();
+    this.ctx.restore();
+
+    const seaSprayAlpha = (1 - skyLaunchProgress) * (0.12 + oceanRiseEase * 0.36) * (1 - coreBurstProgress * 0.45);
+    for (let i = 0; i < 14; i++) {
+      const sprayPhase = (oceanRiseEase * 1.12 + i / 14) % 1;
+      const sprayX = centerX + Math.sin(time * 2.8 + i * 0.74) * marbleVisualSize * (0.42 + sprayPhase * 0.34);
+      const sprayY = seaSurfaceY - sprayPhase * marbleVisualSize * 1.12;
+      this.ctx.save();
+      this.ctx.globalAlpha = seaSprayAlpha * (1 - sprayPhase * 0.55);
+      this.ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 255, 255, 0.92)' : 'rgba(219, 244, 255, 0.9)';
+      this.ctx.beginPath();
+      this.ctx.arc(sprayX, sprayY, 2.4 + (i % 3) * 1.2 + sprayPhase * 1.6, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.14 + islandAlpha * 0.24;
+    this.ctx.strokeStyle = 'rgba(255, 250, 236, 0.96)';
+    this.ctx.lineWidth = 4.2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX - width * 0.13, islandY + marbleVisualSize * 0.28);
+    this.ctx.quadraticCurveTo(centerX, islandY + marbleVisualSize * 0.19, centerX + width * 0.13, islandY + marbleVisualSize * 0.28);
     this.ctx.stroke();
     this.ctx.restore();
 
@@ -1034,7 +1059,7 @@ export class RouletteRenderer {
     ];
 
     for (let i = 0; i < burstAnchors.length; i++) {
-      const localBurst = this.clamp((elapsed - 2860 - i * 145) / 980);
+      const localBurst = this.clamp((elapsed - 3880 - i * 165) / 1120);
       if (localBurst <= 0) continue;
       const burstAlpha = (1 - localBurst) * (0.48 + burstEase * 0.36);
       const burstX = burstAnchors[i].x;
@@ -1092,6 +1117,20 @@ export class RouletteRenderer {
     this.ctx.fillStyle = `rgba(255, 247, 220, ${0.14 + burstEase * 0.16})`;
     this.ctx.arc(marbleCenterX, marbleCenterY, marbleVisualSize * (1.02 + Math.sin(time * 6.4) * 0.04), 0, Math.PI * 2);
     this.ctx.fill();
+
+    if (skyLaunchProgress > 0.08) {
+      for (let i = 0; i < 10; i++) {
+        const trailProgress = (skyLaunchEase * 1.08 + i / 10) % 1;
+        const trailY = marbleCenterY + marbleVisualSize * (0.24 + trailProgress * 1.42);
+        const trailX = marbleCenterX + Math.sin(time * 4.1 + i * 0.92) * marbleVisualSize * (0.14 + trailProgress * 0.08);
+        this.drawCloudPuff(
+          trailX,
+          trailY,
+          marbleVisualSize * (0.16 + (1 - trailProgress) * 0.18),
+          (1 - trailProgress) * 0.16 * skyLaunchProgress
+        );
+      }
+    }
 
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
