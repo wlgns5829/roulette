@@ -562,7 +562,6 @@ export function attachApp(roulette: Roulette) {
 
     roulette.addEventListener('goal', (event) => {
       const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string }>).detail;
-      setRoundFocus(false);
       ready = false;
       startButton.disabled = true;
       clearWinnerReveal();
@@ -582,6 +581,7 @@ export function attachApp(roulette: Roulette) {
       }, bgmStopDelayMs);
 
       resetTimer = window.setTimeout(() => {
+        setRoundFocus(false);
         refreshBoard();
       }, roundResetDelayMs);
       return;
