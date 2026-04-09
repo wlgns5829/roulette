@@ -12,7 +12,6 @@ export class SharkRushEffect implements GameObject {
   private _elapsed = 0;
   private _start: VectorLike;
   private _end: VectorLike;
-  private _previousPosition: VectorLike;
   private _direction: VectorLike;
   private _normal: VectorLike;
   private _accent: string;
@@ -57,13 +56,11 @@ export class SharkRushEffect implements GameObject {
     const deltaX = this._end.x - this._start.x;
     const deltaY = this._end.y - this._start.y;
     const distance = Math.hypot(deltaX, deltaY) || 1;
-    this._previousPosition = { ...this._start };
     this._direction = { x: deltaX / distance, y: deltaY / distance };
     this._normal = { x: -this._direction.y, y: this._direction.x };
   }
 
   update(deltaTime: number) {
-    this._previousPosition = this.getPosition();
     this._elapsed += deltaTime;
     if (this._elapsed >= lifetime) {
       this.isDestroy = true;
@@ -93,36 +90,35 @@ export class SharkRushEffect implements GameObject {
   }
 
   getContactStrength(point: VectorLike, marbleRadius = 0.25) {
-    const profile = this.getCollisionProfile();
-    const currentPosition = this.getPosition();
-    const movement = Math.hypot(
-      currentPosition.x - this._previousPosition.x,
-      currentPosition.y - this._previousPosition.y
-    );
-    const directStrength = this.getCapsuleContactStrength(
-      point,
-      marbleRadius,
-      currentPosition,
-      profile.length,
-      profile.width
-    );
-    if (movement <= 0.02) {
-      return directStrength;
+    if (this._elapsed < 120) {
+      return 0;
     }
 
-    const sweptCenter = {
-      x: (currentPosition.x + this._previousPosition.x) / 2,
-      y: (currentPosition.y + this._previousPosition.y) / 2,
+    const currentPosition = this.getPosition();
+    const profile = this.getCollisionProfile();
+    const headCenter = {
+      x: currentPosition.x + this._direction.x * profile.headOffset,
+      y: currentPosition.y + this._direction.y * profile.headOffset,
     };
-    const sweptStrength = this.getCapsuleContactStrength(
+    const bodyCenter = {
+      x: currentPosition.x + this._direction.x * profile.bodyOffset,
+      y: currentPosition.y + this._direction.y * profile.bodyOffset,
+    };
+
+    const headStrength = this.getCircleContactStrength(
       point,
       marbleRadius,
-      sweptCenter,
-      profile.length + movement * 1.5,
-      profile.width + Math.min(0.48, movement * 0.8)
+      headCenter,
+      profile.headRadius
+    );
+    const bodyStrength = this.getCircleContactStrength(
+      point,
+      marbleRadius,
+      bodyCenter,
+      profile.bodyRadius
     );
 
-    return Math.max(directStrength, sweptStrength);
+    return Math.max(headStrength, bodyStrength * 0.84);
   }
 
   render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
@@ -190,44 +186,38 @@ export class SharkRushEffect implements GameObject {
   private getCollisionProfile() {
     switch (this._creature) {
       case 'starfish':
-        return { length: 2.35, width: 2.05 };
+        return { headOffset: 0, headRadius: 0.94, bodyOffset: 0, bodyRadius: 0.64 };
       case 'octopus':
-        return { length: 2.55, width: 1.9 };
+        return { headOffset: 0.52, headRadius: 0.78, bodyOffset: -0.12, bodyRadius: 0.64 };
       case 'nakji':
-        return { length: 2.3, width: 1.72 };
+        return { headOffset: 0.46, headRadius: 0.72, bodyOffset: -0.12, bodyRadius: 0.58 };
       case 'jjukkumi':
-        return { length: 2.08, width: 1.54 };
+        return { headOffset: 0.42, headRadius: 0.64, bodyOffset: -0.1, bodyRadius: 0.52 };
       case 'mackerel':
-        return { length: 2.92, width: 1.18 };
+        return { headOffset: 0.7, headRadius: 0.56, bodyOffset: -0.18, bodyRadius: 0.44 };
       case 'beltfish':
-        return { length: 3.46, width: 1.04 };
+        return { headOffset: 0.94, headRadius: 0.5, bodyOffset: 0.04, bodyRadius: 0.36 };
       case 'shark':
       default:
-        return { length: 3.6, width: 1.36 };
+        return { headOffset: 1.14, headRadius: 0.66, bodyOffset: 0.12, bodyRadius: 0.54 };
     }
   }
 
-  private getCapsuleContactStrength(
+  private getCircleContactStrength(
     point: VectorLike,
     marbleRadius: number,
     center: VectorLike,
-    bodyLength: number,
-    bodyWidth: number
+    bodyRadius: number
   ) {
     const offsetX = point.x - center.x;
     const offsetY = point.y - center.y;
-    const along = offsetX * this._direction.x + offsetY * this._direction.y;
-    const across = offsetX * this._normal.x + offsetY * this._normal.y;
-    const halfLength = bodyLength / 2;
-    const clampedAlong = Math.max(-halfLength, Math.min(halfLength, along));
-    const capsuleDx = along - clampedAlong;
-    const capsuleDistance = Math.hypot(capsuleDx, across);
-    const threshold = bodyWidth / 2 + marbleRadius;
-    if (capsuleDistance >= threshold) {
+    const distance = Math.hypot(offsetX, offsetY);
+    const threshold = bodyRadius + marbleRadius;
+    if (distance >= threshold) {
       return 0;
     }
-    const centerBias = 1 - Math.min(1, Math.abs(along) / Math.max(0.001, halfLength + marbleRadius));
-    return Math.max(0.22, 1 - capsuleDistance / threshold) * (0.62 + centerBias * 0.48);
+
+    return Math.max(0.16, 1 - distance / threshold);
   }
 
   private drawTrail(ctx: CanvasRenderingContext2D, rate: number, alpha: number) {

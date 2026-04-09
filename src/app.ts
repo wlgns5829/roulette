@@ -121,6 +121,7 @@ export function attachApp(roulette: Roulette) {
     let winnerShowcaseTimer = 0;
     let winnerRevealTimer = 0;
     let bgmStopTimer = 0;
+    let shufflePreviewTimers: number[] = [];
     let roundRunning = false;
     const winnerRevealDelayMs = 3220;
     const bgmStopDelayMs = 4260;
@@ -284,6 +285,13 @@ export function attachApp(roulette: Roulette) {
       eventFeed.innerHTML = '';
     };
 
+    const clearShufflePreview = () => {
+      shufflePreviewTimers.forEach((timerId) => {
+        window.clearTimeout(timerId);
+      });
+      shufflePreviewTimers = [];
+    };
+
     const normalizeRoster = () => {
       rosterInput.value = getRosterTokens().join('\n');
     };
@@ -294,8 +302,28 @@ export function attachApp(roulette: Roulette) {
       const fixedTokens = tokens.filter((token) => fixedSet.has(normalizeNameKey(parseNameToken(token).name)));
       const customTokens = tokens.filter((token) => !fixedSet.has(normalizeNameKey(parseNameToken(token).name)));
 
-      rosterInput.value = [...fixedTokens, ...shuffle(customTokens)].join('\n');
-      refreshBoard();
+      const finalTokens = [...fixedTokens, ...shuffle(customTokens)];
+      rosterInput.value = finalTokens.join('\n');
+
+      if (!roundRunning && finalTokens.length > 0) {
+        clearShufflePreview();
+        const previewFrames = Array.from({ length: 5 }, (_, index) =>
+          index === 4 ? finalTokens : [...fixedTokens, ...shuffle(customTokens)]
+        );
+
+        previewFrames.forEach((frame, index) => {
+          const timerId = window.setTimeout(() => {
+            if (index === previewFrames.length - 1) {
+              refreshBoard();
+              return;
+            }
+            roulette.setMarbles(frame);
+          }, index * 90);
+          shufflePreviewTimers.push(timerId);
+        });
+      } else {
+        refreshBoard();
+      }
       showToast('출발 순서를 다시 섞었어요.', '#38bdf8');
     };
 
@@ -317,6 +345,7 @@ export function attachApp(roulette: Roulette) {
     };
 
     const refreshBoard = () => {
+      clearShufflePreview();
       const names = getRosterTokens();
       roulette.setMarbles(names);
       ready = names.length > 0;
@@ -366,6 +395,7 @@ export function attachApp(roulette: Roulette) {
     };
 
     const startRound = () => {
+      clearShufflePreview();
       normalizeRoster();
       refreshBoard();
 
@@ -428,8 +458,12 @@ export function attachApp(roulette: Roulette) {
     mapSelect.value = String(roulette.getSelectedMapIndex());
     renderStage(roulette.getCurrentMap());
 
-    rosterInput.addEventListener('input', refreshBoard);
+    rosterInput.addEventListener('input', () => {
+      clearShufflePreview();
+      refreshBoard();
+    });
     rosterInput.addEventListener('blur', () => {
+      clearShufflePreview();
       normalizeRoster();
       refreshBoard();
     });
@@ -440,6 +474,7 @@ export function attachApp(roulette: Roulette) {
     });
     demoButton.addEventListener('click', () => {
       audio.playUiClick();
+      clearShufflePreview();
       rosterInput.value = sampleRoster.join('\n');
       refreshBoard();
       showToast('샘플 명단을 불러왔습니다.', '#38bdf8');
@@ -452,6 +487,7 @@ export function attachApp(roulette: Roulette) {
 
     mapSelect.addEventListener('change', () => {
       audio.playUiClick();
+      clearShufflePreview();
       roulette.setMap(Number(mapSelect.value));
       renderStage(roulette.getCurrentMap());
       refreshBoard();
