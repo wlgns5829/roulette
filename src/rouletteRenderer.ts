@@ -710,10 +710,13 @@ export class RouletteRenderer {
     }
 
     const elapsed = now - this._winnerRevealStartedAt;
-    const riseProgress = this.clamp(elapsed / 1550);
-    const textProgress = this.clamp((elapsed - 180) / 980);
-    const finaleProgress = this.clamp((elapsed - 80) / 1900);
+    const riseProgress = this.clamp(elapsed / 1900);
+    const tensionProgress = this.clamp((elapsed - 980) / 560);
+    const fireworksProgress = this.clamp((elapsed - 1480) / 1650);
+    const textProgress = this.clamp((elapsed - 1060) / 980);
+    const finaleProgress = this.clamp((elapsed - 480) / 2400);
     const riseEase = this.easeOutBack(riseProgress);
+    const tensionEase = this.easeOutCubic(tensionProgress);
     const textEase = this.easeOutCubic(textProgress);
     const centerX = this._canvas.width / 2;
     const centerY = this._canvas.height * 0.48;
@@ -729,12 +732,13 @@ export class RouletteRenderer {
     const marbleImage = options.marbleStyle === 'sprite' ? this.getMarbleImage(winner.name) : undefined;
     const marbleSize = Math.max(96, Math.min(148, this._canvas.width * 0.105));
     const marbleCenterX = centerX;
-    const marbleStartY = centerY + this._canvas.height * 0.18;
-    const marbleTargetY = centerY - nameSize * 1.2 - this._canvas.height * 0.02;
+    const marbleStartY = this._canvas.height + marbleSize * 1.45;
+    const marbleTargetY = centerY - nameSize * 1.58 - this._canvas.height * 0.12;
     const marbleCenterY =
-      marbleStartY + (marbleTargetY - marbleStartY) * riseEase - Math.sin(elapsed * 0.0064) * 7 * riseProgress;
-    const nameY = centerY + nameSize * 0.05;
-    const textOffsetY = (1 - textEase) * 34;
+      marbleStartY + (marbleTargetY - marbleStartY) * riseEase - Math.sin(elapsed * 0.0054) * 8 * tensionEase;
+    const platformY = marbleTargetY + marbleSize * 0.9;
+    const nameY = centerY + nameSize * 0.18;
+    const textOffsetY = (1 - textEase) * 42;
 
     this.ctx.save();
 
@@ -760,7 +764,7 @@ export class RouletteRenderer {
     this.ctx.fillStyle = skyGlow;
     this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
 
-    this.ctx.globalAlpha = 0.16 + finaleProgress * 0.1;
+    this.ctx.globalAlpha = 0.15 + finaleProgress * 0.1;
     this.ctx.fillStyle = accent;
     for (let i = 0; i < 8; i++) {
       const spread = this._canvas.width * (0.11 + i * 0.024);
@@ -777,9 +781,9 @@ export class RouletteRenderer {
     this.ctx.globalAlpha = 1;
 
     for (let i = 0; i < 6; i++) {
-      const burstProgress = this.clamp((elapsed - i * 170) / 920);
+      const burstProgress = this.clamp((elapsed - 1480 - i * 190) / 940);
       if (burstProgress <= 0) continue;
-      const burstAlpha = (1 - burstProgress) * (0.52 + finaleProgress * 0.22);
+      const burstAlpha = (1 - burstProgress) * (0.44 + fireworksProgress * 0.34);
       const burstX = this._canvas.width * (0.16 + (i % 3) * 0.24) + (i >= 3 ? this._canvas.width * 0.08 : 0);
       const burstY = this._canvas.height * (i % 2 === 0 ? 0.16 : 0.26);
       const burstRadius = this._canvas.width * (0.04 + (i % 3) * 0.01) * (0.6 + burstProgress * 1.1);
@@ -815,10 +819,10 @@ export class RouletteRenderer {
       }
     }
 
-    const beamWidth = marbleSize * (0.72 + finaleProgress * 0.12);
+    const beamWidth = marbleSize * (0.64 + tensionEase * 0.16 + fireworksProgress * 0.08);
     const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY, 0, this._canvas.height);
-    beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.44)');
-    beamGradient.addColorStop(0.28, `rgba(255, 255, 255, ${0.16 + finaleProgress * 0.08})`);
+    beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.52)');
+    beamGradient.addColorStop(0.28, `rgba(255, 255, 255, ${0.14 + tensionEase * 0.14 + fireworksProgress * 0.06})`);
     beamGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.fillStyle = beamGradient;
     this.ctx.beginPath();
@@ -829,13 +833,35 @@ export class RouletteRenderer {
     this.ctx.closePath();
     this.ctx.fill();
 
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.26 + tensionEase * 0.26;
+    this.ctx.fillStyle = 'rgba(255, 248, 235, 0.62)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, platformY + marbleSize * 0.28, marbleSize * 1.35, marbleSize * 0.28, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.globalAlpha = 0.34 + tensionEase * 0.18;
+    this.ctx.fillStyle = accent;
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, platformY, marbleSize * 1.18, marbleSize * 0.18, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+
+    this.ctx.save();
+    this.ctx.globalAlpha = Math.max(0, 0.55 - fireworksProgress * 0.24) * (0.42 + tensionEase * 0.5);
+    this.ctx.strokeStyle = '#fff7d6';
+    this.ctx.lineWidth = 3.2;
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, marbleCenterY, marbleSize * (1.16 + tensionEase * 0.22 + Math.sin(elapsed * 0.011) * 0.03), 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+
     for (let i = 0; i < 14; i++) {
       const travel = (finaleProgress * 1.2 + i / 14) % 1;
       const sparkX = centerX + Math.sin(elapsed * 0.0032 + i * 1.3) * beamWidth * (0.18 + travel * 0.16);
       const sparkY = this._canvas.height - travel * (this._canvas.height - marbleCenterY - marbleSize * 0.1);
       const sparkSize = 2.6 + (1 - travel) * 4.2;
       this.ctx.save();
-      this.ctx.globalAlpha = 0.28 + (1 - travel) * 0.42;
+      this.ctx.globalAlpha = (0.24 + (1 - travel) * 0.42) * (0.45 + tensionEase * 0.55);
       this.ctx.fillStyle = i % 2 === 0 ? '#ffffff' : accent;
       this.ctx.beginPath();
       this.ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
@@ -904,7 +930,7 @@ export class RouletteRenderer {
     this.ctx.textBaseline = 'middle';
     this.ctx.lineJoin = 'round';
 
-    this.ctx.globalAlpha = 0.26 + textEase * 0.74;
+    this.ctx.globalAlpha = 0.18 + textEase * 0.82;
     this.ctx.font = `700 ${labelSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
     this.ctx.fillStyle = '#6f451f';
     this.ctx.shadowBlur = 18;
@@ -925,7 +951,7 @@ export class RouletteRenderer {
     this.ctx.fillStyle = '#77491d';
     this.ctx.fillText(`${stage.title} 돌파`, centerX, nameY + nameSize * 0.65 + textOffsetY * 0.2);
     this.ctx.fillStyle = accent;
-    this.ctx.fillText('하늘로 솟아오르며 폭죽 속 승리 확정!', centerX, nameY + nameSize * 0.95 + textOffsetY * 0.16);
+    this.ctx.fillText('지상 위로 솟아오른 뒤, 숨 고른 폭죽으로 승리 확정!', centerX, nameY + nameSize * 0.95 + textOffsetY * 0.16);
     this.ctx.restore();
   }
 }

@@ -173,6 +173,7 @@ export class Roulette extends EventTarget {
         stage: this._stage,
         needToZoom: this._goalDist < zoomThreshold,
         targetIndex: 0,
+        winnerSpotlight: this._isRunning ? null : this._winner,
       });
     }
 
@@ -351,7 +352,7 @@ export class Roulette extends EventTarget {
         },
       })
     );
-    this._scheduleCelebration(2100, () => {
+    this._scheduleCelebration(3200, () => {
       this._recorder.stop();
     });
   }
@@ -548,20 +549,30 @@ export class Roulette extends EventTarget {
     const width = this._renderer.width;
     const height = this._renderer.height;
     const bursts = [
-      { delay: 0, x: centerX, y: height * 0.2, count: 180, sizeRange: [6, 18] as [number, number], speedRange: [95, 270] as [number, number] },
-      { delay: 140, x: centerX - width * 0.18, y: height * 0.24, count: 128, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
-      { delay: 280, x: centerX + width * 0.2, y: height * 0.22, count: 128, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
-      { delay: 460, x: centerX - width * 0.08, y: height * 0.12, count: 112, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
-      { delay: 620, x: centerX + width * 0.1, y: height * 0.1, count: 112, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
-      { delay: 820, x: centerX, y: height * 0.16, count: 148, sizeRange: [5, 16] as [number, number], speedRange: [88, 245] as [number, number] },
+      { delay: 760, x: centerX, y: height * 0.18, count: 188, sizeRange: [6, 18] as [number, number], speedRange: [95, 270] as [number, number] },
+      { delay: 980, x: centerX - width * 0.18, y: height * 0.24, count: 132, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 1160, x: centerX + width * 0.2, y: height * 0.22, count: 132, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 1380, x: centerX - width * 0.08, y: height * 0.12, count: 118, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 1540, x: centerX + width * 0.1, y: height * 0.1, count: 118, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 1760, x: centerX, y: height * 0.15, count: 156, sizeRange: [5, 16] as [number, number], speedRange: [88, 245] as [number, number] },
     ];
 
     this._particleManager.shot(centerX, height * 0.58, {
-      count: 92,
+      count: 108,
       palette,
       sizeRange: [4, 12],
-      speedRange: [120, 290],
-      lifeRange: [900, 1500],
+      speedRange: [135, 320],
+      lifeRange: [1100, 1700],
+    });
+
+    this._scheduleCelebration(360, () => {
+      this._particleManager.shot(centerX, height * 0.48, {
+        count: 72,
+        palette: ['#ffffff', '#fff7d6', accent],
+        sizeRange: [3, 9],
+        speedRange: [82, 180],
+        lifeRange: [1000, 1600],
+      });
     });
 
     bursts.forEach((burst) => {

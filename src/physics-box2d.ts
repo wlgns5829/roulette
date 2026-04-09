@@ -21,6 +21,11 @@ export class Box2dPhysics implements IPhysics {
   private entities: PhysicsEntityState[] = [];
 
   private deleteCandidates: Box2D.b2Body[] = [];
+  private _trackBounds = {
+    minX: 1.25,
+    maxX: 24.75,
+    minY: -18,
+  };
 
   async init(): Promise<void> {
     this.Box2D = await Box2DFactory();
@@ -41,39 +46,57 @@ export class Box2dPhysics implements IPhysics {
   }
 
   createStage(stage: StageDef): void {
+    this._trackBounds = {
+      minX: 1.25,
+      maxX: 24.75,
+      minY: -24,
+    };
     this.createEntities([...(stage.entities ?? []), ...this.createSafetyRails(stage.goalY)]);
   }
 
   private createSafetyRails(goalY: number): MapEntity[] {
     const invisible = 'rgba(0, 0, 0, 0)';
+    const topY = -360;
+    const bottomY = goalY + 32;
+    const centerY = (topY + bottomY) / 2;
+    const halfHeight = (bottomY - topY) / 2;
     return [
       {
-        position: { x: 0, y: 0 },
+        position: { x: -0.72, y: centerY },
         type: 'static',
         shape: {
-          type: 'polyline',
+          type: 'box',
           rotation: 0,
           color: invisible,
           bloomColor: invisible,
-          points: [
-            [0.9, -320],
-            [0.9, goalY + 16],
-          ],
+          width: 0.82,
+          height: halfHeight,
         },
         props: { density: 1, angularVelocity: 0, restitution: 0 },
       },
       {
-        position: { x: 0, y: 0 },
+        position: { x: 26.72, y: centerY },
         type: 'static',
         shape: {
-          type: 'polyline',
+          type: 'box',
           rotation: 0,
           color: invisible,
           bloomColor: invisible,
-          points: [
-            [25.1, -320],
-            [25.1, goalY + 16],
-          ],
+          width: 0.82,
+          height: halfHeight,
+        },
+        props: { density: 1, angularVelocity: 0, restitution: 0 },
+      },
+      {
+        position: { x: 13, y: topY - 0.75 },
+        type: 'static',
+        shape: {
+          type: 'box',
+          rotation: 0,
+          color: invisible,
+          bloomColor: invisible,
+          width: 15.4,
+          height: 0.9,
         },
         props: { density: 1, angularVelocity: 0, restitution: 0 },
       },
@@ -159,6 +182,7 @@ export class Box2dPhysics implements IPhysics {
 
     const body = this.world.CreateBody(bodyDef);
     body.CreateFixture(circleShape, 1 + Math.random());
+    body.SetBullet(true);
     body.SetAwake(false);
     body.SetEnabled(false);
     this.marbleMap[id] = body;
@@ -236,6 +260,25 @@ export class Box2dPhysics implements IPhysics {
     this.world.SetGravity(new this.Box2D.b2Vec2(gravity.x, gravity.y));
   }
 
+  private _rescueOutOfBoundsMarbles() {
+    Object.values(this.marbleMap).forEach((body) => {
+      const position = body.GetPosition();
+      const clampedX = Math.min(this._trackBounds.maxX, Math.max(this._trackBounds.minX, position.x));
+      const clampedY = Math.max(this._trackBounds.minY, position.y);
+
+      if (clampedX === position.x && clampedY === position.y) {
+        return;
+      }
+
+      body.SetTransform(new this.Box2D.b2Vec2(clampedX, clampedY), body.GetAngle());
+      body.ApplyLinearImpulseToCenter(
+        new this.Box2D.b2Vec2(clampedX !== position.x ? (clampedX < position.x ? -0.85 : 0.85) : 0, 0.42),
+        true
+      );
+      body.SetAwake(true);
+    });
+  }
+
   start(): void {
     for (const key in this.marbleMap) {
       const marble = this.marbleMap[key];
@@ -267,6 +310,7 @@ export class Box2dPhysics implements IPhysics {
     });
 
     this.world.Step(deltaSeconds, 6, 2);
+    this._rescueOutOfBoundsMarbles();
 
     for (let i = this.entities.length - 1; i >= 0; i--) {
       const entity = this.entities[i];

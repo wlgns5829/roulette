@@ -5,6 +5,7 @@ import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
 const finishZoomBoost = 1.8;
+const winnerSpotlightZoomBoost = 2.32;
 const stageLaneSpan = 26;
 
 export class Camera {
@@ -125,15 +126,17 @@ export class Camera {
     stage,
     needToZoom,
     targetIndex,
+    winnerSpotlight,
   }: {
     marbles: Marble[];
     stage: StageDef;
     needToZoom: boolean;
     targetIndex: number;
+    winnerSpotlight?: Marble | null;
   }) {
     // set target position
     if (!this._locked) {
-      this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex);
+      this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex, winnerSpotlight);
     }
 
     // interpolate position
@@ -144,13 +147,38 @@ export class Camera {
     this._zoom = this._interpolation(this._zoom, this._targetZoom);
   }
 
-  private _calcTargetPositionAndZoom(marbles: Marble[], stage: StageDef, needToZoom: boolean, targetIndex: number) {
+  private _calcTargetPositionAndZoom(
+    marbles: Marble[],
+    stage: StageDef,
+    needToZoom: boolean,
+    targetIndex: number,
+    winnerSpotlight?: Marble | null
+  ) {
     if (!this._shouldFollowMarbles) {
       return;
     }
 
-    if (marbles.length > 0) {
-      const targetMarble = marbles[targetIndex] ? marbles[targetIndex] : marbles[0];
+    const targetMarble = winnerSpotlight ?? (marbles[targetIndex] ? marbles[targetIndex] : marbles[0]);
+    if (targetMarble) {
+      if (winnerSpotlight) {
+        if (stage.presentation === 'side-scroll') {
+          const laneFocus = 13 + (winnerSpotlight.position.x - 13) * 0.34;
+          const targetX = Math.min(stage.goalY + 0.5, winnerSpotlight.position.y + 1.4);
+          const targetY = stageLaneSpan - laneFocus;
+          this.setPosition({ x: targetX, y: targetY });
+          this.zoom = cruisingZoom + winnerSpotlightZoomBoost;
+          return;
+        }
+
+        const spotlightVisualY = this.toVisualY(winnerSpotlight.position.y);
+        this.setPosition({
+          x: winnerSpotlight.position.x,
+          y: Math.max(-1.4, spotlightVisualY - 0.95),
+        });
+        this.zoom = cruisingZoom + winnerSpotlightZoomBoost;
+        return;
+      }
+
       const chaseMarble = marbles[targetIndex + 1] ?? marbles[targetIndex - 1] ?? targetMarble;
       const progress = Math.max(0, Math.min(1, targetMarble.position.y / stage.goalY));
       const finishBias = needToZoom ? Math.max(0, Math.min(1, (progress - 0.58) / 0.42)) : 0;
