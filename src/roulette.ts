@@ -98,6 +98,7 @@ export class Roulette extends EventTarget {
   private _gravityOverride: { x: number; y: number } | null = null;
   private _finalApproachTriggered = false;
   private _closeRaceAssistCooldown = 0;
+  private _celebrationTimeouts: number[] = [];
 
   get isReady() {
     return this._isReady;
@@ -339,28 +340,7 @@ export class Roulette extends EventTarget {
     this._clearRoundEffects();
 
     const accent = this._stage?.accent ?? '#f59e0b';
-    const palette = [accent, '#fef08a', '#ffffff', `hsl(${marble.hue} 100% 62%)`];
-    const centerX = this._renderer.width / 2;
-    const centerY = this._renderer.height * 0.34;
-    this._particleManager.shot(centerX, centerY, { count: 160, palette, sizeRange: [6, 18], speedRange: [90, 260] });
-    this._particleManager.shot(centerX - 170, this._renderer.height * 0.24, {
-      count: 110,
-      palette,
-      sizeRange: [5, 15],
-      speedRange: [80, 220],
-    });
-    this._particleManager.shot(centerX + 170, this._renderer.height * 0.22, {
-      count: 110,
-      palette,
-      sizeRange: [5, 15],
-      speedRange: [80, 220],
-    });
-    this._particleManager.shot(centerX, this._renderer.height * 0.16, {
-      count: 90,
-      palette,
-      sizeRange: [4, 13],
-      speedRange: [70, 180],
-    });
+    this._launchWinnerCelebration(marble, accent);
 
     this.dispatchEvent(
       new CustomEvent('goal', {
@@ -371,9 +351,9 @@ export class Roulette extends EventTarget {
         },
       })
     );
-    setTimeout(() => {
+    this._scheduleCelebration(2100, () => {
       this._recorder.stop();
-    }, 1000);
+    });
   }
 
   private _maybeTriggerFinalApproach(focusPack: Marble[]) {
@@ -541,6 +521,10 @@ export class Roulette extends EventTarget {
   }
 
   private _clearRoundEffects() {
+    this._celebrationTimeouts.forEach((timeoutId) => {
+      window.clearTimeout(timeoutId);
+    });
+    this._celebrationTimeouts = [];
     this._roundSpeedMultiplier = 1;
     this._speedEffectRemaining = 0;
     this._gravityEffectRemaining = 0;
@@ -548,6 +532,56 @@ export class Roulette extends EventTarget {
     if (this.physics) {
       this.physics.setGravity(getDefaultGravity());
     }
+  }
+
+  private _scheduleCelebration(delay: number, callback: () => void) {
+    const timeoutId = window.setTimeout(() => {
+      this._celebrationTimeouts = this._celebrationTimeouts.filter((activeId) => activeId !== timeoutId);
+      callback();
+    }, delay);
+    this._celebrationTimeouts.push(timeoutId);
+  }
+
+  private _launchWinnerCelebration(marble: Marble, accent: string) {
+    const palette = [accent, '#fef08a', '#ffffff', '#fde68a', `hsl(${marble.hue} 100% 62%)`];
+    const centerX = this._renderer.width / 2;
+    const width = this._renderer.width;
+    const height = this._renderer.height;
+    const bursts = [
+      { delay: 0, x: centerX, y: height * 0.2, count: 180, sizeRange: [6, 18] as [number, number], speedRange: [95, 270] as [number, number] },
+      { delay: 140, x: centerX - width * 0.18, y: height * 0.24, count: 128, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 280, x: centerX + width * 0.2, y: height * 0.22, count: 128, sizeRange: [5, 15] as [number, number], speedRange: [82, 230] as [number, number] },
+      { delay: 460, x: centerX - width * 0.08, y: height * 0.12, count: 112, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 620, x: centerX + width * 0.1, y: height * 0.1, count: 112, sizeRange: [4, 13] as [number, number], speedRange: [76, 210] as [number, number] },
+      { delay: 820, x: centerX, y: height * 0.16, count: 148, sizeRange: [5, 16] as [number, number], speedRange: [88, 245] as [number, number] },
+    ];
+
+    this._particleManager.shot(centerX, height * 0.58, {
+      count: 92,
+      palette,
+      sizeRange: [4, 12],
+      speedRange: [120, 290],
+      lifeRange: [900, 1500],
+    });
+
+    bursts.forEach((burst) => {
+      this._scheduleCelebration(burst.delay, () => {
+        this._particleManager.shot(burst.x, burst.y, {
+          count: burst.count,
+          palette,
+          sizeRange: burst.sizeRange,
+          speedRange: burst.speedRange,
+          lifeRange: [1500, 2800],
+        });
+        this._particleManager.shot(burst.x, burst.y, {
+          count: Math.max(44, Math.round(burst.count * 0.38)),
+          palette: ['#ffffff', '#fff7d6', accent],
+          sizeRange: [3, 10],
+          speedRange: [60, 150],
+          lifeRange: [1100, 2000],
+        });
+      });
+    });
   }
 
   private _scheduleRoundEvents() {
