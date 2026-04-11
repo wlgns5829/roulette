@@ -4,7 +4,7 @@ import type { Marble } from './marble';
 import type { VectorLike } from './types/VectorLike';
 
 const cruisingZoom = 0.88;
-const finishZoomBoost = 1.8;
+const finishZoomBoost = 2.2;
 const stageLaneSpan = 26;
 
 export class Camera {
@@ -186,23 +186,31 @@ export class Camera {
       }
 
       const chaseMarble = marbles[targetIndex + 1] ?? marbles[targetIndex - 1] ?? targetMarble;
+      const thirdMarble = marbles[targetIndex + 2] ?? chaseMarble;
       const progress = Math.max(0, Math.min(1, targetMarble.position.y / stage.goalY));
-      const finishBias = needToZoom ? Math.max(0, Math.min(1, (progress - 0.58) / 0.42)) : 0;
+      const finishBias = needToZoom ? Math.max(0, Math.min(1, (progress - 0.48) / 0.34)) : 0;
       const chaseGap = Math.abs(targetMarble.position.y - chaseMarble.position.y);
       const chaseBias = needToZoom ? Math.max(0, 0.18 - chaseGap * 0.03) : 0;
+      const packTail = thirdMarble ?? chaseMarble;
+      const packGap = Math.abs(targetMarble.position.y - packTail.position.y);
+      const packTightness = needToZoom ? Math.max(0, Math.min(1, 1 - packGap / 15)) : 0;
       if (stage.presentation === 'side-scroll') {
-        const laneBlendX = targetMarble.position.x * (1 - chaseBias) + chaseMarble.position.x * chaseBias;
-        const laneFocus = 13 + (laneBlendX - 13) * 0.58;
+        const laneBlendX =
+          targetMarble.position.x * (0.58 - chaseBias * 0.18) +
+          chaseMarble.position.x * (0.26 + chaseBias * 0.1) +
+          thirdMarble.position.x * (0.16 + packTightness * 0.08);
+        const laneFocus = 13 + (laneBlendX - 13) * (0.6 + packTightness * 0.1);
         const remainingDistance = Math.max(0, stage.goalY - targetMarble.position.y);
-        const lookAhead = remainingDistance * (0.14 + finishBias * 0.22);
-        const targetX = Math.min(stage.goalY - 2.2, targetMarble.position.y + lookAhead);
+        const lookAhead = remainingDistance * (0.09 + finishBias * 0.14);
+        const targetX = Math.min(stage.goalY - 1.4, targetMarble.position.y + lookAhead);
         const targetY = stageLaneSpan - laneFocus;
 
         this.setPosition({ x: targetX, y: targetY });
         if (needToZoom) {
           const goalDist = Math.abs(stage.zoomY - targetMarble.position.y);
           const finishRatio = Math.max(0, Math.min(1, 1 - goalDist / zoomThreshold));
-          this.zoom = cruisingZoom + finishRatio * finishZoomBoost;
+          const packZoomBoost = packTightness * (0.18 + finishBias * 0.24);
+          this.zoom = cruisingZoom + finishRatio * finishZoomBoost + packZoomBoost;
         } else {
           this.zoom = cruisingZoom;
         }
@@ -210,14 +218,21 @@ export class Camera {
       }
 
       const leaderVisualY = this.toVisualY(targetMarble.position.y);
-      const targetX = targetMarble.position.x * (1 - chaseBias) + chaseMarble.position.x * chaseBias;
-      const targetY = leaderVisualY * (1 - finishBias * 0.42);
+      const tailVisualY = this.toVisualY(packTail.position.y);
+      const packSpan = Math.abs(tailVisualY - leaderVisualY);
+      const targetX =
+        targetMarble.position.x * (0.58 - chaseBias * 0.16) +
+        chaseMarble.position.x * (0.27 + chaseBias * 0.08) +
+        thirdMarble.position.x * (0.15 + packTightness * 0.08);
+      const targetY =
+        leaderVisualY * (1 - finishBias * 0.34) + Math.min(6.8, packSpan * (0.22 + packTightness * 0.2));
 
       this.setPosition({ x: targetX, y: targetY });
       if (needToZoom) {
         const goalDist = Math.abs(this.toVisualY(stage.zoomY) - leaderVisualY);
         const finishRatio = Math.max(0, Math.min(1, 1 - goalDist / zoomThreshold));
-        this.zoom = cruisingZoom + finishRatio * finishZoomBoost;
+        const packZoomBoost = packTightness * (0.16 + finishBias * 0.22);
+        this.zoom = cruisingZoom + finishRatio * finishZoomBoost + packZoomBoost;
       } else {
         this.zoom = cruisingZoom;
       }

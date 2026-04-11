@@ -23,6 +23,7 @@ export type RenderParameters = {
   effects: GameObject[];
   winnerRank: number;
   winner: Marble | null;
+  podium: Marble[];
   size: VectorLike;
   theme: ColorTheme;
 };
@@ -783,7 +784,44 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
-  private renderWinner({ winner, stage }: RenderParameters) {
+  private renderPodiumBanner(podium: Marble[], accent: string, progress: number, width: number, height: number) {
+    if (podium.length === 0 || progress <= 0) {
+      return;
+    }
+
+    const eased = this.easeOutCubic(progress);
+    const baseY = height * 0.79;
+
+    this.ctx.save();
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.lineJoin = 'round';
+    this.ctx.globalAlpha = 0.22 + eased * 0.78;
+    this.ctx.font = `700 ${Math.max(18, Math.min(28, width * 0.02))}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+    this.ctx.fillStyle = '#fff6dd';
+    this.ctx.shadowBlur = 16;
+    this.ctx.shadowColor = accent;
+    this.ctx.fillText('결승 순위', width / 2, baseY - 46 + (1 - eased) * 12);
+
+    podium.slice(0, 3).forEach((entry, index) => {
+      const y = baseY + index * 34 + (1 - eased) * (18 + index * 4);
+      const fillColor = index === 0 ? '#fde68a' : `hsl(${entry.hue} 100% ${index === 1 ? 88 : 84}%)`;
+      const fontSize = index === 0 ? Math.max(24, Math.min(34, width * 0.026)) : Math.max(20, Math.min(28, width * 0.021));
+
+      this.ctx.font = `${index === 0 ? 800 : 700} ${fontSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+      this.ctx.lineWidth = index === 0 ? 6 : 5;
+      this.ctx.strokeStyle = 'rgba(24, 14, 8, 0.64)';
+      this.ctx.fillStyle = fillColor;
+      this.ctx.shadowBlur = index === 0 ? 18 : 12;
+      this.ctx.shadowColor = index === 0 ? accent : 'rgba(255, 255, 255, 0.28)';
+      this.ctx.strokeText(`${index + 1}등 ${entry.name}`, width / 2, y);
+      this.ctx.fillText(`${index + 1}등 ${entry.name}`, width / 2, y);
+    });
+
+    this.ctx.restore();
+  }
+
+  private renderWinner({ winner, stage, podium }: RenderParameters) {
     if (!winner) {
       this._winnerRevealKey = null;
       this._winnerRevealStartedAt = 0;
@@ -810,6 +848,7 @@ export class RouletteRenderer {
     const zoomInProgress = this.clamp((elapsed - 2760) / 760);
     const zoomOutProgress = this.clamp((elapsed - 4040) / 980);
     const textProgress = this.clamp((elapsed - 4320) / 760);
+    const podiumProgress = this.clamp((elapsed - 2480) / 620);
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
@@ -1295,6 +1334,7 @@ export class RouletteRenderer {
     }
     this.ctx.restore();
     this.drawWinnerSmileFace(marbleCenterX, marbleCenterY, marbleVisualSize, time, joyEase, accent);
+    this.renderPodiumBanner(podium, accent, podiumProgress, width, height);
 
     for (let i = 0; i < 8; i++) {
       const orbitAngle = elapsed * 0.0038 + i * ((Math.PI * 2) / 8);

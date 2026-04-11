@@ -71,6 +71,13 @@ function randomOf<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function formatPodiumSummary(podium: string[] = []) {
+  return podium
+    .slice(0, 3)
+    .map((name, index) => `${index + 1}등 ${name}`)
+    .join(' · ');
+}
+
 export function attachApp(roulette: Roulette) {
   const audio = new AudioEngine();
   const setup = async () => {
@@ -218,11 +225,12 @@ export function attachApp(roulette: Roulette) {
       }
     };
 
-    const showWinnerShowcase = (winner: string, stageTitle: string, accent: string) => {
+    const showWinnerShowcase = (winner: string, stageTitle: string, accent: string, podium: string[] = []) => {
+      const podiumText = formatPodiumSummary(podium);
       document.documentElement.style.setProperty('--goal-accent', accent);
       winnerShowcaseLabel.textContent = '오늘의 커피 당첨자';
       winnerShowcaseName.textContent = winner;
-      winnerShowcaseStage.textContent = `${stageTitle} 최종 돌파`;
+      winnerShowcaseStage.textContent = podiumText || `${stageTitle} 최종 돌파`;
       winnerShowcase.hidden = false;
       document.body.classList.add('winner-showcase');
 
@@ -236,12 +244,14 @@ export function attachApp(roulette: Roulette) {
       }, 3000);
     };
 
-    const revealWinner = (winner: string, stageTitle: string, accent: string) => {
+    const revealWinner = (winner: string, stageTitle: string, accent: string, podium: string[] = []) => {
+      const podiumText = formatPodiumSummary(podium);
       winnerName.textContent = winner;
       winnerLine.textContent = randomOf(winnerLines);
+      winnerMap.textContent = podiumText ? `맵: ${stageTitle} · ${podiumText}` : `맵: ${stageTitle}`;
       resultPanel.hidden = false;
       setStatus('우승 연출', '골인 공이 하늘 위로 솟아오르고 있습니다.');
-      showWinnerShowcase(winner, stageTitle, accent);
+      showWinnerShowcase(winner, stageTitle, accent, podium);
       setStatus('오늘의 당첨', `${winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
       appendFeedItem('당첨', `${winner}님이 ${stageTitle}을 통과해 오늘의 커피 당첨자가 됐습니다.`, accent);
       winnerRevealTimer = 0;
@@ -606,16 +616,20 @@ export function attachApp(roulette: Roulette) {
     });
 
     roulette.addEventListener('goal', (event) => {
-      const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string }>).detail;
+      const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string; podium: string[] }>).detail;
+      const podiumText = formatPodiumSummary(detail.podium);
       ready = false;
       startButton.disabled = true;
       clearWinnerReveal();
       resultPanel.hidden = true;
+      if (podiumText) {
+        queueMicrotask(() => setStatus('결승 확정', podiumText));
+      }
       setStatus('우승 연출', '골인 공이 하늘 위로 솟아오르고 있습니다.');
       triggerGoalOverlay(detail.accent);
       audio.playGoal();
       winnerRevealTimer = window.setTimeout(() => {
-        revealWinner(detail.winner, detail.stageTitle, detail.accent);
+        revealWinner(detail.winner, detail.stageTitle, detail.accent, detail.podium);
       }, winnerRevealDelayMs);
       if (bgmStopTimer) {
         window.clearTimeout(bgmStopTimer);

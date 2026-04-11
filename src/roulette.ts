@@ -132,6 +132,7 @@ export class Roulette extends EventTarget {
   private _celebrationTimeouts: number[] = [];
   private _winnerCelebrationElapsed = 0;
   private _seaCreatureRushEffects: Array<{ effect: SharkRushEffect; creature: SeaCreatureRushSpec }> = [];
+  private _podiumSnapshot: Marble[] = [];
 
   get isReady() {
     return this._isReady;
@@ -376,6 +377,7 @@ export class Roulette extends EventTarget {
     this._winner = marble;
     this._winnerCelebrationElapsed = 0;
     this._isRunning = false;
+    this._capturePodiumSnapshot();
     this._clearRoundEffects();
 
     const accent = this._stage?.accent ?? '#f59e0b';
@@ -387,6 +389,7 @@ export class Roulette extends EventTarget {
           winner: marble.name,
           stageTitle: this._stage?.title ?? '',
           accent,
+          podium: this._podiumSnapshot.slice(0, 3).map((entry) => entry.name),
         },
       })
     );
@@ -429,6 +432,7 @@ export class Roulette extends EventTarget {
 
     const contender = focusPack[0];
     const runnerUp = focusPack[1];
+    const third = focusPack[2];
     if (
       this._winners.length < this._winnerRank + 1 &&
       contender &&
@@ -436,10 +440,29 @@ export class Roulette extends EventTarget {
       this._goalDist < zoomThreshold * 1.4 &&
       contender.y > this._stage.zoomY - zoomThreshold * 1.6
     ) {
-      return Math.max(0.12, this._goalDist / (zoomThreshold * 1.2));
+      const podiumGap = contender.y - (third?.y ?? runnerUp.y);
+      const tension = Math.max(0, Math.min(1, 1 - podiumGap / 11));
+      return Math.max(0.08, this._goalDist / (zoomThreshold * 1.3) - tension * 0.12);
     }
 
     return 1;
+  }
+
+  private _capturePodiumSnapshot() {
+    if (!this._stage) {
+      this._podiumSnapshot = [];
+      return;
+    }
+
+    const finishLine = getFinishLine(this._stage);
+    const finished = this._winners.slice(0, 3);
+    const finishedIds = new Set(finished.map((marble) => marble.id));
+    const contenders = this._marbles
+      .filter((marble) => !finishedIds.has(marble.id) && marble.y <= finishLine)
+      .slice()
+      .sort((a, b) => b.y - a.y);
+
+    this._podiumSnapshot = [...finished, ...contenders].slice(0, 3);
   }
 
   private _updateEffects(deltaTime: number) {
@@ -508,6 +531,7 @@ export class Roulette extends EventTarget {
       effects: this._effects,
       winnerRank: this._winnerRank,
       winner: this._winner,
+      podium: this._podiumSnapshot,
       size: { x: this._renderer.width, y: this._renderer.height },
       theme: this._theme,
     };
@@ -1070,6 +1094,7 @@ export class Roulette extends EventTarget {
     this._winner = null;
     this._winnerCelebrationElapsed = 0;
     this._winners = [];
+    this._podiumSnapshot = [];
     this._marbles = [];
     this._resetRoundFlow();
   }
@@ -1088,6 +1113,7 @@ export class Roulette extends EventTarget {
     this._winner = null;
     this._winnerCelebrationElapsed = 0;
     this._winners = [];
+    this._podiumSnapshot = [];
     this._goalDist = Infinity;
     this._camera.startFollowingMarbles();
     this._resetRoundFlow();
