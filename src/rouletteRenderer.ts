@@ -794,6 +794,93 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawBatSpecter(x: number, y: number, size: number, alpha = 1) {
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.globalAlpha = alpha;
+    this.ctx.fillStyle = 'rgba(31, 41, 55, 0.94)';
+    this.ctx.beginPath();
+    this.ctx.moveTo(-size * 0.7, 0);
+    this.ctx.quadraticCurveTo(-size * 0.34, -size * 0.4, -size * 0.06, -size * 0.08);
+    this.ctx.quadraticCurveTo(0, -size * 0.46, size * 0.06, -size * 0.08);
+    this.ctx.quadraticCurveTo(size * 0.34, -size * 0.4, size * 0.7, 0);
+    this.ctx.quadraticCurveTo(size * 0.26, size * 0.08, size * 0.18, size * 0.32);
+    this.ctx.quadraticCurveTo(0, size * 0.2, -size * 0.18, size * 0.32);
+    this.ctx.quadraticCurveTo(-size * 0.26, size * 0.08, -size * 0.7, 0);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.fillStyle = 'rgba(255, 245, 208, 0.96)';
+    this.ctx.beginPath();
+    this.ctx.arc(-size * 0.12, 0, size * 0.08, 0, Math.PI * 2);
+    this.ctx.arc(size * 0.12, 0, size * 0.08, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private drawStoneShoreline(centerX: number, baseY: number, width: number, height: number, alpha = 1) {
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+
+    this.ctx.fillStyle = 'rgba(77, 87, 104, 0.96)';
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX - width * 0.52, baseY);
+    this.ctx.lineTo(centerX - width * 0.42, baseY - height * 0.36);
+    this.ctx.lineTo(centerX + width * 0.42, baseY - height * 0.36);
+    this.ctx.lineTo(centerX + width * 0.52, baseY);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.fillStyle = 'rgba(163, 170, 183, 0.92)';
+    for (let i = 0; i < 8; i++) {
+      const stoneX = centerX - width * 0.42 + (width * 0.12) * i;
+      const stoneY = baseY - height * (0.18 + (i % 2) * 0.08);
+      this.ctx.beginPath();
+      this.ctx.roundRect(stoneX, stoneY, width * 0.11, height * 0.18, 8);
+      this.ctx.fill();
+    }
+
+    this.ctx.strokeStyle = 'rgba(241, 245, 249, 0.9)';
+    this.ctx.lineWidth = Math.max(2.4, width * 0.006);
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, baseY - height * 0.56, width * 0.34, Math.PI, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawShatteredHeavenBurst(centerX: number, centerY: number, radius: number, alpha = 1) {
+    this.ctx.save();
+    this.ctx.translate(centerX, centerY);
+    this.ctx.globalAlpha = alpha;
+
+    this.ctx.fillStyle = 'rgba(12, 10, 24, 0.72)';
+    this.ctx.fillRect(-radius * 1.5, -radius * 1.2, radius * 3, radius * 2.4);
+
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.98)';
+    for (let i = 0; i < 14; i++) {
+      const angle = (Math.PI * 2 * i) / 14;
+      const inner = radius * (0.12 + (i % 3) * 0.04);
+      const outer = radius * (0.42 + (i % 4) * 0.1);
+      this.ctx.beginPath();
+      this.ctx.moveTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+      this.ctx.lineTo(Math.cos(angle - 0.12) * outer, Math.sin(angle - 0.12) * outer);
+      this.ctx.lineTo(Math.cos(angle + 0.12) * outer, Math.sin(angle + 0.12) * outer);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+
+    this.ctx.lineWidth = Math.max(3, radius * 0.028);
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+    for (let i = 0; i < 11; i++) {
+      const angle = (Math.PI * 2 * i) / 11;
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, 0);
+      this.ctx.lineTo(Math.cos(angle) * radius * (0.72 + (i % 3) * 0.16), Math.sin(angle) * radius * (0.68 + (i % 4) * 0.1));
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
   private drawShockwaveRing(x: number, y: number, radius: number, thickness: number, color: string, alpha = 1) {
     this.ctx.save();
     this.ctx.globalAlpha = alpha;
@@ -1339,6 +1426,8 @@ export class RouletteRenderer {
     this.ctx.fillStyle = islandGlow;
     this.ctx.fillRect(0, islandY - marbleVisualSize, width, height - islandY + marbleVisualSize);
 
+    this.drawStoneShoreline(centerX, islandY + marbleVisualSize * 0.62, width * 0.42, marbleVisualSize * 1.24, islandAlpha);
+
     this.ctx.save();
     this.ctx.globalAlpha = islandAlpha;
     this.ctx.fillStyle = '#6c5137';
@@ -1350,6 +1439,13 @@ export class RouletteRenderer {
     this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.22, width * 0.145, marbleVisualSize * 0.2, 0, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.restore();
+
+    for (let i = 0; i < 5; i++) {
+      const batAlpha = 0.18 + islandAlpha * 0.52 + landToSkyEase * 0.18;
+      const batX = centerX - width * 0.16 + i * width * 0.08 + Math.sin(time * 1.8 + i) * width * 0.012;
+      const batY = islandY - marbleVisualSize * (1.22 + (i % 2) * 0.16) - Math.cos(time * 2.2 + i) * 6;
+      this.drawBatSpecter(batX, batY, marbleVisualSize * (0.18 + (i % 3) * 0.03), batAlpha);
+    }
 
     this.drawImpactCracks(
       centerX,
@@ -1570,6 +1666,15 @@ export class RouletteRenderer {
           );
         }
       }
+    }
+
+    if (coreBurstProgress > 0.08) {
+      this.drawShatteredHeavenBurst(
+        marbleCenterX,
+        marbleCenterY - marbleVisualSize * 0.1,
+        marbleVisualSize * (1.54 + coreBurstEase * 1.18),
+        Math.max(0, 0.12 + coreBurstEase * 0.56 - burstProgress * 0.3)
+      );
     }
 
     const burstAnchors = [

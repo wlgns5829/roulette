@@ -1,1 +1,1 @@
-export type MarbleStyle = 'classic' | 'cute' | 'retro' | 'sprite' | 'mushroom';
+export type MarbleStyle = 'classic' | 'cute' | 'retro' | 'sprite' | 'mushroom' | 'boss';

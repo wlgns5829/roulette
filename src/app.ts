@@ -453,13 +453,14 @@ export function attachApp(roulette: Roulette) {
     themeToggle.checked = options.darkMode;
     const savedMarbleStyle = localStorage.getItem(marbleStyleStorageKey) as MarbleStyle | null;
     if (
+      savedMarbleStyle === 'boss' ||
       savedMarbleStyle === 'classic' ||
       savedMarbleStyle === 'cute' ||
       savedMarbleStyle === 'mushroom' ||
       savedMarbleStyle === 'retro' ||
       savedMarbleStyle === 'sprite'
     ) {
-      options.marbleStyle = savedMarbleStyle;
+      options.marbleStyle = savedMarbleStyle === 'mushroom' ? 'boss' : savedMarbleStyle;
     }
     marbleStyleSelect.value = options.marbleStyle;
     options.audioEnabled = localStorage.getItem(audioStorageKey) !== 'false';
@@ -546,6 +547,7 @@ export function attachApp(roulette: Roulette) {
       localStorage.setItem(marbleStyleStorageKey, options.marbleStyle);
       audio.playUiClick();
       const styleLabels: Record<MarbleStyle, string> = {
+        boss: '보스 캐릭터',
         classic: '기본 공',
         cute: '귀여운 몬스터',
         mushroom: '버섯 러너',

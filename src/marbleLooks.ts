@@ -1,3 +1,4 @@
+import { drawBossMarbleLook } from './bossMarbleLook';
 import { drawCuteLunchMonster, getCuteMonsterPalette } from './cuteMonster';
 import type { MarbleStyle } from './types/MarbleStyle.type';
 
@@ -276,7 +277,8 @@ export function drawMarbleLook(ctx: CanvasRenderingContext2D, options: MarbleLoo
       drawClassicMarble(ctx, options);
       break;
     case 'mushroom':
-      drawMushroomRunner(ctx, options);
+    case 'boss':
+      drawBossMarbleLook(ctx, options);
       break;
     case 'retro':
       drawRetroParody(ctx, options);
