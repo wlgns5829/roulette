@@ -11,6 +11,7 @@
   --app-bg-end: #181522;
   --app-bg-photo: none;
   --app-bg-photo-position: 50% 50%;
+  --app-bg-photo-scale: 1.8;
   --ambient-one-color: rgba(255, 181, 118, 0.32);
   --ambient-two-color: rgba(105, 209, 255, 0.28);
   --ambient-three-color: rgba(255, 171, 218, 0.24);
@@ -65,7 +66,7 @@ body {
     radial-gradient(circle at 50% 78%, var(--app-bg-bottom), transparent 34%),
     linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-mid) 46%, var(--app-bg-end) 100%),
     var(--app-bg-photo);
-  background-size: auto, auto, auto, auto, cover;
+  background-size: auto, auto, auto, auto, calc(100% * var(--app-bg-photo-scale)) auto;
   background-position: center, center, center, center, var(--app-bg-photo-position);
   background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   background-attachment: scroll, scroll, scroll, scroll, fixed;

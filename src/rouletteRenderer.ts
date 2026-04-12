@@ -157,9 +157,9 @@ export class RouletteRenderer {
     this.renderLagoonBackdrop(stage);
   }
 
-  private drawBackdropCover(image: HTMLImageElement, focusX: number, focusY: number) {
+  private drawBackdropCover(image: HTMLImageElement, focusX: number, focusY: number, zoom = 1) {
     const { width, height } = this._canvas;
-    const scale = Math.max(width / image.width, height / image.height);
+    const scale = Math.max(width / image.width, height / image.height) * zoom;
     const drawWidth = image.width * scale;
     const drawHeight = image.height * scale;
     const overflowX = Math.max(0, drawWidth - width);
@@ -175,7 +175,7 @@ export class RouletteRenderer {
     const now = performance.now() * 0.001;
 
     this.ctx.save();
-    this.drawBackdropCover(image, backdrop.focusX, backdrop.focusY);
+    this.drawBackdropCover(image, backdrop.focusX, backdrop.focusY, backdrop.scenePhotoScale);
 
     const veil = this.ctx.createLinearGradient(0, 0, 0, height);
     veil.addColorStop(0, backdrop.sceneTop);
