@@ -17,6 +17,7 @@ export class Camera {
   private _goalY = 0;
   private _reverseFlow = true;
   private _presentation: StageDef['presentation'] = 'default';
+  private _activeGoalSpotlightKey: string | null = null;
 
   get zoom() {
     return this._zoom;
@@ -182,6 +183,9 @@ export class Camera {
     const targetMarble = winnerSpotlight ?? (marbles[targetIndex] ? marbles[targetIndex] : marbles[0]);
     if (targetMarble) {
       if (goalSpotlight) {
+        const spotlightKey = `${stage.presentation}:${goalSpotlight.x.toFixed(2)}:${goalSpotlight.y.toFixed(2)}`;
+        const shouldSnapToSpotlight =
+          this._activeGoalSpotlightKey !== spotlightKey || goalSpotlightElapsed <= 26;
         const zoomInProgress = Math.max(0, Math.min(1, goalSpotlightElapsed / 180));
         const holdStart = Math.max(0, goalSpotlightDuration - 220);
         const zoomOutProgress = Math.max(
@@ -193,19 +197,38 @@ export class Camera {
           const laneFocus = 13 + (goalSpotlight.x - 13) * 0.34;
           const targetX = Math.min(stage.goalY + 0.5, goalSpotlight.y + 0.65);
           const targetY = stageLaneSpan - laneFocus;
-          this.setPosition({ x: targetX, y: targetY });
-          this.zoom = spotlightZoom;
+          if (shouldSnapToSpotlight) {
+            this._position = { x: targetX, y: targetY };
+            this._targetPosition = { x: targetX, y: targetY };
+            this._zoom = spotlightZoom;
+            this._targetZoom = spotlightZoom;
+          } else {
+            this.setPosition({ x: targetX, y: targetY });
+            this.zoom = spotlightZoom;
+          }
+          this._activeGoalSpotlightKey = spotlightKey;
           return;
         }
 
         const spotlightVisualY = this.toVisualY(goalSpotlight.y);
-        this.setPosition({
+        const scenePosition = {
           x: goalSpotlight.x,
           y: Math.max(-1.2, spotlightVisualY - 1.1),
-        });
-        this.zoom = spotlightZoom;
+        };
+        if (shouldSnapToSpotlight) {
+          this._position = { ...scenePosition };
+          this._targetPosition = { ...scenePosition };
+          this._zoom = spotlightZoom;
+          this._targetZoom = spotlightZoom;
+        } else {
+          this.setPosition(scenePosition);
+          this.zoom = spotlightZoom;
+        }
+        this._activeGoalSpotlightKey = spotlightKey;
         return;
       }
+
+      this._activeGoalSpotlightKey = null;
 
       if (winnerSpotlight) {
         const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1820) / 620));
@@ -282,6 +305,7 @@ export class Camera {
         this.zoom = cruisingZoom;
       }
     } else {
+      this._activeGoalSpotlightKey = null;
       this.zoom = cruisingZoom;
     }
   }

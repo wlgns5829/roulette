@@ -894,6 +894,93 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawSolarImpactSeal(
+    x: number,
+    y: number,
+    radius: number,
+    accent: string,
+    alpha = 1,
+    progress = 1
+  ) {
+    if (alpha <= 0 || radius <= 0) {
+      return;
+    }
+
+    const eased = this.easeOutCubic(this.clamp(progress));
+    const innerRadius = radius * (0.22 + eased * 0.08);
+    const midRadius = radius * (0.62 + eased * 0.18);
+    const outerRadius = radius * (1.04 + eased * 0.26);
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.globalAlpha = alpha;
+
+    const floorGlow = this.ctx.createRadialGradient(0, 0, innerRadius * 0.2, 0, 0, outerRadius * 1.06);
+    floorGlow.addColorStop(0, 'rgba(255, 253, 244, 0.96)');
+    floorGlow.addColorStop(0.12, 'rgba(255, 243, 184, 0.92)');
+    floorGlow.addColorStop(0.36, 'rgba(255, 210, 98, 0.72)');
+    floorGlow.addColorStop(0.68, 'rgba(255, 183, 77, 0.24)');
+    floorGlow.addColorStop(1, 'rgba(255, 183, 77, 0)');
+    this.ctx.fillStyle = floorGlow;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, outerRadius * 1.06, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.strokeStyle = 'rgba(255, 248, 214, 0.96)';
+    this.ctx.lineWidth = Math.max(5, radius * 0.08);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, midRadius, 0, Math.PI * 2);
+    this.ctx.stroke();
+
+    this.ctx.strokeStyle = 'rgba(255, 207, 92, 0.92)';
+    this.ctx.lineWidth = Math.max(3, radius * 0.04);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, outerRadius * 0.9, 0, Math.PI * 2);
+    this.ctx.stroke();
+
+    this.ctx.rotate(eased * 0.2);
+    for (let i = 0; i < 20; i++) {
+      const angle = (Math.PI * 2 * i) / 20;
+      const rayWidth = radius * (0.08 + (i % 3) * 0.015);
+      const rayInner = innerRadius * (0.72 + (i % 2) * 0.08);
+      const rayOuter = outerRadius * (1.02 + (i % 4) * 0.08);
+      this.ctx.save();
+      this.ctx.rotate(angle);
+      const rayGradient = this.ctx.createLinearGradient(rayInner, 0, rayOuter, 0);
+      rayGradient.addColorStop(0, 'rgba(255, 247, 220, 0.9)');
+      rayGradient.addColorStop(0.46, 'rgba(255, 210, 109, 0.76)');
+      rayGradient.addColorStop(1, 'rgba(255, 188, 85, 0)');
+      this.ctx.fillStyle = rayGradient;
+      this.ctx.beginPath();
+      this.ctx.moveTo(rayInner, -rayWidth * 0.42);
+      this.ctx.lineTo(rayOuter, -rayWidth * 0.14);
+      this.ctx.lineTo(rayOuter, rayWidth * 0.14);
+      this.ctx.lineTo(rayInner, rayWidth * 0.42);
+      this.ctx.closePath();
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+
+    this.ctx.rotate(-eased * 0.2);
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 * i) / 12 + eased * 0.1;
+      const shardInner = midRadius * (0.42 + (i % 2) * 0.06);
+      const shardOuter = outerRadius * (0.8 + (i % 3) * 0.07);
+      this.ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 252, 235, 0.84)' : accent;
+      this.ctx.beginPath();
+      this.ctx.moveTo(Math.cos(angle) * shardInner, Math.sin(angle) * shardInner);
+      this.ctx.lineTo(Math.cos(angle - 0.11) * shardOuter, Math.sin(angle - 0.11) * shardOuter);
+      this.ctx.lineTo(Math.cos(angle + 0.11) * shardOuter, Math.sin(angle + 0.11) * shardOuter);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+
+    this.ctx.restore();
+
+    this.drawShockwaveRing(x, y, midRadius * 0.88, Math.max(4, radius * 0.034), '#fff8dc', alpha * 0.76);
+    this.drawShockwaveRing(x, y, outerRadius, Math.max(3, radius * 0.022), '#facc15', alpha * 0.44);
+  }
+
   private drawMeteorFireball(x: number, y: number, size: number, angle: number, alpha = 1, accent = '#ff8a1c') {
     const tailLength = size * 3.2;
 
@@ -1571,6 +1658,14 @@ export class RouletteRenderer {
     }
 
     if (coreBurstProgress > 0) {
+      this.drawSolarImpactSeal(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.18 + coreBurstEase * 1.48),
+        accent,
+        0.26 + coreBurstEase * 0.58,
+        coreBurstEase
+      );
       this.drawNovaBurst(
         marbleCenterX,
         marbleCenterY,
@@ -1808,6 +1903,14 @@ export class RouletteRenderer {
     }
     this.ctx.restore();
     if (shockwaveProgress > 0) {
+      this.drawSolarImpactSeal(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.06 + shockwaveEase * 2.16),
+        accent,
+        (1 - shockwaveProgress) * 0.42,
+        shockwaveEase
+      );
       this.drawShockwaveRing(
         marbleCenterX,
         marbleCenterY,

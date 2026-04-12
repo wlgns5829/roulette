@@ -130,6 +130,7 @@ export function attachApp(roulette: Roulette) {
     let bgmStopTimer = 0;
     let shufflePreviewTimers: number[] = [];
     let roundRunning = false;
+    let pendingGoalDetail: { winner: string; stageTitle: string; accent: string; podium: string[] } | null = null;
     const winnerRevealDelayMs = 4320;
     const bgmStopDelayMs = 5480;
     const roundResetDelayMs = 7920;
@@ -438,6 +439,7 @@ export function attachApp(roulette: Roulette) {
 
       clearWinnerReveal();
       hideWinnerShowcase();
+      pendingGoalDetail = null;
 
       resultPanel.hidden = true;
       clearFeed();
@@ -627,15 +629,13 @@ export function attachApp(roulette: Roulette) {
       startButton.disabled = true;
       clearWinnerReveal();
       resultPanel.hidden = true;
+      pendingGoalDetail = detail;
       if (podiumText) {
         queueMicrotask(() => setStatus('결승 확정', podiumText));
       }
       setStatus('우승 연출', '골인 공이 하늘 위로 솟아오르고 있습니다.');
       triggerGoalOverlay(detail.accent);
       audio.playGoal();
-      winnerRevealTimer = window.setTimeout(() => {
-        revealWinner(detail.winner, detail.stageTitle, detail.accent, detail.podium);
-      }, winnerRevealDelayMs);
       if (bgmStopTimer) {
         window.clearTimeout(bgmStopTimer);
       }
@@ -643,35 +643,34 @@ export function attachApp(roulette: Roulette) {
         audio.stopBgm();
         bgmStopTimer = 0;
       }, bgmStopDelayMs);
-
-      resetTimer = window.setTimeout(() => {
-        setRoundFocus(false);
-        refreshBoard();
-      }, roundResetDelayMs);
       return;
-      clearWinnerReveal();
-      winnerLine.textContent = randomOf(winnerLines);
-      resultPanel.hidden = false;
-      showWinnerShowcase(detail.winner, detail.stageTitle, detail.accent);
+
       setStatus('오늘의 당첨', `${detail.winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
       appendFeedItem(
         '골인',
         `${detail.winner}님이 ${detail.stageTitle}을 통과해 오늘의 커피 당첨자가 됐습니다.`,
         detail.accent
       );
-      triggerGoalOverlay(detail.accent);
-      audio.playGoal();
-      if (bgmStopTimer) {
-        window.clearTimeout(bgmStopTimer);
-      }
-      bgmStopTimer = window.setTimeout(() => {
-        audio.stopBgm();
-        bgmStopTimer = 0;
-      }, 1800);
+    });
 
+    roulette.addEventListener('winner-reveal-ready', (event) => {
+      const detail =
+        pendingGoalDetail ??
+        (event as CustomEvent<{ winner: string; stageTitle: string; accent: string; podium: string[] }>).detail;
+
+      pendingGoalDetail = null;
+      clearWinnerReveal();
+      winnerRevealTimer = window.setTimeout(() => {
+        revealWinner(detail.winner, detail.stageTitle, detail.accent, detail.podium);
+      }, winnerRevealDelayMs);
+
+      if (resetTimer) {
+        window.clearTimeout(resetTimer);
+      }
       resetTimer = window.setTimeout(() => {
+        setRoundFocus(false);
         refreshBoard();
-      }, 3300);
+      }, roundResetDelayMs);
     });
 
     roulette.addEventListener('message', (event) => {
