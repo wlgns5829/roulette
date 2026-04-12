@@ -20,6 +20,7 @@ const schedulerInterval = 80;
 const enabledMasterGain = 1.52;
 const defaultBgmGain = 0.9;
 const duckedBgmGain = 0.24;
+const defaultBgmUrl = new URL('../assets/audio/08_1_Buyeo.mp3', import.meta.url).toString();
 
 type BgmTrack = {
   bassPatterns: number[][];
@@ -175,6 +176,9 @@ export class AudioEngine {
   private _masterGain: GainNode | null = null;
   private _bgmGain: GainNode | null = null;
   private _sfxGain: GainNode | null = null;
+  private _bgmElement: HTMLAudioElement | null = null;
+  private _bgmSource: MediaElementAudioSourceNode | null = null;
+  private _bgmPauseTimer: number | null = null;
   private _noiseBuffer: AudioBuffer | null = null;
   private _schedulerId: number | null = null;
   private _nextStepTime = 0;
@@ -216,9 +220,19 @@ export class AudioEngine {
     if (!ctx || !this._isEnabled || ctx.state === 'suspended' || !this._bgmGain) return;
 
     this._hasStartedBgm = true;
-    this._selectRandomBgmTrack();
     this._bgmGain.gain.cancelScheduledValues(ctx.currentTime);
     this._bgmGain.gain.setTargetAtTime(defaultBgmGain, ctx.currentTime, 0.08);
+    this._clearBgmPauseTimer();
+    if (this._bgmElement) {
+      void this._bgmElement.play().catch(() => undefined);
+      if (this._schedulerId !== null) {
+        window.clearInterval(this._schedulerId);
+        this._schedulerId = null;
+      }
+      return;
+    }
+
+    this._selectRandomBgmTrack();
     this._nextStepTime = ctx.currentTime + 0.06;
     this._step = 0;
     this._bar = 0;
@@ -233,6 +247,16 @@ export class AudioEngine {
     if (this._ctx && this._bgmGain) {
       this._bgmGain.gain.cancelScheduledValues(this._ctx.currentTime);
       this._bgmGain.gain.setTargetAtTime(0.0001, this._ctx.currentTime, 0.08);
+    }
+    if (this._bgmElement) {
+      this._clearBgmPauseTimer();
+      this._bgmPauseTimer = window.setTimeout(() => {
+        this._bgmElement?.pause();
+        if (this._bgmElement) {
+          this._bgmElement.currentTime = 0;
+        }
+        this._bgmPauseTimer = null;
+      }, 180);
     }
     if (this._schedulerId !== null) {
       window.clearInterval(this._schedulerId);
@@ -494,6 +518,7 @@ export class AudioEngine {
     sfx.connect(master);
     master.connect(compressor);
     compressor.connect(ctx.destination);
+    this._ensureBgmElement(ctx, bgm);
 
     this._ctx = ctx;
     this._masterGain = master;
@@ -501,6 +526,31 @@ export class AudioEngine {
     this._sfxGain = sfx;
     this._noiseBuffer = this._createNoiseBuffer(ctx);
     return ctx;
+  }
+
+  private _ensureBgmElement(ctx: AudioContext, bgm: GainNode) {
+    if (this._bgmElement && this._bgmSource) {
+      return;
+    }
+
+    const element = new Audio(defaultBgmUrl);
+    element.loop = true;
+    element.preload = 'auto';
+    element.crossOrigin = 'anonymous';
+    element.volume = 1;
+
+    const source = ctx.createMediaElementSource(element);
+    source.connect(bgm);
+
+    this._bgmElement = element;
+    this._bgmSource = source;
+  }
+
+  private _clearBgmPauseTimer() {
+    if (this._bgmPauseTimer !== null) {
+      window.clearTimeout(this._bgmPauseTimer);
+      this._bgmPauseTimer = null;
+    }
   }
 
   private _selectRandomBgmTrack() {
