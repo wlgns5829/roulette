@@ -4,6 +4,7 @@ import { defaultLunchEventPool, getLunchEventNotice, getLunchEventTitles } from 
 import { type StageDef, stages } from './data/maps';
 import { getStageBackdrop, type StageBackdropId } from './data/stageBackdrops';
 import { FastForwader } from './fastForwader';
+import { FinishRankEffect } from './finishRankEffect';
 import type { GameObject } from './gameObject';
 import { GoalCelebrationEffect } from './goalCelebrationEffect';
 import type { IPhysics } from './IPhysics';
@@ -341,6 +342,14 @@ export class Roulette extends EventTarget {
       }
       if (marble.y > getFinishLine(this._stage)) {
         this._winners.push(marble);
+        const finishRank = this._winners.length;
+        if (finishRank <= 3) {
+          const finishAccent =
+            finishRank === 1 ? '#fde68a' : finishRank === 2 ? '#bfdbfe' : '#f9a8d4';
+          this._effects.push(
+            new FinishRankEffect(marble.x, getFinishLine(this._stage) + 1.15, finishRank, marble.name, finishAccent)
+          );
+        }
         if (this._isRunning && this._winners.length === this._winnerRank + 1) {
           this._finishRound(marble);
         } else if (
@@ -353,9 +362,10 @@ export class Roulette extends EventTarget {
             this._finishRound(fallbackWinner);
           }
         }
+        const removeDelay = finishRank <= 3 ? 980 : 500;
         setTimeout(() => {
           this.physics.removeMarble(marble.id);
-        }, 500);
+        }, removeDelay);
       }
     }
 
