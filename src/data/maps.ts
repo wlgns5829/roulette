@@ -58,14 +58,16 @@ function cloneEntity(entity: MapEntity): MapEntity {
         : { ...entity.shape },
   };
 
-  if (cloned.shape.type === 'circle') {
+  if (cloned.shape.type !== 'polyline') {
+    cloned.props.life = 1;
+  } else if ((cloned.props.life ?? -1) > 0) {
     cloned.props.life = 1;
   }
 
   return cloned;
 }
 
-function createGuideWall(points: [number, number][], color: string): MapEntity {
+function createGuideWall(points: [number, number][], color: string, life?: number): MapEntity {
   return {
     position: { x: 0, y: 0 },
     type: 'static',
@@ -76,8 +78,12 @@ function createGuideWall(points: [number, number][], color: string): MapEntity {
       color,
       bloomColor: color,
     },
-    props: { density: 1, angularVelocity: 0, restitution: 0 },
+    props: { density: 1, angularVelocity: 0, restitution: 0, life },
   };
+}
+
+function createFragileGuideWall(points: [number, number][], color: string): MapEntity {
+  return createGuideWall(points, color, 1);
 }
 
 function mirrorX(x: number) {
@@ -100,7 +106,7 @@ function createBoxObstacle(
     restitution = 0,
     motion,
     angularVelocity = 0,
-    life,
+    life = 1,
   }: {
     type?: 'static' | 'kinematic';
     restitution?: number;
@@ -187,7 +193,7 @@ function createCenterSpinner(y: number, color: string, width = 4.4, angularVeloc
 
 function createPocketWalls(y: number, color: string): MapEntity[] {
   return [
-    createGuideWall(
+    createFragileGuideWall(
       [
         [4.2, y],
         [8.3, y + 5.1],
@@ -195,7 +201,7 @@ function createPocketWalls(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [21.8, y],
         [17.7, y + 5.1],
@@ -208,7 +214,7 @@ function createPocketWalls(y: number, color: string): MapEntity[] {
 
 function createSplitMergeWalls(y: number, color: string): MapEntity[] {
   return [
-    createGuideWall(
+    createFragileGuideWall(
       [
         [5.2, y],
         [9.8, y + 4.2],
@@ -216,7 +222,7 @@ function createSplitMergeWalls(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [20.8, y],
         [16.2, y + 4.2],
@@ -224,14 +230,14 @@ function createSplitMergeWalls(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [9.5, y + 12.1],
         [11.6, y + 16.9],
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [16.5, y + 12.1],
         [14.4, y + 16.9],
@@ -243,7 +249,7 @@ function createSplitMergeWalls(y: number, color: string): MapEntity[] {
 
 function createBridgeRails(y: number, color: string): MapEntity[] {
   return [
-    createGuideWall(
+    createFragileGuideWall(
       [
         [7.1, y],
         [10.3, y + 5.4],
@@ -251,7 +257,7 @@ function createBridgeRails(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [18.9, y],
         [15.7, y + 5.4],
@@ -309,7 +315,7 @@ function createCrissCrossGates(y: number, colorA: string, colorB: string, colorC
 
 function createMazeWalls(y: number, color: string): MapEntity[] {
   return [
-    createGuideWall(
+    createFragileGuideWall(
       [
         [4.1, y],
         [9.4, y + 3.9],
@@ -318,7 +324,7 @@ function createMazeWalls(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [21.9, y],
         [16.6, y + 3.9],
@@ -327,14 +333,14 @@ function createMazeWalls(y: number, color: string): MapEntity[] {
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [10.7, y + 14.4],
         [8.9, y + 18.4],
       ],
       color
     ),
-    createGuideWall(
+    createFragileGuideWall(
       [
         [15.3, y + 14.4],
         [17.1, y + 18.4],
@@ -371,6 +377,18 @@ function createDenseTiltStack(y: number, colorA: string, colorB: string): MapEnt
     ...createTiltPair(y, colorA, colorB, false),
     createBoxObstacle(9.4, y + 7.2, 1.55, 0.11, -0.46, colorB),
     createBoxObstacle(16.6, y + 8.4, 1.55, 0.11, 0.46, colorA),
+  ];
+}
+
+function createShatterField(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  return [
+    createFragileCircle(7.1, y, 0.24, colorA),
+    createBoxObstacle(9.3, y + 1.1, 1.04, 0.1, 0.52, colorB),
+    createFragileCircle(11.5, y + 2.2, 0.26, colorC),
+    createBoxObstacle(trackCenterX, y + 3.5, 1.42, 0.1, 0, colorA),
+    createFragileCircle(14.5, y + 4.8, 0.28, colorB),
+    createBoxObstacle(16.7, y + 6.1, 1.04, 0.1, -0.52, colorC),
+    createFragileCircle(18.9, y + 7.2, 0.24, colorA),
   ];
 }
 
@@ -518,6 +536,8 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
   const palette = getCoursePalette(stage.accent, seed);
   const usableHeight = Math.max(78, stage.goalY - 54);
   const bandYs = [0.04, 0.12, 0.2, 0.29, 0.39, 0.49, 0.59, 0.69, 0.79, 0.87].map((t) => 24 + usableHeight * t);
+  const shatterBandTop = 24 + usableHeight * 0.155;
+  const shatterBandBottom = 24 + usableHeight * 0.61;
   const phase = (seed % 4) * 0.55;
   const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, pattern, palette.rail)];
 
@@ -585,6 +605,9 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
       entities.push(...createTiltPair(bandYs[9], palette.secondary, palette.primary, index % 2 === 0));
       break;
   }
+
+  entities.push(...createShatterField(shatterBandTop, palette.primary, palette.secondary, palette.tertiary));
+  entities.push(...createShatterField(shatterBandBottom, palette.tertiary, palette.primary, palette.secondary));
 
   return entities;
 }
