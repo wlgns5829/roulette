@@ -645,10 +645,10 @@ export class RouletteRenderer {
 
     uiObjects.forEach((obj) => obj.render(this.ctx, renderParameters, this._canvas.width, this._canvas.height));
     renderParameters.particleManager.render(this.ctx);
-    if (renderParameters.goalSpotlight && !renderParameters.winner) {
+    this.renderWinner(renderParameters);
+    if (renderParameters.goalSpotlight) {
       this.renderGoalSpotlightBanner(renderParameters.goalSpotlight, this._canvas.width, this._canvas.height);
     }
-    this.renderWinner(renderParameters);
   }
 
   private renderEntities(entities: MapEntityState[]) {
@@ -912,10 +912,11 @@ export class RouletteRenderer {
     }
 
     const panelWidth = Math.min(width * 0.52, 560);
-    const panelHeight = Math.min(height * 0.16, 136);
+    const panelHeight = Math.min(height * 0.18, 148);
     const centerX = width / 2;
     const centerY = height * 0.46;
     const offsetY = (1 - ease) * 34;
+    const statusLabel = '골인했습니다';
     const rankLabel = `${spotlight.rank}등 GOAL IN`;
 
     this.ctx.save();
@@ -925,7 +926,7 @@ export class RouletteRenderer {
     this.ctx.textBaseline = 'middle';
     this.ctx.lineJoin = 'round';
 
-    this.ctx.fillStyle = 'rgba(12, 16, 28, 0.76)';
+    this.ctx.fillStyle = 'rgba(12, 16, 28, 0.68)';
     this.ctx.strokeStyle = spotlight.accent;
     this.ctx.lineWidth = 2.4;
     this.ctx.beginPath();
@@ -937,15 +938,18 @@ export class RouletteRenderer {
     this.ctx.shadowColor = spotlight.accent;
     this.ctx.font = `800 ${Math.max(24, Math.min(34, width * 0.022))}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
     this.ctx.fillStyle = spotlight.accent;
-    this.ctx.fillText(rankLabel, 0, -28);
+    this.ctx.fillText(`${spotlight.rank}등 GOAL IN`, 0, -30);
 
     this.ctx.shadowBlur = 0;
     this.ctx.font = `800 ${Math.max(38, Math.min(62, width * 0.04))}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
     this.ctx.strokeStyle = 'rgba(9, 12, 20, 0.94)';
     this.ctx.lineWidth = 8;
-    this.ctx.strokeText(spotlight.name, 0, 8);
+    this.ctx.strokeText(spotlight.name, 0, 6);
     this.ctx.fillStyle = '#fff8ef';
-    this.ctx.fillText(spotlight.name, 0, 8);
+    this.ctx.fillText(spotlight.name, 0, 6);
+    this.ctx.font = `700 ${Math.max(18, Math.min(26, width * 0.016))}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+    this.ctx.fillStyle = 'rgba(255, 248, 239, 0.92)';
+    this.ctx.fillText(statusLabel, 0, panelHeight * 0.24);
 
     this.ctx.restore();
   }

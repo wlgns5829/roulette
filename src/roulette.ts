@@ -139,6 +139,7 @@ export class Roulette extends EventTarget {
   private _gravityOverride: { x: number; y: number } | null = null;
   private _finalApproachTriggered = false;
   private _closeRaceAssistCooldown = 0;
+  private _lastFinisherAssistCooldown = 0;
   private _celebrationTimeouts: number[] = [];
   private _winnerCelebrationElapsed = 0;
   private _seaCreatureRushEffects: Array<{ effect: SharkRushEffect; creature: SeaCreatureRushSpec }> = [];
@@ -258,6 +259,9 @@ export class Roulette extends EventTarget {
   private _updateTemporaryRoundEffects(deltaTime: number) {
     if (this._closeRaceAssistCooldown > 0) {
       this._closeRaceAssistCooldown = Math.max(0, this._closeRaceAssistCooldown - deltaTime);
+    }
+    if (this._lastFinisherAssistCooldown > 0) {
+      this._lastFinisherAssistCooldown = Math.max(0, this._lastFinisherAssistCooldown - deltaTime);
     }
 
     if (this._speedEffectRemaining > 0) {
@@ -387,6 +391,7 @@ export class Roulette extends EventTarget {
     this._goalDist = Math.abs(this._stage.zoomY - (leader?.y ?? 0));
     this._timeScale = this._calcTimeScale(focusPack);
     this._maybeTriggerFinalApproach(focusPack);
+    this._applyLastFinisherAssist(focusPack);
 
     this._marbles = focusPack;
   }
@@ -396,8 +401,18 @@ export class Roulette extends EventTarget {
     this._winner = marble;
     this._winnerCelebrationElapsed = 0;
     this._isRunning = false;
+    const finalSpotlight = this._goalSpotlightQueue.length > 0 ? this._goalSpotlightQueue[this._goalSpotlightQueue.length - 1] : null;
     this._goalSpotlightQueue = [];
-    this._activeGoalSpotlight = null;
+    if (finalSpotlight) {
+      this._activeGoalSpotlight = {
+        ...finalSpotlight,
+        elapsed: 0,
+        duration: Math.max(finalSpotlight.duration, 920),
+      };
+    } else if (this._activeGoalSpotlight) {
+      this._activeGoalSpotlight.elapsed = 0;
+      this._activeGoalSpotlight.duration = Math.max(this._activeGoalSpotlight.duration, 920);
+    }
     this._capturePodiumSnapshot();
     this._clearRoundEffects();
 
@@ -452,6 +467,14 @@ export class Roulette extends EventTarget {
     if (!this._stage) return 1;
 
     if (this._activeGoalSpotlight) {
+      if (this._winnerRank === this._totalMarbleCount - 1) {
+        if (focusPack.length <= 1) {
+          return 0.92;
+        }
+        if (focusPack.length === 2) {
+          return 0.72;
+        }
+      }
       return 0.34;
     }
 
@@ -479,6 +502,10 @@ export class Roulette extends EventTarget {
     }
 
     const accent = rank === 1 ? '#fde68a' : rank === 2 ? '#bfdbfe' : rank === 3 ? '#f9a8d4' : this._stage.accent ?? '#f59e0b';
+    const isLastPlaceRace = this._winnerRank === this._totalMarbleCount - 1;
+    const remainingAfterFinish = Math.max(0, this._totalMarbleCount - rank);
+    const compressedDuration =
+      isLastPlaceRace && remainingAfterFinish <= 2 ? (rank <= 3 ? 640 : 460) : rank <= 3 ? 860 : 620;
     this._goalSpotlightQueue.push({
       position: {
         x: marble.x,
@@ -488,14 +515,20 @@ export class Roulette extends EventTarget {
       name: marble.name,
       accent,
       elapsed: 0,
-      duration: rank <= 3 ? 860 : 620,
+      duration: compressedDuration,
     });
   }
 
   private _updateGoalSpotlight(deltaTime: number) {
     if (!this._isRunning) {
       this._goalSpotlightQueue = [];
-      this._activeGoalSpotlight = null;
+      if (!this._activeGoalSpotlight) {
+        return;
+      }
+      this._activeGoalSpotlight.elapsed += deltaTime;
+      if (this._activeGoalSpotlight.elapsed >= this._activeGoalSpotlight.duration) {
+        this._activeGoalSpotlight = null;
+      }
       return;
     }
 
@@ -511,6 +544,47 @@ export class Roulette extends EventTarget {
     if (this._activeGoalSpotlight.elapsed >= this._activeGoalSpotlight.duration) {
       this._activeGoalSpotlight = this._goalSpotlightQueue.shift() ?? null;
     }
+  }
+
+  private _applyLastFinisherAssist(focusPack: Marble[]) {
+    if (!this._stage || !this._isRunning) {
+      return;
+    }
+
+    if (this._winnerRank !== this._totalMarbleCount - 1) {
+      return;
+    }
+
+    if (this._winners.length !== this._totalMarbleCount - 1 || focusPack.length !== 1) {
+      return;
+    }
+
+    if (this._lastFinisherAssistCooldown > 0) {
+      return;
+    }
+
+    const contender = focusPack[0];
+    if (!contender) {
+      return;
+    }
+
+    const finishLine = getFinishLine(this._stage);
+    const remaining = Math.max(0, finishLine - contender.y);
+    const urgency = Math.max(0, Math.min(1, 1 - remaining / 20));
+    const laneCenter = 13;
+    const laneAdjust = Math.max(-0.2, Math.min(0.2, (laneCenter - contender.x) * 0.05));
+
+    this.physics.nudgeMarble(contender.id, {
+      x: laneAdjust + (Math.random() - 0.5) * 0.04,
+      y: 0.24 + urgency * 0.38,
+    });
+
+    if (remaining < 7.2) {
+      this.physics.shakeMarble(contender.id);
+    }
+
+    contender.impact = Math.max(contender.impact, 120 + urgency * 180);
+    this._lastFinisherAssistCooldown = remaining < 8 ? 120 : 180;
   }
 
   private _capturePodiumSnapshot() {
@@ -703,6 +777,7 @@ export class Roulette extends EventTarget {
     this._lastRoundEventId = null;
     this._finalApproachTriggered = false;
     this._closeRaceAssistCooldown = 0;
+    this._lastFinisherAssistCooldown = 0;
     this._clearRoundEffects();
   }
 
