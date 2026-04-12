@@ -399,6 +399,8 @@ export function attachApp(roulette: Roulette) {
       document.documentElement.style.setProperty('--app-bg-start', backdrop.uiStart);
       document.documentElement.style.setProperty('--app-bg-mid', backdrop.uiMid);
       document.documentElement.style.setProperty('--app-bg-end', backdrop.uiEnd);
+      document.documentElement.style.setProperty('--app-bg-photo', `url("${backdrop.imageUrl}")`);
+      document.documentElement.style.setProperty('--app-bg-photo-position', `${backdrop.focusX * 100}% ${backdrop.focusY * 100}%`);
       document.documentElement.style.setProperty('--ambient-one-color', backdrop.ambientOne);
       document.documentElement.style.setProperty('--ambient-two-color', backdrop.ambientTwo);
       document.documentElement.style.setProperty('--ambient-three-color', backdrop.ambientThree);

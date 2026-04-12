@@ -9,6 +9,8 @@
   --app-bg-start: #2e1d31;
   --app-bg-mid: #21182d;
   --app-bg-end: #181522;
+  --app-bg-photo: none;
+  --app-bg-photo-position: 50% 50%;
   --ambient-one-color: rgba(255, 181, 118, 0.32);
   --ambient-two-color: rgba(105, 209, 255, 0.28);
   --ambient-three-color: rgba(255, 171, 218, 0.24);
@@ -56,11 +58,17 @@ body {
   margin: 0;
   min-height: 100dvh;
   font-family: var(--font-ui);
-  background:
+  background-color: var(--app-bg-end);
+  background-image:
     radial-gradient(circle at top left, var(--app-bg-top-left), transparent 32%),
     radial-gradient(circle at top right, var(--app-bg-top-right), transparent 26%),
     radial-gradient(circle at 50% 78%, var(--app-bg-bottom), transparent 34%),
-    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-mid) 46%, var(--app-bg-end) 100%);
+    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-mid) 46%, var(--app-bg-end) 100%),
+    var(--app-bg-photo);
+  background-size: auto, auto, auto, auto, cover;
+  background-position: center, center, center, center, var(--app-bg-photo-position);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: scroll, scroll, scroll, scroll, fixed;
   color: var(--text-main);
   overflow-x: hidden;
   overflow-y: auto;

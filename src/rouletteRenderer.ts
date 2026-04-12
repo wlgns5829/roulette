@@ -2,6 +2,7 @@ import type { Camera } from './camera';
 import { getCuteMonsterPalette } from './cuteMonster';
 import { canvasHeight, canvasWidth, initialZoom, Themes } from './data/constants';
 import type { StageDef } from './data/maps';
+import { getStageBackdrop, stageBackdrops, type StageBackdropId, type StageBackdropPalette } from './data/stageBackdrops';
 import type { GameObject } from './gameObject';
 import { KeywordService } from './keywordService';
 import type { Marble } from './marble';
@@ -34,6 +35,7 @@ export class RouletteRenderer {
   public sizeFactor = 1;
 
   protected _images: { [key: string]: HTMLImageElement } = {};
+  private _backdropImages: Partial<Record<StageBackdropId, HTMLImageElement>> = {};
   protected _theme: ColorTheme = Themes.dark;
   protected _keywordService: KeywordService;
   private _winnerRevealKey: string | null = null;
@@ -112,6 +114,14 @@ export class RouletteRenderer {
       })();
     });
 
+    Object.values(stageBackdrops).forEach((backdrop) => {
+      loadPromises.push(
+        (async () => {
+          this._backdropImages[backdrop.id] = await this._loadImage(backdrop.imageUrl);
+        })()
+      );
+    });
+
     loadPromises.push(
       (async () => {
         await this._loadImage(new URL('../assets/images/ff.svg', import.meta.url).toString());
@@ -136,21 +146,78 @@ export class RouletteRenderer {
   }
 
   private renderBackdrop(stage: StageDef) {
-    switch (stage.backdrop) {
-      case 'sunset':
-        this.renderSunsetBackdrop(stage);
-        break;
-      case 'midnight':
-        this.renderMidnightBackdrop(stage);
-        break;
-      case 'garden':
-        this.renderGardenBackdrop(stage);
-        break;
-      case 'lagoon':
-      default:
-        this.renderLagoonBackdrop(stage);
-        break;
+    const backdropId = stage.backdrop ?? getStageBackdrop(0);
+    const backdrop = stageBackdrops[backdropId];
+    const backdropImage = this._backdropImages[backdropId];
+    if (backdrop && backdropImage) {
+      this.renderPhotoBackdrop(backdrop, stage.accent ?? '#f59e0b', backdropImage);
+      return;
     }
+
+    this.renderLagoonBackdrop(stage);
+  }
+
+  private drawBackdropCover(image: HTMLImageElement, focusX: number, focusY: number) {
+    const { width, height } = this._canvas;
+    const scale = Math.max(width / image.width, height / image.height);
+    const drawWidth = image.width * scale;
+    const drawHeight = image.height * scale;
+    const overflowX = Math.max(0, drawWidth - width);
+    const overflowY = Math.max(0, drawHeight - height);
+    const x = -overflowX * focusX;
+    const y = -overflowY * focusY;
+
+    this.ctx.drawImage(image, x, y, drawWidth, drawHeight);
+  }
+
+  private renderPhotoBackdrop(backdrop: StageBackdropPalette, accent: string, image: HTMLImageElement) {
+    const { width, height } = this._canvas;
+    const now = performance.now() * 0.001;
+
+    this.ctx.save();
+    this.drawBackdropCover(image, backdrop.focusX, backdrop.focusY);
+
+    const veil = this.ctx.createLinearGradient(0, 0, 0, height);
+    veil.addColorStop(0, backdrop.sceneTop);
+    veil.addColorStop(0.48, backdrop.sceneMid);
+    veil.addColorStop(1, backdrop.sceneBottom);
+    this.ctx.fillStyle = veil;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const leftGlow = this.ctx.createRadialGradient(width * 0.18, height * 0.22, width * 0.04, width * 0.18, height * 0.22, width * 0.4);
+    leftGlow.addColorStop(0, backdrop.ambientOne);
+    leftGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = leftGlow;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const rightGlow = this.ctx.createRadialGradient(width * 0.82, height * 0.18, width * 0.04, width * 0.82, height * 0.18, width * 0.34);
+    rightGlow.addColorStop(0, backdrop.ambientTwo);
+    rightGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = rightGlow;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const floorGlow = this.ctx.createRadialGradient(width * 0.5, height * 0.92, width * 0.05, width * 0.5, height * 0.92, width * 0.55);
+    floorGlow.addColorStop(0, backdrop.ambientThree);
+    floorGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = floorGlow;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.12;
+    this.ctx.strokeStyle = accent;
+    this.ctx.lineWidth = 1.4;
+    for (let i = 0; i < 7; i++) {
+      const y = height * (0.1 + i * 0.12);
+      const drift = Math.sin(now * 0.55 + i * 0.9) * width * 0.01;
+      this.ctx.beginPath();
+      this.ctx.moveTo(-24, y);
+      this.ctx.quadraticCurveTo(width * 0.34 + drift, y + 12, width * 0.68 - drift, y - 8);
+      this.ctx.quadraticCurveTo(width * 0.86 + drift, y - 2, width + 24, y + 10);
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+
+    this.ctx.restore();
   }
 
   private renderLagoonBackdrop(stage: StageDef) {

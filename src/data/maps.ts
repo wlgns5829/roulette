@@ -12,6 +12,7 @@ export type StageDef = {
   accent?: string;
   backdrop?: StageBackdropId;
   presentation?: StagePresentation;
+  patternSeed?: number;
   eventPool?: LunchEventId[];
   entities?: MapEntity[];
   goalY: number;
@@ -443,13 +444,14 @@ function createMovingPlatformSet(y: number, colorA: string, colorB: string, phas
 }
 
 function buildSideScrollEntities(stage: StageDef, index: number): MapEntity[] {
-  const palette = getCoursePalette(stage.accent, index);
+  const seed = stage.patternSeed ?? index;
+  const palette = getCoursePalette(stage.accent, seed);
   const usableHeight = Math.max(80, stage.goalY - 56);
   const bandYs = [0.05, 0.14, 0.24, 0.35, 0.47, 0.59, 0.71, 0.82].map((t) => 24 + usableHeight * t);
-  const phase = (index % 4) * 0.6;
-  const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, index, palette.rail)];
+  const phase = (seed % 5) * 0.6;
+  const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, seed, palette.rail)];
 
-  switch (index % 4) {
+  switch (seed % 5) {
     case 0:
       entities.push(...createPlatformStairs(bandYs[0], palette.primary, palette.secondary));
       entities.push(...createJumpPads(bandYs[1], palette.primary, palette.tertiary));
@@ -481,7 +483,6 @@ function buildSideScrollEntities(stage: StageDef, index: number): MapEntity[] {
       entities.push(...createJumpPads(bandYs[7], palette.primary, palette.secondary));
       break;
     case 3:
-    default:
       entities.push(...createPlatformTunnel(bandYs[0], palette.primary, palette.secondary));
       entities.push(...createPlatformStairs(bandYs[1], palette.secondary, palette.tertiary));
       entities.push(...createJumpPads(bandYs[2], palette.primary, palette.secondary));
@@ -490,6 +491,17 @@ function buildSideScrollEntities(stage: StageDef, index: number): MapEntity[] {
       entities.push(...createBounceBridge(bandYs[5], palette.primary, palette.secondary));
       entities.push(...createMovingPlatformSet(bandYs[6], palette.primary, palette.tertiary, phase + 0.5));
       entities.push(...createPlatformTunnel(bandYs[7], palette.secondary, palette.tertiary));
+      break;
+    case 4:
+    default:
+      entities.push(...createCloudPlatforms(bandYs[0], palette.secondary, palette.primary));
+      entities.push(...createMovingPlatformSet(bandYs[1], palette.primary, palette.tertiary, phase + 0.15));
+      entities.push(...createPlatformStairs(bandYs[2], palette.tertiary, palette.secondary));
+      entities.push(...createPipeColumns(bandYs[3], palette.primary, palette.secondary));
+      entities.push(...createBounceBridge(bandYs[4], palette.secondary, palette.primary));
+      entities.push(...createJumpPads(bandYs[5], palette.tertiary, palette.secondary));
+      entities.push(...createPlatformTunnel(bandYs[6], palette.primary, palette.secondary));
+      entities.push(...createMovingPlatformSet(bandYs[7], palette.secondary, palette.tertiary, phase + 0.95));
       break;
   }
 
@@ -501,11 +513,12 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
     return buildSideScrollEntities(stage, index);
   }
 
-  const pattern = index % 5;
-  const palette = getCoursePalette(stage.accent, index);
+  const seed = stage.patternSeed ?? index;
+  const pattern = seed % 5;
+  const palette = getCoursePalette(stage.accent, seed);
   const usableHeight = Math.max(78, stage.goalY - 54);
   const bandYs = [0.04, 0.12, 0.2, 0.29, 0.39, 0.49, 0.59, 0.69, 0.79, 0.87].map((t) => 24 + usableHeight * t);
-  const phase = (index % 4) * 0.55;
+  const phase = (seed % 4) * 0.55;
   const entities: MapEntity[] = [...createBoundaryWalls(stage.goalY, pattern, palette.rail)];
 
   switch (pattern) {
