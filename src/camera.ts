@@ -125,6 +125,9 @@ export class Camera {
     stage,
     needToZoom,
     targetIndex,
+    goalSpotlight,
+    goalSpotlightElapsed = 0,
+    goalSpotlightDuration = 0,
     winnerSpotlight,
     winnerSpotlightElapsed = 0,
   }: {
@@ -132,12 +135,25 @@ export class Camera {
     stage: StageDef;
     needToZoom: boolean;
     targetIndex: number;
+    goalSpotlight?: VectorLike | null;
+    goalSpotlightElapsed?: number;
+    goalSpotlightDuration?: number;
     winnerSpotlight?: Marble | null;
     winnerSpotlightElapsed?: number;
   }) {
     // set target position
     if (!this._locked) {
-      this._calcTargetPositionAndZoom(marbles, stage, needToZoom, targetIndex, winnerSpotlight, winnerSpotlightElapsed);
+      this._calcTargetPositionAndZoom(
+        marbles,
+        stage,
+        needToZoom,
+        targetIndex,
+        goalSpotlight,
+        goalSpotlightElapsed,
+        goalSpotlightDuration,
+        winnerSpotlight,
+        winnerSpotlightElapsed
+      );
     }
 
     // interpolate position
@@ -153,6 +169,9 @@ export class Camera {
     stage: StageDef,
     needToZoom: boolean,
     targetIndex: number,
+    goalSpotlight?: VectorLike | null,
+    goalSpotlightElapsed = 0,
+    goalSpotlightDuration = 0,
     winnerSpotlight?: Marble | null,
     winnerSpotlightElapsed = 0
   ) {
@@ -162,6 +181,32 @@ export class Camera {
 
     const targetMarble = winnerSpotlight ?? (marbles[targetIndex] ? marbles[targetIndex] : marbles[0]);
     if (targetMarble) {
+      if (goalSpotlight) {
+        const zoomInProgress = Math.max(0, Math.min(1, goalSpotlightElapsed / 180));
+        const holdStart = Math.max(0, goalSpotlightDuration - 220);
+        const zoomOutProgress = Math.max(
+          0,
+          Math.min(1, holdStart > 0 ? (goalSpotlightElapsed - holdStart) / Math.max(120, goalSpotlightDuration - holdStart) : 0)
+        );
+        const spotlightZoom = cruisingZoom + 0.42 + zoomInProgress * 0.54 - zoomOutProgress * 0.18;
+        if (stage.presentation === 'side-scroll') {
+          const laneFocus = 13 + (goalSpotlight.x - 13) * 0.34;
+          const targetX = Math.min(stage.goalY + 0.5, goalSpotlight.y + 0.65);
+          const targetY = stageLaneSpan - laneFocus;
+          this.setPosition({ x: targetX, y: targetY });
+          this.zoom = spotlightZoom;
+          return;
+        }
+
+        const spotlightVisualY = this.toVisualY(goalSpotlight.y);
+        this.setPosition({
+          x: goalSpotlight.x,
+          y: Math.max(-1.2, spotlightVisualY - 1.1),
+        });
+        this.zoom = spotlightZoom;
+        return;
+      }
+
       if (winnerSpotlight) {
         const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1820) / 620));
         const zoomOutProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 2940) / 840));

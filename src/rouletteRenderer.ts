@@ -25,6 +25,13 @@ export type RenderParameters = {
   winnerRank: number;
   winner: Marble | null;
   podium: Marble[];
+  goalSpotlight: {
+    rank: number;
+    name: string;
+    accent: string;
+    elapsed: number;
+    duration: number;
+  } | null;
   size: VectorLike;
   theme: ColorTheme;
 };
@@ -638,6 +645,9 @@ export class RouletteRenderer {
 
     uiObjects.forEach((obj) => obj.render(this.ctx, renderParameters, this._canvas.width, this._canvas.height));
     renderParameters.particleManager.render(this.ctx);
+    if (renderParameters.goalSpotlight && !renderParameters.winner) {
+      this.renderGoalSpotlightBanner(renderParameters.goalSpotlight, this._canvas.width, this._canvas.height);
+    }
     this.renderWinner(renderParameters);
   }
 
@@ -884,6 +894,58 @@ export class RouletteRenderer {
       this.ctx.strokeText(`${index + 1}등 ${entry.name}`, width / 2, y);
       this.ctx.fillText(`${index + 1}등 ${entry.name}`, width / 2, y);
     });
+
+    this.ctx.restore();
+  }
+
+  private renderGoalSpotlightBanner(
+    spotlight: NonNullable<RenderParameters['goalSpotlight']>,
+    width: number,
+    height: number
+  ) {
+    const progress = this.clamp(spotlight.elapsed / Math.max(1, spotlight.duration));
+    const ease = this.easeOutCubic(Math.min(1, progress * 1.25));
+    const fadeOut = 1 - this.clamp((progress - 0.72) / 0.28);
+    const alpha = ease * fadeOut;
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    const panelWidth = Math.min(width * 0.52, 560);
+    const panelHeight = Math.min(height * 0.16, 136);
+    const centerX = width / 2;
+    const centerY = height * 0.46;
+    const offsetY = (1 - ease) * 34;
+    const rankLabel = `${spotlight.rank}등 GOAL IN`;
+
+    this.ctx.save();
+    this.ctx.translate(centerX, centerY + offsetY);
+    this.ctx.globalAlpha = alpha;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.lineJoin = 'round';
+
+    this.ctx.fillStyle = 'rgba(12, 16, 28, 0.76)';
+    this.ctx.strokeStyle = spotlight.accent;
+    this.ctx.lineWidth = 2.4;
+    this.ctx.beginPath();
+    this.ctx.roundRect(-panelWidth / 2, -panelHeight / 2, panelWidth, panelHeight, 24);
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.shadowBlur = 18;
+    this.ctx.shadowColor = spotlight.accent;
+    this.ctx.font = `800 ${Math.max(24, Math.min(34, width * 0.022))}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
+    this.ctx.fillStyle = spotlight.accent;
+    this.ctx.fillText(rankLabel, 0, -28);
+
+    this.ctx.shadowBlur = 0;
+    this.ctx.font = `800 ${Math.max(38, Math.min(62, width * 0.04))}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
+    this.ctx.strokeStyle = 'rgba(9, 12, 20, 0.94)';
+    this.ctx.lineWidth = 8;
+    this.ctx.strokeText(spotlight.name, 0, 8);
+    this.ctx.fillStyle = '#fff8ef';
+    this.ctx.fillText(spotlight.name, 0, 8);
 
     this.ctx.restore();
   }

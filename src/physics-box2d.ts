@@ -191,7 +191,13 @@ export class Box2dPhysics implements IPhysics {
   shakeMarble(id: number): void {
     const body = this.marbleMap[id];
     if (body) {
-      body.ApplyLinearImpulseToCenter(new this.Box2D.b2Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5), true);
+      const position = body.GetPosition();
+      const rescueX = Math.min(this._trackBounds.maxX, Math.max(this._trackBounds.minX, position.x + (Math.random() - 0.5) * 0.42));
+      const rescueY = Math.max(this._trackBounds.minY, position.y + 0.34 + Math.random() * 0.24);
+      body.SetTransform(new this.Box2D.b2Vec2(rescueX, rescueY), body.GetAngle() + (Math.random() - 0.5) * 0.12);
+      body.SetLinearVelocity(new this.Box2D.b2Vec2((Math.random() - 0.5) * 2.8, 2.8 + Math.random() * 1.6));
+      body.ApplyLinearImpulseToCenter(new this.Box2D.b2Vec2((Math.random() - 0.5) * 4.2, 3.8 + Math.random() * 1.7), true);
+      body.SetAwake(true);
     }
   }
 

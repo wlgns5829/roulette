@@ -35,9 +35,9 @@ function getDefaultGravity() {
 }
 
 const roundEventWeights: Partial<Record<LunchEventId, number>> = {
-  'shark-rush': 56,
-  'bomb-burst': 1.8,
-  'bean-burst': 1.1,
+  'shark-rush': 210,
+  'bomb-burst': 1.2,
+  'bean-burst': 0.95,
 };
 
 type SeaCreatureRushSpec = {
@@ -47,6 +47,15 @@ type SeaCreatureRushSpec = {
   band: number;
   lateralPower: number;
   verticalPower: number;
+};
+
+type GoalSpotlightState = {
+  position: VectorLike;
+  rank: number;
+  name: string;
+  accent: string;
+  elapsed: number;
+  duration: number;
 };
 
 const seaCreatureRushAngles = [-2.58, -2.18, -1.82, -1.36, -0.98, -0.54, -0.24, 0.24, 0.54, 0.98, 1.36, 1.82, 2.18, 2.58];
@@ -134,6 +143,8 @@ export class Roulette extends EventTarget {
   private _winnerCelebrationElapsed = 0;
   private _seaCreatureRushEffects: Array<{ effect: SharkRushEffect; creature: SeaCreatureRushSpec }> = [];
   private _podiumSnapshot: Marble[] = [];
+  private _goalSpotlightQueue: GoalSpotlightState[] = [];
+  private _activeGoalSpotlight: GoalSpotlightState | null = null;
 
   get isReady() {
     return this._isReady;
@@ -192,6 +203,7 @@ export class Roulette extends EventTarget {
       this._updateRoundSystems(this._updateInterval);
       this.physics.step(interval);
       this._updateMarbles(this._updateInterval);
+      this._updateGoalSpotlight(this._updateInterval);
       this._particleManager.update(this._updateInterval);
       this._updateEffects(this._updateInterval);
       if (this._winner) {
@@ -211,6 +223,9 @@ export class Roulette extends EventTarget {
         stage: this._stage,
         needToZoom: this._goalDist < zoomThreshold,
         targetIndex: 0,
+        goalSpotlight: this._activeGoalSpotlight?.position ?? null,
+        goalSpotlightElapsed: this._activeGoalSpotlight?.elapsed ?? 0,
+        goalSpotlightDuration: this._activeGoalSpotlight?.duration ?? 0,
         winnerSpotlight: this._isRunning ? null : this._winner,
         winnerSpotlightElapsed: this._winnerCelebrationElapsed,
       });
@@ -350,6 +365,9 @@ export class Roulette extends EventTarget {
             new FinishRankEffect(marble.x, getFinishLine(this._stage) + 1.15, finishRank, marble.name, finishAccent)
           );
         }
+        if (this._isRunning) {
+          this._queueGoalSpotlight(marble, finishRank);
+        }
         if (this._isRunning && this._winners.length === this._winnerRank + 1) {
           this._finishRound(marble);
         }
@@ -378,6 +396,8 @@ export class Roulette extends EventTarget {
     this._winner = marble;
     this._winnerCelebrationElapsed = 0;
     this._isRunning = false;
+    this._goalSpotlightQueue = [];
+    this._activeGoalSpotlight = null;
     this._capturePodiumSnapshot();
     this._clearRoundEffects();
 
@@ -431,6 +451,10 @@ export class Roulette extends EventTarget {
   private _calcTimeScale(focusPack: Marble[]): number {
     if (!this._stage) return 1;
 
+    if (this._activeGoalSpotlight) {
+      return 0.34;
+    }
+
     const contender = focusPack[0];
     const runnerUp = focusPack[1];
     const third = focusPack[2];
@@ -447,6 +471,46 @@ export class Roulette extends EventTarget {
     }
 
     return 1;
+  }
+
+  private _queueGoalSpotlight(marble: Marble, rank: number) {
+    if (!this._stage) {
+      return;
+    }
+
+    const accent = rank === 1 ? '#fde68a' : rank === 2 ? '#bfdbfe' : rank === 3 ? '#f9a8d4' : this._stage.accent ?? '#f59e0b';
+    this._goalSpotlightQueue.push({
+      position: {
+        x: marble.x,
+        y: getFinishLine(this._stage) + 0.82,
+      },
+      rank,
+      name: marble.name,
+      accent,
+      elapsed: 0,
+      duration: rank <= 3 ? 860 : 620,
+    });
+  }
+
+  private _updateGoalSpotlight(deltaTime: number) {
+    if (!this._isRunning) {
+      this._goalSpotlightQueue = [];
+      this._activeGoalSpotlight = null;
+      return;
+    }
+
+    if (!this._activeGoalSpotlight) {
+      this._activeGoalSpotlight = this._goalSpotlightQueue.shift() ?? null;
+    }
+
+    if (!this._activeGoalSpotlight) {
+      return;
+    }
+
+    this._activeGoalSpotlight.elapsed += deltaTime;
+    if (this._activeGoalSpotlight.elapsed >= this._activeGoalSpotlight.duration) {
+      this._activeGoalSpotlight = this._goalSpotlightQueue.shift() ?? null;
+    }
   }
 
   private _capturePodiumSnapshot() {
@@ -533,6 +597,15 @@ export class Roulette extends EventTarget {
       winnerRank: this._winnerRank,
       winner: this._winner,
       podium: this._podiumSnapshot,
+      goalSpotlight: this._activeGoalSpotlight
+        ? {
+            rank: this._activeGoalSpotlight.rank,
+            name: this._activeGoalSpotlight.name,
+            accent: this._activeGoalSpotlight.accent,
+            elapsed: this._activeGoalSpotlight.elapsed,
+            duration: this._activeGoalSpotlight.duration,
+          }
+        : null,
       size: { x: this._renderer.width, y: this._renderer.height },
       theme: this._theme,
     };
@@ -789,12 +862,12 @@ export class Roulette extends EventTarget {
 
   private _scheduleRoundEvents() {
     const pace = isCompactViewport() ? 1.18 : 1;
-    const totalEvents = Math.max(12, Math.min(20, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 1.35 : 1.2))));
+    const totalEvents = Math.max(18, Math.min(30, Math.ceil(this._totalMarbleCount / (isCompactViewport() ? 0.9 : 0.82))));
     const schedule: number[] = [];
-    let nextAt = (820 + Math.random() * 420) * pace;
+    let nextAt = (540 + Math.random() * 260) * pace;
     for (let i = 0; i < totalEvents; i++) {
       schedule.push(nextAt);
-      nextAt += (920 + Math.random() * 640) * pace;
+      nextAt += (520 + Math.random() * 380) * pace;
     }
     this._eventTimeline = schedule;
     this._nextEventIndex = 0;
@@ -805,13 +878,13 @@ export class Roulette extends EventTarget {
 
     const pool =
       this._stage.eventPool && this._stage.eventPool.length > 0 ? this._stage.eventPool : defaultLunchEventPool;
-    const prioritizeSeaRush = pool.includes('shark-rush') && Math.random() < 0.6;
+    const prioritizeSeaRush = pool.includes('shark-rush') && Math.random() < 0.84;
     const weights = pool.map((id) => {
       const baseWeight = roundEventWeights[id] ?? 1;
       if (id !== this._lastRoundEventId) {
         return baseWeight;
       }
-      return id === 'shark-rush' ? baseWeight * 1.06 : baseWeight * 0.2;
+      return id === 'shark-rush' ? baseWeight * 0.92 : baseWeight * 0.18;
     });
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
     if (totalWeight <= 0) return;
@@ -1096,6 +1169,8 @@ export class Roulette extends EventTarget {
     this._winnerCelebrationElapsed = 0;
     this._winners = [];
     this._podiumSnapshot = [];
+    this._goalSpotlightQueue = [];
+    this._activeGoalSpotlight = null;
     this._marbles = [];
     this._resetRoundFlow();
   }
@@ -1115,6 +1190,8 @@ export class Roulette extends EventTarget {
     this._winnerCelebrationElapsed = 0;
     this._winners = [];
     this._podiumSnapshot = [];
+    this._goalSpotlightQueue = [];
+    this._activeGoalSpotlight = null;
     this._goalDist = Infinity;
     this._camera.startFollowingMarbles();
     this._resetRoundFlow();
