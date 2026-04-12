@@ -352,15 +352,6 @@ export class Roulette extends EventTarget {
         }
         if (this._isRunning && this._winners.length === this._winnerRank + 1) {
           this._finishRound(marble);
-        } else if (
-          this._isRunning &&
-          this._winnerRank === this._winners.length &&
-          this._winnerRank === this._totalMarbleCount - 1
-        ) {
-          const fallbackWinner = this._marbles[i + 1];
-          if (fallbackWinner) {
-            this._finishRound(fallbackWinner);
-          }
         }
         const removeDelay = finishRank <= 3 ? 980 : 500;
         setTimeout(() => {
