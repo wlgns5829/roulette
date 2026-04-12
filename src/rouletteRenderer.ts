@@ -794,6 +794,153 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawShockwaveRing(x: number, y: number, radius: number, thickness: number, color: string, alpha = 1) {
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = thickness;
+    this.ctx.shadowBlur = thickness * 2.4;
+    this.ctx.shadowColor = color;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawMeteorFireball(x: number, y: number, size: number, angle: number, alpha = 1, accent = '#ff8a1c') {
+    const tailLength = size * 3.2;
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.rotate(angle);
+    this.ctx.globalAlpha = alpha;
+
+    const tailGradient = this.ctx.createLinearGradient(-tailLength, 0, size * 0.35, 0);
+    tailGradient.addColorStop(0, 'rgba(255, 98, 0, 0)');
+    tailGradient.addColorStop(0.24, 'rgba(255, 140, 30, 0.32)');
+    tailGradient.addColorStop(0.58, 'rgba(255, 202, 74, 0.76)');
+    tailGradient.addColorStop(1, 'rgba(255, 250, 223, 0.96)');
+    this.ctx.fillStyle = tailGradient;
+    this.ctx.beginPath();
+    this.ctx.moveTo(-tailLength, 0);
+    this.ctx.quadraticCurveTo(-tailLength * 0.58, -size * 0.78, size * 0.24, -size * 0.2);
+    this.ctx.quadraticCurveTo(-tailLength * 0.24, 0, size * 0.24, size * 0.2);
+    this.ctx.quadraticCurveTo(-tailLength * 0.58, size * 0.78, -tailLength, 0);
+    this.ctx.fill();
+
+    for (let i = 0; i < 6; i++) {
+      const sparkX = -tailLength * (0.22 + i * 0.12);
+      const sparkY = (i % 2 === 0 ? -1 : 1) * size * (0.14 + i * 0.03);
+      this.drawSpark(sparkX, sparkY, size * (0.16 + i * 0.02), i % 2 === 0 ? '#fff8df' : accent, alpha * 0.7);
+    }
+
+    const fireGlow = this.ctx.createRadialGradient(0, 0, size * 0.12, 0, 0, size * 1.6);
+    fireGlow.addColorStop(0, 'rgba(255, 255, 255, 0.96)');
+    fireGlow.addColorStop(0.18, 'rgba(255, 241, 190, 0.96)');
+    fireGlow.addColorStop(0.42, 'rgba(255, 176, 66, 0.9)');
+    fireGlow.addColorStop(0.72, 'rgba(255, 108, 18, 0.58)');
+    fireGlow.addColorStop(1, 'rgba(255, 108, 18, 0)');
+    this.ctx.fillStyle = fireGlow;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, size * 1.6, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = '#3b1b11';
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, size * 0.54, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = '#7a2d14';
+    for (let i = 0; i < 5; i++) {
+      const rockAngle = (Math.PI * 2 * i) / 5 + size * 0.01;
+      this.ctx.beginPath();
+      this.ctx.arc(Math.cos(rockAngle) * size * 0.22, Math.sin(rockAngle) * size * 0.18, size * 0.12, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+
+    this.ctx.strokeStyle = '#ffd58f';
+    this.ctx.lineWidth = Math.max(2, size * 0.08);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, size * 0.72, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawImpactCracks(x: number, y: number, radius: number, alpha: number, accent: string) {
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+    this.ctx.strokeStyle = 'rgba(47, 23, 14, 0.9)';
+    this.ctx.lineWidth = Math.max(2, radius * 0.045);
+    for (let i = 0; i < 8; i++) {
+      const angle = -Math.PI * 0.92 + (Math.PI * 1.84 * i) / 7;
+      const reach = radius * (0.4 + (i % 3) * 0.18);
+      const midX = x + Math.cos(angle) * reach * 0.54;
+      const midY = y + Math.sin(angle) * reach * 0.28;
+      const endX = x + Math.cos(angle) * reach;
+      const endY = y + Math.sin(angle) * reach * 0.52;
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, y);
+      this.ctx.lineTo(midX, midY);
+      this.ctx.lineTo(endX, endY);
+      this.ctx.stroke();
+    }
+
+    this.ctx.strokeStyle = accent;
+    this.ctx.globalAlpha = alpha * 0.38;
+    this.ctx.lineWidth = Math.max(1.2, radius * 0.02);
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius * 0.28, Math.PI * 0.1, Math.PI * 0.9);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawNovaBurst(x: number, y: number, radius: number, accent: string, alpha: number) {
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.globalAlpha = alpha;
+
+    const bloom = this.ctx.createRadialGradient(0, 0, radius * 0.04, 0, 0, radius);
+    bloom.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    bloom.addColorStop(0.2, 'rgba(255, 251, 225, 0.98)');
+    bloom.addColorStop(0.46, 'rgba(255, 224, 148, 0.92)');
+    bloom.addColorStop(0.72, 'rgba(255, 186, 74, 0.46)');
+    bloom.addColorStop(1, 'rgba(255, 186, 74, 0)');
+    this.ctx.fillStyle = bloom;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.lineCap = 'round';
+    for (let i = 0; i < 28; i++) {
+      const angle = (Math.PI * 2 * i) / 28;
+      const inner = radius * (0.14 + (i % 3) * 0.03);
+      const outer = radius * (0.74 + (i % 5) * 0.08);
+      this.ctx.save();
+      this.ctx.rotate(angle);
+      this.ctx.strokeStyle = i % 2 === 0 ? '#fffbe8' : accent;
+      this.ctx.lineWidth = 2.4 + (i % 3) * 0.6;
+      this.ctx.beginPath();
+      this.ctx.moveTo(inner, 0);
+      this.ctx.lineTo(outer, 0);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
+    this.drawShockwaveRing(0, 0, radius * 0.56, Math.max(5, radius * 0.06), '#fff8d8', alpha * 0.8);
+    this.drawShockwaveRing(0, 0, radius * 0.86, Math.max(4, radius * 0.042), accent, alpha * 0.55);
+    this.ctx.restore();
+  }
+
   private drawWinnerSmileFace(x: number, y: number, size: number, time: number, joy: number, accent: string) {
     const blink = 0.45 + Math.sin(time * 6.2) * 0.08;
     const cheekAlpha = 0.14 + joy * 0.22;
@@ -978,6 +1125,9 @@ export class RouletteRenderer {
     const gatherProgress = this.clamp((elapsed - 2860) / 980);
     const coreBurstProgress = this.clamp((elapsed - 3440) / 640);
     const burstProgress = this.clamp((elapsed - 3880) / 1600);
+    const infernoProgress = this.clamp((elapsed - 3040) / 1740);
+    const meteorStormProgress = this.clamp((elapsed - 3360) / 1880);
+    const shockwaveProgress = this.clamp((elapsed - 3500) / 1160);
     const zoomInProgress = this.clamp((elapsed - 2760) / 760);
     const zoomOutProgress = this.clamp((elapsed - 4040) / 980);
     const textProgress = this.clamp((elapsed - 4320) / 760);
@@ -990,6 +1140,9 @@ export class RouletteRenderer {
     const gatherEase = this.easeInOutCubic(gatherProgress);
     const coreBurstEase = this.easeOutCubic(coreBurstProgress);
     const burstEase = this.easeOutCubic(burstProgress);
+    const infernoEase = this.easeOutCubic(infernoProgress);
+    const meteorStormEase = this.easeOutCubic(meteorStormProgress);
+    const shockwaveEase = this.easeOutCubic(shockwaveProgress);
     const joyEase = this.easeOutCubic(this.clamp((elapsed - 1740) / 2580));
     const focusScale = 1 + this.easeOutCubic(zoomInProgress) * 0.4 - this.easeInOutCubic(zoomOutProgress) * 0.24;
     const textEase = this.easeOutCubic(textProgress);
@@ -1198,6 +1351,14 @@ export class RouletteRenderer {
     this.ctx.fill();
     this.ctx.restore();
 
+    this.drawImpactCracks(
+      centerX,
+      islandY + marbleVisualSize * 0.5,
+      width * 0.14 + coreBurstEase * width * 0.06,
+      islandAlpha * 0.42 + coreBurstEase * 0.58,
+      accent
+    );
+
     const beamWidth = marbleVisualSize * (0.56 + landPauseEase * 0.14 + skyLaunchEase * 0.18);
     const beamGradient = this.ctx.createLinearGradient(0, marbleCenterY - marbleVisualSize * 0.6, 0, height);
     beamGradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
@@ -1225,6 +1386,23 @@ export class RouletteRenderer {
       this.ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2);
       this.ctx.fill();
       this.ctx.restore();
+    }
+
+    if (skyLaunchProgress > 0.08 || infernoProgress > 0) {
+      for (let i = 0; i < 6; i++) {
+        const emberProgress = (skyLaunchEase * 0.92 + infernoEase * 0.48 + i / 6) % 1;
+        const emberX =
+          marbleCenterX + Math.sin(time * 4.1 + i * 1.08) * marbleVisualSize * (0.18 + emberProgress * 0.16);
+        const emberY = marbleCenterY + marbleVisualSize * (0.34 + emberProgress * 1.45);
+        this.drawMeteorFireball(
+          emberX,
+          emberY,
+          marbleVisualSize * (0.12 + (1 - emberProgress) * 0.08),
+          -Math.PI / 2 + Math.sin(time * 2.7 + i) * 0.14,
+          (0.16 + infernoEase * 0.3) * (1 - emberProgress),
+          accent
+        );
+      }
     }
 
     for (let i = 0; i < 10; i++) {
@@ -1297,6 +1475,13 @@ export class RouletteRenderer {
     }
 
     if (coreBurstProgress > 0) {
+      this.drawNovaBurst(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.26 + coreBurstEase * 1.22),
+        accent,
+        0.28 + coreBurstEase * 0.56
+      );
       const coreRadius = marbleVisualSize * (0.24 + coreBurstEase * 0.5);
       const coreOuterRadius = marbleVisualSize * (0.46 + coreBurstEase * 0.98);
       const coreGlow = this.ctx.createRadialGradient(
@@ -1352,6 +1537,39 @@ export class RouletteRenderer {
       this.ctx.arc(marbleCenterX, marbleCenterY, coreOuterRadius * (0.92 + coreBurstEase * 0.24), 0, Math.PI * 2);
       this.ctx.stroke();
       this.ctx.restore();
+    }
+
+    if (meteorStormProgress > 0) {
+      for (let i = 0; i < 7; i++) {
+        const localMeteor = this.clamp((elapsed - 3480 - i * 118) / 1180);
+        if (localMeteor <= 0 || localMeteor >= 1) {
+          continue;
+        }
+
+        const startX = width * (0.08 + (i % 4) * 0.22) + (i % 2 === 0 ? -width * 0.06 : width * 0.06);
+        const startY = -height * (0.14 + (i % 3) * 0.04);
+        const impactX = centerX + (i - 3) * width * 0.11;
+        const impactY = height * (0.18 + (i % 3) * 0.1);
+        const meteorEase = this.easeInOutCubic(localMeteor);
+        const meteorX = this.lerp(startX, impactX, meteorEase);
+        const meteorY = this.lerp(startY, impactY, meteorEase);
+        const meteorAngle = Math.atan2(impactY - startY, impactX - startX);
+        const meteorSize = marbleVisualSize * (0.18 + (i % 3) * 0.045) * (1.08 - localMeteor * 0.24);
+        const meteorAlpha = (1 - localMeteor) * (0.44 + meteorStormEase * 0.36);
+
+        this.drawMeteorFireball(meteorX, meteorY, meteorSize, meteorAngle, meteorAlpha, accent);
+
+        if (localMeteor > 0.72) {
+          this.drawShockwaveRing(
+            impactX,
+            impactY,
+            meteorSize * (0.8 + (localMeteor - 0.72) * 4.6),
+            Math.max(3, meteorSize * 0.14),
+            i % 2 === 0 ? '#fff0ba' : accent,
+            (1 - localMeteor) * 0.55
+          );
+        }
+      }
     }
 
     const burstAnchors = [
@@ -1440,6 +1658,24 @@ export class RouletteRenderer {
       }
     }
 
+    const infernoGlow = this.ctx.createRadialGradient(
+      marbleCenterX,
+      marbleCenterY,
+      marbleVisualSize * 0.18,
+      marbleCenterX,
+      marbleCenterY,
+      marbleVisualSize * (1.42 + infernoEase * 0.44)
+    );
+    infernoGlow.addColorStop(0, `rgba(255, 255, 255, ${0.2 + infernoEase * 0.14})`);
+    infernoGlow.addColorStop(0.18, `rgba(255, 240, 185, ${0.18 + infernoEase * 0.2})`);
+    infernoGlow.addColorStop(0.42, `rgba(255, 170, 55, ${0.14 + infernoEase * 0.26})`);
+    infernoGlow.addColorStop(0.76, `rgba(255, 92, 18, ${0.06 + infernoEase * 0.18})`);
+    infernoGlow.addColorStop(1, 'rgba(255, 92, 18, 0)');
+    this.ctx.fillStyle = infernoGlow;
+    this.ctx.beginPath();
+    this.ctx.arc(marbleCenterX, marbleCenterY, marbleVisualSize * (1.42 + infernoEase * 0.44), 0, Math.PI * 2);
+    this.ctx.fill();
+
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
     if (marbleImage) {
@@ -1466,6 +1702,24 @@ export class RouletteRenderer {
       );
     }
     this.ctx.restore();
+    if (shockwaveProgress > 0) {
+      this.drawShockwaveRing(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.18 + shockwaveEase * 2.08),
+        Math.max(5, marbleVisualSize * 0.08),
+        '#fff7dd',
+        (1 - shockwaveProgress) * 0.72
+      );
+      this.drawShockwaveRing(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.58 + shockwaveEase * 2.72),
+        Math.max(3, marbleVisualSize * 0.05),
+        accent,
+        (1 - shockwaveProgress) * 0.46
+      );
+    }
     this.drawWinnerSmileFace(marbleCenterX, marbleCenterY, marbleVisualSize, time, joyEase, accent);
     this.renderPodiumBanner(podium, accent, podiumProgress, width, height);
 

@@ -21,6 +21,7 @@ const enabledMasterGain = 1.52;
 const defaultBgmGain = 0.9;
 const duckedBgmGain = 0.24;
 const defaultBgmUrl = new URL('../assets/audio/08_1_Buyeo.mp3', import.meta.url).toString();
+const goalMusicUrl = new URL('../assets/audio/01_Mt_D2.mp3', import.meta.url).toString();
 
 type BgmTrack = {
   bassPatterns: number[][];
@@ -175,10 +176,14 @@ export class AudioEngine {
   private _ctx: AudioContext | null = null;
   private _masterGain: GainNode | null = null;
   private _bgmGain: GainNode | null = null;
+  private _goalMusicGain: GainNode | null = null;
   private _sfxGain: GainNode | null = null;
   private _bgmElement: HTMLAudioElement | null = null;
   private _bgmSource: MediaElementAudioSourceNode | null = null;
   private _bgmPauseTimer: number | null = null;
+  private _goalMusicElement: HTMLAudioElement | null = null;
+  private _goalMusicSource: MediaElementAudioSourceNode | null = null;
+  private _goalMusicStopTimer: number | null = null;
   private _noiseBuffer: AudioBuffer | null = null;
   private _schedulerId: number | null = null;
   private _nextStepTime = 0;
@@ -203,6 +208,7 @@ export class AudioEngine {
     }
 
     this._masterGain.gain.setTargetAtTime(0.0001, this._ctx.currentTime, 0.04);
+    this._stopGoalMusic(true);
     this.stopBgm();
   }
 
@@ -220,6 +226,7 @@ export class AudioEngine {
     if (!ctx || !this._isEnabled || ctx.state === 'suspended' || !this._bgmGain) return;
 
     this._hasStartedBgm = true;
+    this._stopGoalMusic(true);
     this._bgmGain.gain.cancelScheduledValues(ctx.currentTime);
     this._bgmGain.gain.setTargetAtTime(defaultBgmGain, ctx.currentTime, 0.08);
     this._clearBgmPauseTimer();
@@ -465,7 +472,7 @@ export class AudioEngine {
       });
     });
 
-    this._playWinnerBurstTheme(start);
+    this._playGoalMusic(start);
   }
 
   public playFinalApproach() {
@@ -502,11 +509,13 @@ export class AudioEngine {
     const ctx = new AudioCtx();
     const master = ctx.createGain();
     const bgm = ctx.createGain();
+    const goalMusic = ctx.createGain();
     const sfx = ctx.createGain();
     const compressor = ctx.createDynamicsCompressor();
 
     master.gain.value = 0.0001;
     bgm.gain.value = defaultBgmGain;
+    goalMusic.gain.value = 0.96;
     sfx.gain.value = 0.24;
     compressor.threshold.setValueAtTime(-16, ctx.currentTime);
     compressor.knee.setValueAtTime(18, ctx.currentTime);
@@ -515,14 +524,17 @@ export class AudioEngine {
     compressor.release.setValueAtTime(0.2, ctx.currentTime);
 
     bgm.connect(master);
+    goalMusic.connect(master);
     sfx.connect(master);
     master.connect(compressor);
     compressor.connect(ctx.destination);
     this._ensureBgmElement(ctx, bgm);
+    this._ensureGoalMusicElement(ctx, goalMusic);
 
     this._ctx = ctx;
     this._masterGain = master;
     this._bgmGain = bgm;
+    this._goalMusicGain = goalMusic;
     this._sfxGain = sfx;
     this._noiseBuffer = this._createNoiseBuffer(ctx);
     return ctx;
@@ -546,11 +558,65 @@ export class AudioEngine {
     this._bgmSource = source;
   }
 
+  private _ensureGoalMusicElement(ctx: AudioContext, goalMusic: GainNode) {
+    if (this._goalMusicElement && this._goalMusicSource) {
+      return;
+    }
+
+    const element = new Audio(goalMusicUrl);
+    element.loop = false;
+    element.preload = 'auto';
+    element.crossOrigin = 'anonymous';
+    element.volume = 1;
+
+    const source = ctx.createMediaElementSource(element);
+    source.connect(goalMusic);
+
+    this._goalMusicElement = element;
+    this._goalMusicSource = source;
+  }
+
   private _clearBgmPauseTimer() {
     if (this._bgmPauseTimer !== null) {
       window.clearTimeout(this._bgmPauseTimer);
       this._bgmPauseTimer = null;
     }
+  }
+
+  private _clearGoalMusicStopTimer() {
+    if (this._goalMusicStopTimer !== null) {
+      window.clearTimeout(this._goalMusicStopTimer);
+      this._goalMusicStopTimer = null;
+    }
+  }
+
+  private _stopGoalMusic(reset = false) {
+    if (!this._goalMusicElement) {
+      return;
+    }
+
+    this._clearGoalMusicStopTimer();
+    this._goalMusicElement.pause();
+    if (reset) {
+      this._goalMusicElement.currentTime = 0;
+    }
+  }
+
+  private _playGoalMusic(start: number) {
+    const ctx = this._ctx;
+    if (!ctx || !this._goalMusicGain || !this._goalMusicElement) {
+      return;
+    }
+
+    this._clearGoalMusicStopTimer();
+    this._goalMusicGain.gain.cancelScheduledValues(start);
+    this._goalMusicGain.gain.setValueAtTime(0.0001, start);
+    this._goalMusicGain.gain.linearRampToValueAtTime(0.92, start + 0.08);
+    this._goalMusicGain.gain.setTargetAtTime(0.92, start + 0.1, 0.12);
+
+    this._goalMusicElement.pause();
+    this._goalMusicElement.currentTime = 0;
+    void this._goalMusicElement.play().catch(() => undefined);
   }
 
   private _selectRandomBgmTrack() {
