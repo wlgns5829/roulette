@@ -102,6 +102,7 @@ export class RouletteRenderer {
     return new Promise((resolve) => {
       const img = new Image();
       img.addEventListener('load', () => resolve(img));
+      img.addEventListener('error', () => resolve(img));
       img.src = url;
     });
   }
@@ -156,7 +157,7 @@ export class RouletteRenderer {
     const backdropId = stage.backdrop ?? getStageBackdrop(0);
     const backdrop = stageBackdrops[backdropId];
     const backdropImage = this._backdropImages[backdropId];
-    if (backdrop && backdropImage) {
+    if (backdrop && backdropImage && backdropImage.naturalWidth > 0 && backdropImage.naturalHeight > 0) {
       this.renderPhotoBackdrop(backdrop, stage.accent ?? '#f59e0b', backdropImage);
       return;
     }

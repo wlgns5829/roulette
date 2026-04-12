@@ -30,13 +30,19 @@ export type StageBackdropPalette = {
   ambientThree: string;
 };
 
-const image = (name: string) => new URL(`../../assets/images/stage-backgrounds/${name}`, import.meta.url).toString();
+const sunlitFairway = new URL('../../assets/images/stage-backgrounds/sunlit-fairway.svg', import.meta.url).toString();
+const crystalLake = new URL('../../assets/images/stage-backgrounds/crystal-lake.svg', import.meta.url).toString();
+const goldenSeaCliffs = new URL('../../assets/images/stage-backgrounds/golden-sea-cliffs.svg', import.meta.url).toString();
+const midnightSkyline = new URL('../../assets/images/stage-backgrounds/midnight-skyline.svg', import.meta.url).toString();
+const gothicSpires = new URL('../../assets/images/stage-backgrounds/gothic-spires.svg', import.meta.url).toString();
+const snowRailway = new URL('../../assets/images/stage-backgrounds/snow-railway.svg', import.meta.url).toString();
+const tropicalShore = new URL('../../assets/images/stage-backgrounds/tropical-shore.svg', import.meta.url).toString();
 
 export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'sakura-village': {
     id: 'sakura-village',
     label: '햇살 초원',
-    imageUrl: image('sunlit-fairway.svg'),
+    imageUrl: sunlitFairway,
     focusX: 0.36,
     focusY: 0.4,
     uiPhotoScale: 1.44,
@@ -57,7 +63,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'sky-sanctum': {
     id: 'sky-sanctum',
     label: '거울 호수',
-    imageUrl: image('crystal-lake.svg'),
+    imageUrl: crystalLake,
     focusX: 0.5,
     focusY: 0.42,
     uiPhotoScale: 1.42,
@@ -78,7 +84,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'mushroom-square': {
     id: 'mushroom-square',
     label: '황혼 절벽해안',
-    imageUrl: image('golden-sea-cliffs.svg'),
+    imageUrl: goldenSeaCliffs,
     focusX: 0.56,
     focusY: 0.42,
     uiPhotoScale: 1.48,
@@ -99,7 +105,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'abyss-corridor': {
     id: 'abyss-corridor',
     label: '푸른 야경도시',
-    imageUrl: image('midnight-skyline.svg'),
+    imageUrl: midnightSkyline,
     focusX: 0.5,
     focusY: 0.34,
     uiPhotoScale: 1.52,
@@ -120,7 +126,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'aurora-village': {
     id: 'aurora-village',
     label: '고딕 첨탑광장',
-    imageUrl: image('gothic-spires.svg'),
+    imageUrl: gothicSpires,
     focusX: 0.52,
     focusY: 0.34,
     uiPhotoScale: 1.5,
@@ -141,7 +147,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'moon-market': {
     id: 'moon-market',
     label: '설산 열차길',
-    imageUrl: image('snow-railway.svg'),
+    imageUrl: snowRailway,
     focusX: 0.5,
     focusY: 0.38,
     uiPhotoScale: 1.46,
@@ -162,7 +168,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'star-palace': {
     id: 'star-palace',
     label: '에메랄드 해변',
-    imageUrl: image('tropical-shore.svg'),
+    imageUrl: tropicalShore,
     focusX: 0.42,
     focusY: 0.42,
     uiPhotoScale: 1.44,
@@ -183,7 +189,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'harvest-terrace': {
     id: 'harvest-terrace',
     label: '목초지 언덕',
-    imageUrl: image('sunlit-fairway.svg'),
+    imageUrl: sunlitFairway,
     focusX: 0.66,
     focusY: 0.54,
     uiPhotoScale: 1.58,
