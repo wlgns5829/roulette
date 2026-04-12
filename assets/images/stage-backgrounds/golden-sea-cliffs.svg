@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6d28e"/>
+      <stop offset="55%" stop-color="#f3b36a"/>
+      <stop offset="100%" stop-color="#6d5f7b"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6d68f"/>
+      <stop offset="35%" stop-color="#d89c59"/>
+      <stop offset="100%" stop-color="#544869"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0.68" cy="0.32" r="0.3">
+      <stop offset="0%" stop-color="#fff0b5" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#ffd78e" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffd78e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#sunGlow)"/>
+  <circle cx="1090" cy="250" r="82" fill="#fff3c7"/>
+  <rect y="380" width="1600" height="520" fill="url(#sea)"/>
+  <g fill="#2e2231">
+    <path d="M0 0v900h220l60-230 104-88 64-215 120-96 60-271Z"/>
+    <path d="M1010 900h162l52-330 69-119 41-203 71-138 75 790Z"/>
+  </g>
+  <g fill="#443040">
+    <path d="M0 900h278l58-156 44-78 26 234H0z"/>
+    <path d="M1066 900h176l53-220 26 220z"/>
+  </g>
+  <g fill="#352636">
+    <path d="M528 730 620 384 714 730Z"/>
+    <path d="M1124 758 1218 280 1302 758Z"/>
+  </g>
+  <g opacity="0.6" fill="#fff1b1">
+    <path d="M1044 322 1120 900h29L1082 322Z"/>
+    <path d="M1067 330 1299 900h33L1094 330Z"/>
+    <path d="M1090 320 1467 900h38L1115 321Z"/>
+  </g>
+</svg>

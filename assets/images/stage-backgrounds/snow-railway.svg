@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b1dbff"/>
+      <stop offset="55%" stop-color="#d8e8ff"/>
+      <stop offset="100%" stop-color="#eef5ff"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#d8e6f3"/>
+    </linearGradient>
+    <linearGradient id="train" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f56f2a"/>
+      <stop offset="100%" stop-color="#ffb366"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <g fill="#dbe4f2">
+    <path d="M0 386c157-120 352-164 544-138 135 18 263 16 430-38 234-76 440-68 626 10v250H0z"/>
+    <path d="M0 446c176-91 331-101 507-67 152 29 271 21 444-28 257-73 447-56 649 10v176H0z" fill="#c8d5e6"/>
+    <path d="M0 514c179-68 356-72 533-41 151 26 292 23 465-17 235-53 390-39 602 6v150H0z" fill="#b7c6da"/>
+  </g>
+  <g opacity="0.9">
+    <path d="M0 900V598c133 11 239-8 330-60 68-39 139-60 223-66 74-6 138 8 212 37 82 31 155 34 250 8 106-30 180-76 266-91 86-15 182-5 319 34v540z" fill="url(#snow)"/>
+    <path d="M0 900V682c147-24 276-48 392-94 119-48 229-51 346-9 105 38 216 46 347 24 117-20 241-7 515 53v244z" fill="#edf4fb"/>
+  </g>
+  <g stroke="#646b73" stroke-width="10">
+    <path d="M-100 728C118 710 286 622 428 532c135-86 256-127 420-93 139 28 265 24 420-18 112-30 228-80 416-98"/>
+    <path d="M-92 764c216-18 388-110 532-200 134-84 250-122 406-89 143 30 271 25 428-17 113-30 233-78 420-98"/>
+  </g>
+  <g fill="#8f5f42">
+    <rect x="324" y="603" width="22" height="58" transform="rotate(-28 335 632)"/>
+    <rect x="402" y="560" width="22" height="58" transform="rotate(-28 413 589)"/>
+    <rect x="486" y="526" width="22" height="58" transform="rotate(-22 497 555)"/>
+    <rect x="579" y="508" width="22" height="58" transform="rotate(-15 590 537)"/>
+    <rect x="683" y="508" width="22" height="58" transform="rotate(-5 694 537)"/>
+    <rect x="791" y="514" width="22" height="58" transform="rotate(8 802 543)"/>
+  </g>
+  <g>
+    <path d="M612 498c92-14 157-8 234 24 21 8 38 23 38 48v54c0 39-31 70-70 70H632c-38 0-70-31-70-70v-48c0-41 22-69 50-78z" fill="url(#train)"/>
+    <path d="M640 528h110v62H640z" fill="#d7f0ff"/>
+    <path d="M762 532h74v50h-74z" fill="#d7f0ff"/>
+    <path d="M686 498h96v24h-96z" fill="#f3f5f8"/>
+    <circle cx="646" cy="690" r="25" fill="#404750"/>
+    <circle cx="794" cy="690" r="25" fill="#404750"/>
+    <circle cx="646" cy="690" r="11" fill="#c7d0d8"/>
+    <circle cx="794" cy="690" r="11" fill="#c7d0d8"/>
+  </g>
+  <g stroke="#8e949d" stroke-width="5">
+    <path d="M376 0 358 284"/>
+    <path d="M628 0 608 236"/>
+    <path d="M1008 0 984 256"/>
+  </g>
+  <g fill="#dfe8f3" opacity="0.6">
+    <circle cx="260" cy="238" r="18"/>
+    <circle cx="1084" cy="198" r="16"/>
+    <circle cx="1328" cy="266" r="14"/>
+  </g>
+</svg>

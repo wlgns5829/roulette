@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4e89d8"/>
+      <stop offset="55%" stop-color="#7bb2f4"/>
+      <stop offset="100%" stop-color="#dce9ff"/>
+    </linearGradient>
+    <linearGradient id="stoneLeft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5f6877"/>
+      <stop offset="100%" stop-color="#2f3542"/>
+    </linearGradient>
+    <linearGradient id="stoneRight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818997"/>
+      <stop offset="100%" stop-color="#444b59"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <g fill="#ffffff" opacity="0.18">
+    <path d="M320 118c63-18 122 5 155 39 52-20 111-11 142 18H236c11-29 34-48 84-57z"/>
+    <path d="M1000 164c51-18 100 5 128 33 46-16 101-7 129 18H924c10-24 27-39 76-51z"/>
+  </g>
+  <g>
+    <path d="M245 900V412h165v488z" fill="url(#stoneLeft)"/>
+    <path d="M1190 900V402h176v498z" fill="url(#stoneRight)"/>
+    <path d="M289 412 327 92 366 412z" fill="#9fa9b8"/>
+    <path d="M1240 402 1278 68 1318 402z" fill="#b6c0ce"/>
+    <path d="M327 92 351 46 377 92z" fill="#d6dde8"/>
+    <path d="M1278 68 1302 24 1328 68z" fill="#e3e9f0"/>
+    <path d="M351 46 349 0 356 46z" fill="#232933"/>
+    <path d="M1302 24 1300 0 1308 24z" fill="#232933"/>
+  </g>
+  <g fill="#202530" opacity="0.62">
+    <path d="M258 480h142v30H258z"/>
+    <path d="M1206 472h154v32h-154z"/>
+    <path d="M270 526h118v28H270z"/>
+    <path d="M1220 520h128v28h-128z"/>
+  </g>
+  <g stroke="#1f2430" stroke-width="7" stroke-linecap="round">
+    <path d="M332 182v184"/>
+    <path d="M1284 164v196"/>
+  </g>
+  <g fill="#d5dde8" opacity="0.95">
+    <circle cx="332" cy="512" r="18"/>
+    <circle cx="1284" cy="506" r="18"/>
+    <circle cx="332" cy="566" r="14"/>
+    <circle cx="1284" cy="560" r="14"/>
+  </g>
+  <g fill="#2c323d" opacity="0.45">
+    <path d="M0 900V728c132-36 292-44 472 0 143 35 313 38 504-8 213-50 408-46 624 10v170z"/>
+    <path d="M0 900V796c166-21 314-18 468 10 157 30 325 25 520-10 218-40 410-35 612 8v96z" fill="#1a2029"/>
+  </g>
+</svg>
