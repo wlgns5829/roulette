@@ -178,22 +178,25 @@ export class Marble {
     const impactRatio = Math.min(1, this.impact / 500);
     const style = options.marbleStyle;
     const visualScale = this._getVisualScale();
+    const isCharacterStyle = style === 'boss';
 
-    transformGuard(ctx, () => {
-      ctx.translate(this.x, this.y);
-      ctx.scale(1, -1);
-      ctx.strokeStyle = 'rgba(12, 18, 28, 0.72)';
-      ctx.lineWidth = Math.max(0.06, this.size * 0.15);
-      ctx.beginPath();
-      ctx.arc(0, 0, this.size * 0.78 * visualScale, 0, Math.PI * 2);
-      ctx.stroke();
+    if (!isCharacterStyle) {
+      transformGuard(ctx, () => {
+        ctx.translate(this.x, this.y);
+        ctx.scale(1, -1);
+        ctx.strokeStyle = 'rgba(12, 18, 28, 0.72)';
+        ctx.lineWidth = Math.max(0.06, this.size * 0.15);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.78 * visualScale, 0, Math.PI * 2);
+        ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(255, 250, 244, 0.52)';
-      ctx.lineWidth = Math.max(0.03, this.size * 0.06);
-      ctx.beginPath();
-      ctx.arc(0, 0, this.size * 0.72 * visualScale, 0, Math.PI * 2);
-      ctx.stroke();
-    });
+        ctx.strokeStyle = 'rgba(255, 250, 244, 0.52)';
+        ctx.lineWidth = Math.max(0.03, this.size * 0.06);
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 0.72 * visualScale, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+    }
 
     if (style === 'sprite' && skin) {
       transformGuard(ctx, () => {
@@ -224,11 +227,11 @@ export class Marble {
     ctx.shadowBlur = 0;
     this._drawName(ctx, zoom, sceneRotation);
 
-    if (outline) {
+    if (outline && !isCharacterStyle) {
       this._drawOutline(ctx, 2 / zoom);
     }
 
-    if (options.useSkills) {
+    if (options.useSkills && !isCharacterStyle) {
       this._renderCoolTime(ctx, zoom);
     }
   }

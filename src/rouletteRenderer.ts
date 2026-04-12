@@ -1393,8 +1393,8 @@ export class RouletteRenderer {
     const zoomOutProgress = this.clamp((elapsed - 4040) / 980);
     const textProgress = this.clamp((elapsed - 4320) / 760);
     const podiumProgress = this.clamp((elapsed - 2480) / 620);
-    const supportChargeProgress = this.clamp((elapsed - 180) / 1320);
-    const supportLiftProgress = this.clamp((elapsed - 760) / 1560);
+    const supportChargeProgress = this.clamp((elapsed - 60) / 1480);
+    const supportLiftProgress = this.clamp((elapsed - 520) / 1760);
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
@@ -1446,7 +1446,7 @@ export class RouletteRenderer {
           ? this.lerp(oceanLegY, landHoverY, landPauseEase) - Math.sin(time * 7.6) * (4.4 + landPauseEase * 3.6)
           : oceanLegY - Math.sin(time * 7.4) * (5.6 + oceanRiseEase * 3.4);
     const supportLiftOffset =
-      marbleVisualSize * (0.08 + supportChargeEase * 0.12 + supportLiftEase * 0.16) * (1 - coreBurstProgress * 0.3);
+      marbleVisualSize * (0.1 + supportChargeEase * 0.16 + supportLiftEase * 0.24) * (1 - coreBurstProgress * 0.24);
     const marbleCenterY = baseMarbleCenterY - supportLiftOffset;
     const islandAlpha = seaToLandEase * Math.max(0, 1 - skyLaunchProgress * 1.08);
     const nameY = centerY + nameSize * 0.14;
@@ -1629,10 +1629,39 @@ export class RouletteRenderer {
     this.ctx.fill();
     this.ctx.restore();
 
-    const supportAlpha = supportMarbles.length > 0 ? supportChargeEase * (0.22 + (1 - coreBurstProgress) * 0.7) : 0;
+    const supportAlpha = supportMarbles.length > 0 ? supportChargeEase * (0.34 + (1 - coreBurstProgress) * 0.82) : 0;
     if (supportAlpha > 0.02) {
       const supportSpread = Math.min(width * 0.24, marbleVisualSize * 3.2);
       const supportBaseY = islandY + marbleVisualSize * 0.1;
+
+      const upliftGlow = this.ctx.createRadialGradient(
+        marbleCenterX,
+        marbleCenterY + marbleVisualSize * 0.42,
+        marbleVisualSize * 0.18,
+        marbleCenterX,
+        marbleCenterY + marbleVisualSize * 0.42,
+        marbleVisualSize * 2.2
+      );
+      upliftGlow.addColorStop(0, `rgba(255, 248, 226, ${0.22 + supportAlpha * 0.24})`);
+      upliftGlow.addColorStop(0.32, `rgba(255, 214, 130, ${0.16 + supportAlpha * 0.22})`);
+      upliftGlow.addColorStop(1, 'rgba(255, 214, 130, 0)');
+      this.ctx.fillStyle = upliftGlow;
+      this.ctx.beginPath();
+      this.ctx.arc(marbleCenterX, marbleCenterY + marbleVisualSize * 0.42, marbleVisualSize * 2.2, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      for (let ring = 0; ring < 3; ring++) {
+        const ringProgress = (supportLiftEase + ring * 0.19) % 1;
+        this.drawShockwaveRing(
+          marbleCenterX,
+          marbleCenterY + marbleVisualSize * 0.36,
+          marbleVisualSize * (0.74 + ringProgress * (0.88 + ring * 0.18)),
+          Math.max(2.6, marbleVisualSize * 0.03),
+          ring % 2 === 0 ? '#fff4c8' : accent,
+          supportAlpha * (0.34 - ring * 0.07) * (1 - ringProgress * 0.72)
+        );
+      }
+
       supportMarbles.forEach((supporter, index) => {
         const ratio = supportMarbles.length === 1 ? 0.5 : index / (supportMarbles.length - 1);
         const supportAngle = -0.5 + ratio * 1.0;
@@ -1642,11 +1671,11 @@ export class RouletteRenderer {
           supportBaseY + Math.sin(time * 4.8 + index * 1.4) * (4 + (1 - supportLiftEase) * 5) + Math.abs(supportAngle) * marbleVisualSize * 0.26;
         const supportSize = marbleVisualSize * (0.28 + (index % 2) * 0.03);
         const supportGlow = `hsl(${supporter.hue} 100% 72%)`;
-        const beamAlpha = supportAlpha * (0.82 + (1 - Math.abs(ratio - 0.5) * 2) * 0.28);
+        const beamAlpha = supportAlpha * (0.94 + (1 - Math.abs(ratio - 0.5) * 2) * 0.36);
         const targetX = marbleCenterX + supportAngle * marbleVisualSize * 0.18;
         const targetY = marbleCenterY + marbleVisualSize * 0.18;
 
-        this.drawSupportLiftBeam(supportX, supportY, targetX, targetY, supportGlow, beamAlpha, supportSize * 0.24);
+        this.drawSupportLiftBeam(supportX, supportY, targetX, targetY, supportGlow, beamAlpha, supportSize * 0.3);
         this.drawSupportMarble(supporter, supportX, supportY, supportSize, 0.46 + beamAlpha * 0.5, supportGlow);
 
         for (let spark = 0; spark < 3; spark++) {
