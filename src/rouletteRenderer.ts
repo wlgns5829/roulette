@@ -981,6 +981,93 @@ export class RouletteRenderer {
     this.drawShockwaveRing(x, y, outerRadius, Math.max(3, radius * 0.022), '#facc15', alpha * 0.44);
   }
 
+  private drawSupportLiftBeam(
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number,
+    color: string,
+    alpha = 1,
+    width = 12
+  ) {
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    const controlX = this.lerp(fromX, toX, 0.46) + (fromX - toX) * 0.08;
+    const controlY = this.lerp(fromY, toY, 0.54) - Math.abs(toY - fromY) * 0.2;
+
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+
+    this.ctx.strokeStyle = 'rgba(255, 248, 220, 0.92)';
+    this.ctx.lineWidth = width;
+    this.ctx.shadowBlur = width * 2.2;
+    this.ctx.shadowColor = color;
+    this.ctx.beginPath();
+    this.ctx.moveTo(fromX, fromY);
+    this.ctx.quadraticCurveTo(controlX, controlY, toX, toY);
+    this.ctx.stroke();
+
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = width * 0.42;
+    this.ctx.shadowBlur = width * 1.3;
+    this.ctx.beginPath();
+    this.ctx.moveTo(fromX, fromY);
+    this.ctx.quadraticCurveTo(controlX, controlY, toX, toY);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawSupportMarble(
+    marble: Marble,
+    x: number,
+    y: number,
+    size: number,
+    alpha: number,
+    glow: string
+  ) {
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    const marbleImage = options.marbleStyle === 'sprite' ? this.getMarbleImage(marble.name) : undefined;
+
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.fillStyle = 'rgba(20, 10, 8, 0.22)';
+    this.ctx.beginPath();
+    this.ctx.ellipse(x, y + size * 0.4, size * 0.6, size * 0.22, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.globalAlpha = alpha;
+    if (marbleImage) {
+      this.ctx.shadowBlur = size * 0.38;
+      this.ctx.shadowColor = glow;
+      this.ctx.drawImage(marbleImage, -size / 2, -size / 2, size, size);
+    } else {
+      drawMarbleLook(
+        this.ctx,
+        {
+          x: 0,
+          y: 0,
+          size,
+          hue: marble.hue,
+          seed: marble.id,
+          bounce: 0.34,
+          glow,
+        },
+        options.marbleStyle === 'sprite' ? 'retro' : options.marbleStyle
+      );
+    }
+    this.ctx.restore();
+  }
+
   private drawMeteorFireball(x: number, y: number, size: number, angle: number, alpha = 1, accent = '#ff8a1c') {
     const tailLength = size * 3.2;
 
@@ -1275,7 +1362,7 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
-  private renderWinner({ winner, stage, podium }: RenderParameters) {
+  private renderWinner({ winner, stage, podium, marbles, winners }: RenderParameters) {
     if (!winner) {
       this._winnerRevealKey = null;
       this._winnerRevealStartedAt = 0;
@@ -1306,6 +1393,8 @@ export class RouletteRenderer {
     const zoomOutProgress = this.clamp((elapsed - 4040) / 980);
     const textProgress = this.clamp((elapsed - 4320) / 760);
     const podiumProgress = this.clamp((elapsed - 2480) / 620);
+    const supportChargeProgress = this.clamp((elapsed - 180) / 1320);
+    const supportLiftProgress = this.clamp((elapsed - 760) / 1560);
     const oceanRiseEase = this.easeOutBack(oceanRiseProgress);
     const landPauseEase = this.easeInOutCubic(landPauseProgress);
     const skyLaunchEase = this.easeInOutCubic(skyLaunchProgress);
@@ -1317,6 +1406,8 @@ export class RouletteRenderer {
     const infernoEase = this.easeOutCubic(infernoProgress);
     const meteorStormEase = this.easeOutCubic(meteorStormProgress);
     const shockwaveEase = this.easeOutCubic(shockwaveProgress);
+    const supportChargeEase = this.easeInOutCubic(supportChargeProgress);
+    const supportLiftEase = this.easeOutCubic(supportLiftProgress);
     const joyEase = this.easeOutCubic(this.clamp((elapsed - 1740) / 2580));
     const focusScale = 1 + this.easeOutCubic(zoomInProgress) * 0.4 - this.easeInOutCubic(zoomOutProgress) * 0.24;
     const textEase = this.easeOutCubic(textProgress);
@@ -1348,16 +1439,27 @@ export class RouletteRenderer {
     const shoreLegY = this.lerp(marbleSurfaceY, marbleLandY, landPauseEase);
     const landHoverY = shoreLegY - Math.sin(time * 5.2) * 4.4 * (0.5 + (1 - skyLaunchProgress) * 0.5);
     const skyLegY = this.lerp(marbleLandY, marbleSkyY, skyLaunchEase);
-    const marbleCenterY =
+    const baseMarbleCenterY =
       skyLaunchProgress > 0
         ? this.lerp(landHoverY, skyLegY, skyLaunchEase) - Math.sin(time * 8.4) * 12 * (1 - skyLaunchProgress)
         : landPauseProgress > 0
           ? this.lerp(oceanLegY, landHoverY, landPauseEase) - Math.sin(time * 7.6) * (4.4 + landPauseEase * 3.6)
           : oceanLegY - Math.sin(time * 7.4) * (5.6 + oceanRiseEase * 3.4);
+    const supportLiftOffset =
+      marbleVisualSize * (0.08 + supportChargeEase * 0.12 + supportLiftEase * 0.16) * (1 - coreBurstProgress * 0.3);
+    const marbleCenterY = baseMarbleCenterY - supportLiftOffset;
     const islandAlpha = seaToLandEase * Math.max(0, 1 - skyLaunchProgress * 1.08);
     const nameY = centerY + nameSize * 0.14;
     const textOffsetY = (1 - textEase) * 42;
     const showText = textProgress > 0.01;
+    const supportIds = new Set<number>();
+    const supportMarbles = [...podium, ...winners, ...marbles].filter((entry) => {
+      if (entry.id === winner.id || supportIds.has(entry.id)) {
+        return false;
+      }
+      supportIds.add(entry.id);
+      return true;
+    }).slice(0, 5);
 
     this.ctx.save();
 
@@ -1526,6 +1628,35 @@ export class RouletteRenderer {
     this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.22, width * 0.145, marbleVisualSize * 0.2, 0, 0, Math.PI * 2);
     this.ctx.fill();
     this.ctx.restore();
+
+    const supportAlpha = supportMarbles.length > 0 ? supportChargeEase * (0.22 + (1 - coreBurstProgress) * 0.7) : 0;
+    if (supportAlpha > 0.02) {
+      const supportSpread = Math.min(width * 0.24, marbleVisualSize * 3.2);
+      const supportBaseY = islandY + marbleVisualSize * 0.1;
+      supportMarbles.forEach((supporter, index) => {
+        const ratio = supportMarbles.length === 1 ? 0.5 : index / (supportMarbles.length - 1);
+        const supportAngle = -0.5 + ratio * 1.0;
+        const supportX =
+          centerX - supportSpread + ratio * supportSpread * 2 + Math.sin(time * 2.2 + index * 0.9) * width * 0.012;
+        const supportY =
+          supportBaseY + Math.sin(time * 4.8 + index * 1.4) * (4 + (1 - supportLiftEase) * 5) + Math.abs(supportAngle) * marbleVisualSize * 0.26;
+        const supportSize = marbleVisualSize * (0.28 + (index % 2) * 0.03);
+        const supportGlow = `hsl(${supporter.hue} 100% 72%)`;
+        const beamAlpha = supportAlpha * (0.82 + (1 - Math.abs(ratio - 0.5) * 2) * 0.28);
+        const targetX = marbleCenterX + supportAngle * marbleVisualSize * 0.18;
+        const targetY = marbleCenterY + marbleVisualSize * 0.18;
+
+        this.drawSupportLiftBeam(supportX, supportY, targetX, targetY, supportGlow, beamAlpha, supportSize * 0.24);
+        this.drawSupportMarble(supporter, supportX, supportY, supportSize, 0.46 + beamAlpha * 0.5, supportGlow);
+
+        for (let spark = 0; spark < 3; spark++) {
+          const sparkProgress = (supportChargeEase * 0.84 + spark / 3 + index * 0.07) % 1;
+          const sparkX = this.lerp(supportX, targetX, sparkProgress);
+          const sparkY = this.lerp(supportY, targetY, sparkProgress) - Math.sin(sparkProgress * Math.PI) * marbleVisualSize * 0.08;
+          this.drawSpark(sparkX, sparkY, 3 + sparkProgress * 5, spark % 2 === 0 ? '#fff8e1' : supportGlow, beamAlpha * 0.7);
+        }
+      });
+    }
 
     for (let i = 0; i < 5; i++) {
       const batAlpha = 0.18 + islandAlpha * 0.52 + landToSkyEase * 0.18;

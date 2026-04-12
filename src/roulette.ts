@@ -371,7 +371,9 @@ export class Roulette extends EventTarget {
             new FinishRankEffect(marble.x, getFinishLine(this._stage) + 1.15, finishRank, marble.name, finishAccent)
           );
         }
-        this._queueGoalSpotlight(marble, finishRank);
+        if (!this._winner) {
+          this._queueGoalSpotlight(marble, finishRank);
+        }
         if (this._isRunning && this._winners.length === this._winnerRank + 1) {
           this._finishRound(marble);
         }
@@ -524,12 +526,7 @@ export class Roulette extends EventTarget {
   }
 
   private _canRevealWinner() {
-    return (
-      Boolean(this._winner) &&
-      this._marbles.length === 0 &&
-      !this._activeGoalSpotlight &&
-      this._goalSpotlightQueue.length === 0
-    );
+    return Boolean(this._winner) && !this._activeGoalSpotlight && this._goalSpotlightQueue.length === 0;
   }
 
   private _maybeDispatchWinnerRevealReady() {
