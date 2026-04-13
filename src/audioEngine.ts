@@ -21,7 +21,7 @@ const enabledMasterGain = 1.52;
 const defaultBgmGain = 0.9;
 const duckedBgmGain = 0.24;
 const defaultBgmUrl = new URL('../assets/audio/08_1_Buyeo.mp3', import.meta.url).toString();
-const goalMusicUrl = new URL('../assets/audio/01_Mt_D2.mp3', import.meta.url).toString();
+const goalMusicUrl = new URL('../assets/audio/10_4way_battle.mp3', import.meta.url).toString();
 
 type BgmTrack = {
   bassPatterns: number[][];
