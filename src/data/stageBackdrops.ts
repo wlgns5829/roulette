@@ -30,20 +30,13 @@ export type StageBackdropPalette = {
   ambientThree: string;
 };
 
-const backdrop1 = new URL('../../assets/images/stage-backgrounds/1.jpg', import.meta.url).toString();
-const backdrop2 = new URL('../../assets/images/stage-backgrounds/2.jpg', import.meta.url).toString();
-const backdrop3 = new URL('../../assets/images/stage-backgrounds/3.jpg', import.meta.url).toString();
-const backdrop4 = new URL('../../assets/images/stage-backgrounds/4.jpg', import.meta.url).toString();
-const backdrop5 = new URL('../../assets/images/stage-backgrounds/5.jpg', import.meta.url).toString();
-const backdrop6 = new URL('../../assets/images/stage-backgrounds/6.jpg', import.meta.url).toString();
-const backdrop7 = new URL('../../assets/images/stage-backgrounds/7.jpg', import.meta.url).toString();
-const backdrop8 = new URL('../../assets/images/stage-backgrounds/8.jpg', import.meta.url).toString();
+const solidImageUrl = '';
 
 export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'sakura-village': {
     id: 'sakura-village',
     label: '햇살 초원',
-    imageUrl: backdrop1,
+    imageUrl: solidImageUrl,
     focusX: 0.36,
     focusY: 0.4,
     uiPhotoScale: 1.44,
@@ -64,7 +57,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'sky-sanctum': {
     id: 'sky-sanctum',
     label: '거울 호수',
-    imageUrl: backdrop2,
+    imageUrl: solidImageUrl,
     focusX: 0.5,
     focusY: 0.42,
     uiPhotoScale: 1.42,
@@ -85,7 +78,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'mushroom-square': {
     id: 'mushroom-square',
     label: '황혼 절벽해안',
-    imageUrl: backdrop3,
+    imageUrl: solidImageUrl,
     focusX: 0.56,
     focusY: 0.42,
     uiPhotoScale: 1.48,
@@ -106,7 +99,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'abyss-corridor': {
     id: 'abyss-corridor',
     label: '푸른 야경도시',
-    imageUrl: backdrop4,
+    imageUrl: solidImageUrl,
     focusX: 0.5,
     focusY: 0.34,
     uiPhotoScale: 1.52,
@@ -127,7 +120,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'aurora-village': {
     id: 'aurora-village',
     label: '고딕 첨탑광장',
-    imageUrl: backdrop5,
+    imageUrl: solidImageUrl,
     focusX: 0.52,
     focusY: 0.34,
     uiPhotoScale: 1.5,
@@ -148,7 +141,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'moon-market': {
     id: 'moon-market',
     label: '설산 열차길',
-    imageUrl: backdrop6,
+    imageUrl: solidImageUrl,
     focusX: 0.5,
     focusY: 0.38,
     uiPhotoScale: 1.46,
@@ -169,7 +162,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'star-palace': {
     id: 'star-palace',
     label: '에메랄드 해변',
-    imageUrl: backdrop7,
+    imageUrl: solidImageUrl,
     focusX: 0.42,
     focusY: 0.42,
     uiPhotoScale: 1.44,
@@ -190,7 +183,7 @@ export const stageBackdrops: Record<StageBackdropId, StageBackdropPalette> = {
   'harvest-terrace': {
     id: 'harvest-terrace',
     label: '목초지 언덕',
-    imageUrl: backdrop8,
+    imageUrl: solidImageUrl,
     focusX: 0.66,
     focusY: 0.54,
     uiPhotoScale: 1.58,
