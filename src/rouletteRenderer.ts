@@ -1389,21 +1389,28 @@ export class RouletteRenderer {
     this.ctx.save();
 
     const oceanBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
-    oceanBackdrop.addColorStop(0, '#08233d');
-    oceanBackdrop.addColorStop(0.24, '#0d4263');
-    oceanBackdrop.addColorStop(0.6, '#16719a');
-    oceanBackdrop.addColorStop(1, '#0a2f4c');
+    oceanBackdrop.addColorStop(0, '#071423');
+    oceanBackdrop.addColorStop(0.26, '#0a2a45');
+    oceanBackdrop.addColorStop(0.62, '#0b5872');
+    oceanBackdrop.addColorStop(1, '#06101f');
     this.ctx.fillStyle = oceanBackdrop;
     this.ctx.fillRect(0, 0, width, height);
 
+    const cinematicDepth = this.ctx.createRadialGradient(centerX, height * 0.42, width * 0.08, centerX, height * 0.42, width * 0.78);
+    cinematicDepth.addColorStop(0, 'rgba(255, 244, 205, 0.16)');
+    cinematicDepth.addColorStop(0.34, 'rgba(14, 165, 233, 0.08)');
+    cinematicDepth.addColorStop(1, 'rgba(2, 6, 23, 0.74)');
+    this.ctx.fillStyle = cinematicDepth;
+    this.ctx.fillRect(0, 0, width, height);
+
     this.ctx.save();
-    this.ctx.globalAlpha = 0.2 + oceanRiseEase * 0.24;
+    this.ctx.globalAlpha = 0.12 + oceanRiseEase * 0.14;
     for (let i = 0; i < 7; i++) {
       const beamX = width * (0.1 + i * 0.14);
       const beamWidth = width * 0.045;
       const beamGradient = this.ctx.createLinearGradient(beamX, 0, beamX, height);
-      beamGradient.addColorStop(0, 'rgba(201, 247, 255, 0.3)');
-      beamGradient.addColorStop(0.55, 'rgba(123, 220, 241, 0.08)');
+      beamGradient.addColorStop(0, 'rgba(201, 247, 255, 0.22)');
+      beamGradient.addColorStop(0.55, 'rgba(123, 220, 241, 0.05)');
       beamGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       this.ctx.fillStyle = beamGradient;
       this.ctx.fillRect(beamX - beamWidth / 2, 0, beamWidth, height * 0.84);
@@ -1416,11 +1423,11 @@ export class RouletteRenderer {
     this.ctx.rect(0, landRevealY, width, height - landRevealY);
     this.ctx.clip();
     const landBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
-    landBackdrop.addColorStop(0, '#fde6b1');
-    landBackdrop.addColorStop(0.24, '#ffc89f');
-    landBackdrop.addColorStop(0.48, '#ffa97b');
-    landBackdrop.addColorStop(0.72, '#5ec6df');
-    landBackdrop.addColorStop(1, '#0f4f72');
+    landBackdrop.addColorStop(0, '#f8d38a');
+    landBackdrop.addColorStop(0.22, '#db8b5f');
+    landBackdrop.addColorStop(0.5, '#7b5b42');
+    landBackdrop.addColorStop(0.72, '#0e7490');
+    landBackdrop.addColorStop(1, '#082f49');
     this.ctx.fillStyle = landBackdrop;
     this.ctx.fillRect(0, 0, width, height);
     this.ctx.restore();
@@ -1431,11 +1438,11 @@ export class RouletteRenderer {
     this.ctx.rect(0, 0, width, skyRevealHeight);
     this.ctx.clip();
     const skyBackdrop = this.ctx.createLinearGradient(0, 0, 0, height);
-    skyBackdrop.addColorStop(0, '#f6fdff');
-    skyBackdrop.addColorStop(0.2, '#d9f7ff');
-    skyBackdrop.addColorStop(0.46, '#97e8ff');
-    skyBackdrop.addColorStop(0.78, '#7bcdf0');
-    skyBackdrop.addColorStop(1, 'rgba(123, 205, 240, 0)');
+    skyBackdrop.addColorStop(0, '#eaf9ff');
+    skyBackdrop.addColorStop(0.18, '#b8ecff');
+    skyBackdrop.addColorStop(0.48, '#4fb6d8');
+    skyBackdrop.addColorStop(0.78, '#126782');
+    skyBackdrop.addColorStop(1, 'rgba(8, 47, 73, 0)');
     this.ctx.fillStyle = skyBackdrop;
     this.ctx.fillRect(0, 0, width, height);
     this.ctx.restore();
@@ -1455,11 +1462,11 @@ export class RouletteRenderer {
     this.ctx.fillRect(0, skyRevealHeight - height * 0.06, width, height * 0.14);
 
     const sunGlow = this.ctx.createRadialGradient(centerX, height * 0.16, width * 0.02, centerX, height * 0.16, width * 0.22);
-    sunGlow.addColorStop(0, 'rgba(255, 251, 229, 0.96)');
-    sunGlow.addColorStop(0.28, 'rgba(255, 241, 199, 0.54)');
+    sunGlow.addColorStop(0, 'rgba(255, 251, 229, 0.76)');
+    sunGlow.addColorStop(0.28, 'rgba(255, 214, 165, 0.38)');
     sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.save();
-    this.ctx.globalAlpha = 0.12 + seaToLandEase * 0.32 + landToSkyEase * 0.34;
+    this.ctx.globalAlpha = 0.08 + seaToLandEase * 0.18 + landToSkyEase * 0.24;
     this.ctx.fillStyle = sunGlow;
     this.ctx.fillRect(0, 0, width, height * 0.46);
     this.ctx.restore();
@@ -1468,6 +1475,27 @@ export class RouletteRenderer {
     this.drawCloudPuff(width * 0.79, height * 0.2, width * 0.09, 0.18 + landToSkyEase * 0.54);
     this.drawCloudPuff(width * 0.56, height * 0.12, width * 0.06, 0.12 + landToSkyEase * 0.46 + burstEase * 0.2);
     this.drawCloudPuff(width * 0.34, height * 0.26, width * 0.08, 0.1 + landToSkyEase * 0.42 + burstEase * 0.18);
+
+    const stageSpotlight = this.ctx.createRadialGradient(
+      marbleCenterX,
+      marbleCenterY,
+      marbleVisualSize * 0.3,
+      marbleCenterX,
+      marbleCenterY,
+      width * 0.46
+    );
+    stageSpotlight.addColorStop(0, 'rgba(255, 250, 219, 0.2)');
+    stageSpotlight.addColorStop(0.36, `rgba(255, 210, 122, ${0.08 + gatherEase * 0.08})`);
+    stageSpotlight.addColorStop(1, 'rgba(2, 6, 23, 0)');
+    this.ctx.fillStyle = stageSpotlight;
+    this.ctx.fillRect(0, 0, width, height);
+
+    const cleanVignette = this.ctx.createRadialGradient(centerX, height * 0.48, width * 0.12, centerX, height * 0.48, width * 0.78);
+    cleanVignette.addColorStop(0, 'rgba(2, 6, 23, 0)');
+    cleanVignette.addColorStop(0.58, 'rgba(2, 6, 23, 0.1)');
+    cleanVignette.addColorStop(1, 'rgba(2, 6, 23, 0.5)');
+    this.ctx.fillStyle = cleanVignette;
+    this.ctx.fillRect(0, 0, width, height);
 
     const oceanGradient = this.ctx.createLinearGradient(0, seaSurfaceY, 0, height);
     oceanGradient.addColorStop(0, 'rgba(67, 191, 233, 0.92)');
