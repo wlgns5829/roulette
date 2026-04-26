@@ -392,6 +392,139 @@ function createShatterField(y: number, colorA: string, colorB: string, colorC: s
   ];
 }
 
+function createVortexFunnel(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  return [
+    createFragileGuideWall(
+      [
+        [5.1, y],
+        [9.4, y + 3.1],
+        [7.2, y + 6.2],
+        [11.2, y + 9.8],
+        [10.2, y + 13.6],
+      ],
+      colorA
+    ),
+    createFragileGuideWall(
+      [
+        [20.9, y + 0.5],
+        [16.6, y + 3.4],
+        [18.8, y + 6.6],
+        [14.8, y + 10],
+        [15.9, y + 13.8],
+      ],
+      colorA
+    ),
+    createSpinner(trackCenterX, y + 7.2, 3.6, -5.4, colorB),
+    ...createFragileRing(y + 14.9, colorB, colorC),
+  ];
+}
+
+function createSwitchbackRamps(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createBoxObstacle(8.2, y, 2.1, 0.1, 0.48, colorA),
+    createBoxObstacle(17.8, y + 2.8, 2.1, 0.1, -0.48, colorB),
+    createBoxObstacle(8.9, y + 5.8, 1.9, 0.1, 0.52, colorB),
+    createBoxObstacle(17.1, y + 8.7, 1.9, 0.1, -0.52, colorA),
+    createBoxObstacle(trackCenterX, y + 12.2, 1.55, 0.1, 0.08, colorA),
+  ];
+}
+
+function createPinballOrchard(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  const dots: Array<[number, number, number, string]> = [];
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      const stagger = row % 2 === 0 ? 0 : 1.15;
+      dots.push([8.2 + col * 3.1 + stagger, y + row * 2.6, 0.23 + ((row + col) % 2) * 0.04, [colorA, colorB, colorC][(row + col) % 3]]);
+    }
+  }
+
+  return dots.map(([x, dotY, radius, color]) => createFragileCircle(x, dotY, radius, color, 1.42));
+}
+
+function createCrossLaneBurst(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createFragileGuideWall(
+      [
+        [5.2, y],
+        [11.4, y + 5.2],
+        [8.9, y + 10.2],
+        [13.4, y + 15.1],
+      ],
+      colorA
+    ),
+    createFragileGuideWall(
+      [
+        [20.8, y],
+        [14.6, y + 5.2],
+        [17.1, y + 10.2],
+        [12.6, y + 15.1],
+      ],
+      colorB
+    ),
+    createBoxObstacle(10.2, y + 7.2, 1.2, 0.1, -0.58, colorB),
+    createBoxObstacle(15.8, y + 7.2, 1.2, 0.1, 0.58, colorA),
+  ];
+}
+
+function createMovingCurtains(y: number, colorA: string, colorB: string, colorC: string, phase = 0): MapEntity[] {
+  return [
+    createBoxObstacle(7.2, y, 1.42, 0.1, 0.18, colorA, { motion: createMotion('x', 1.35, 1.48, phase) }),
+    createBoxObstacle(18.8, y + 2.15, 1.42, 0.1, -0.18, colorB, { motion: createMotion('x', 1.35, 1.58, phase + 1.1) }),
+    createBoxObstacle(trackCenterX, y + 4.9, 2.2, 0.1, 0, colorC, { motion: createMotion('x', 2.35, 1.12, phase + 2.2) }),
+    createBoxObstacle(8.4, y + 8.2, 1.18, 0.1, 0.34, colorB, { motion: createMotion('x', 1.05, 1.62, phase + 3.1) }),
+    createBoxObstacle(17.6, y + 10.5, 1.18, 0.1, -0.34, colorA, { motion: createMotion('x', 1.05, 1.72, phase + 4.2) }),
+  ];
+}
+
+function createBounceCascade(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  return [
+    createFragileCircle(8.1, y, 0.36, colorA, 1.72),
+    createBoxObstacle(12, y + 1.8, 1.34, 0.1, 0.42, colorB, { restitution: 0.15 }),
+    createFragileCircle(17.8, y + 3.4, 0.34, colorC, 1.68),
+    createBoxObstacle(14.1, y + 5.4, 1.42, 0.1, -0.44, colorA, { restitution: 0.15 }),
+    createFragileCircle(9.4, y + 7.4, 0.32, colorB, 1.64),
+    createBoxObstacle(13, y + 10.2, 1.8, 0.1, 0.04, colorC, { restitution: 0.18 }),
+  ];
+}
+
+function createNeedleForest(y: number, colorA: string, colorB: string): MapEntity[] {
+  return [
+    createBoxObstacle(7.4, y, 0.11, 1.18, 0.08, colorA),
+    createBoxObstacle(11.2, y + 1.8, 0.11, 1.32, -0.08, colorB),
+    createBoxObstacle(15.1, y + 0.5, 0.11, 1.26, 0.12, colorA),
+    createBoxObstacle(18.8, y + 2.3, 0.11, 1.38, -0.12, colorB),
+    createBoxObstacle(9.4, y + 5.2, 0.1, 1.16, -0.16, colorB),
+    createBoxObstacle(13.4, y + 6.5, 0.1, 1.38, 0.15, colorA),
+    createBoxObstacle(17.2, y + 5.6, 0.1, 1.18, -0.15, colorB),
+  ];
+}
+
+function createHourglassSplitter(y: number, colorA: string, colorB: string, colorC: string): MapEntity[] {
+  return [
+    createFragileGuideWall(
+      [
+        [4.8, y],
+        [10.5, y + 5.5],
+        [12.1, y + 9.4],
+        [8.6, y + 14.2],
+      ],
+      colorA
+    ),
+    createFragileGuideWall(
+      [
+        [21.2, y],
+        [15.5, y + 5.5],
+        [13.9, y + 9.4],
+        [17.4, y + 14.2],
+      ],
+      colorA
+    ),
+    createFragileCircle(11.1, y + 7.6, 0.28, colorB, 1.46),
+    createFragileCircle(14.9, y + 7.6, 0.28, colorC, 1.46),
+    createCenterSpinner(y + 15.6, colorB, 3.2, 5.2)[0],
+  ];
+}
+
 function createSidePlatform(x: number, y: number, length: number, color: string, motion?: EntityMotion): MapEntity {
   return createBoxObstacle(x, y, 0.11, length, 0, color, { motion });
 }
@@ -532,7 +665,7 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
   }
 
   const seed = stage.patternSeed ?? index;
-  const pattern = seed % 5;
+  const pattern = seed % 8;
   const palette = getCoursePalette(stage.accent, seed);
   const usableHeight = Math.max(78, stage.goalY - 54);
   const bandYs = [0.04, 0.12, 0.2, 0.29, 0.39, 0.49, 0.59, 0.69, 0.79, 0.87].map((t) => 24 + usableHeight * t);
@@ -543,66 +676,84 @@ function buildSpectacleEntities(stage: StageDef, index: number): MapEntity[] {
 
   switch (pattern) {
     case 0:
-      entities.push(...createPocketWalls(bandYs[0] - 2.8, palette.rail));
-      entities.push(...createDenseTiltStack(bandYs[0], palette.primary, palette.secondary));
-      entities.push(...createSplitMergeWalls(bandYs[1] - 3.5, palette.rail));
-      entities.push(...createCrissCrossGates(bandYs[2], palette.primary, palette.secondary, palette.tertiary, phase));
-      entities.push(...createSpinnerCorridor(bandYs[3], palette.secondary, palette.primary, palette.tertiary));
-      entities.push(...createFragileCluster(bandYs[4], palette.secondary, palette.tertiary));
-      entities.push(...createMazeWalls(bandYs[5] - 2.4, palette.secondary));
-      entities.push(...createSwingGatePair(bandYs[6], palette.tertiary, palette.primary, phase + 0.8));
-      entities.push(...createBridgeRails(bandYs[7] - 3.2, palette.rail));
+      entities.push(...createVortexFunnel(bandYs[0] - 2.2, palette.rail, palette.primary, palette.tertiary));
+      entities.push(...createSwitchbackRamps(bandYs[1], palette.primary, palette.secondary));
+      entities.push(...createMovingCurtains(bandYs[2], palette.secondary, palette.primary, palette.tertiary, phase));
+      entities.push(...createPinballOrchard(bandYs[3], palette.primary, palette.secondary, palette.tertiary));
+      entities.push(...createSplitMergeWalls(bandYs[5] - 3.2, palette.rail));
+      entities.push(...createBounceCascade(bandYs[6], palette.secondary, palette.tertiary, palette.primary));
       entities.push(...createFragileRing(bandYs[8], palette.primary, palette.tertiary));
-      entities.push(...createCenterSpinner(bandYs[9], palette.secondary, 4.8, -4.8));
+      entities.push(...createCenterSpinner(bandYs[9], palette.secondary, 4.2, -5.2));
       break;
     case 1:
-      entities.push(...createSplitMergeWalls(bandYs[0] - 4.8, palette.rail));
-      entities.push(...createBridgeRails(bandYs[1] - 3.4, palette.rail));
-      entities.push(...createCenterSpinner(bandYs[2], palette.primary, 4.8, index % 2 === 0 ? -5 : 5));
-      entities.push(...createCrissCrossGates(bandYs[3], palette.secondary, palette.primary, palette.tertiary, phase + 0.3));
-      entities.push(...createFragileStair(bandYs[4], palette.secondary, palette.tertiary));
-      entities.push(...createMazeWalls(bandYs[5] - 2.1, palette.secondary));
-      entities.push(...createSpinnerPair(bandYs[6], palette.tertiary, palette.primary));
-      entities.push(...createTiltPair(bandYs[7], palette.primary, palette.secondary, true));
-      entities.push(...createSwingGatePair(bandYs[8], palette.tertiary, palette.primary, phase + 0.95));
-      entities.push(...createFragileRing(bandYs[9], palette.secondary, palette.primary));
+      entities.push(...createBridgeRails(bandYs[0] - 3.6, palette.rail));
+      entities.push(...createNeedleForest(bandYs[1], palette.primary, palette.secondary));
+      entities.push(...createCrossLaneBurst(bandYs[2], palette.secondary, palette.tertiary));
+      entities.push(...createMovingCurtains(bandYs[3], palette.primary, palette.secondary, palette.tertiary, phase + 0.4));
+      entities.push(...createSpinnerCorridor(bandYs[5], palette.tertiary, palette.primary, palette.secondary));
+      entities.push(...createHourglassSplitter(bandYs[6] - 1.2, palette.rail, palette.primary, palette.secondary));
+      entities.push(...createFragileStair(bandYs[8], palette.secondary, palette.tertiary));
+      entities.push(...createSwingGatePair(bandYs[9], palette.primary, palette.secondary, phase + 1.1));
       break;
     case 2:
-      entities.push(...createBridgeRails(bandYs[0] - 4.1, palette.rail));
-      entities.push(...createSpinnerPair(bandYs[1], palette.primary, palette.secondary));
-      entities.push(...createPocketWalls(bandYs[2] - 2.8, palette.secondary));
-      entities.push(...createFragileCluster(bandYs[3], palette.tertiary, palette.primary));
-      entities.push(...createCrissCrossGates(bandYs[4], palette.secondary, palette.primary, palette.tertiary, phase + 0.5));
-      entities.push(...createMazeWalls(bandYs[5] - 2.3, palette.rail));
-      entities.push(...createCenterSpinner(bandYs[6], palette.primary, 5.1, -4.7));
-      entities.push(...createFragileRing(bandYs[7], palette.secondary, palette.tertiary));
-      entities.push(...createDenseTiltStack(bandYs[8], palette.primary, palette.secondary));
-      entities.push(...createSwingGatePair(bandYs[9], palette.tertiary, palette.primary, phase + 0.85));
+      entities.push(...createPinballOrchard(bandYs[0], palette.primary, palette.secondary, palette.tertiary));
+      entities.push(...createPocketWalls(bandYs[2] - 2.6, palette.rail));
+      entities.push(...createVortexFunnel(bandYs[3] - 1.4, palette.secondary, palette.tertiary, palette.primary));
+      entities.push(...createBounceCascade(bandYs[4], palette.tertiary, palette.primary, palette.secondary));
+      entities.push(...createCrissCrossGates(bandYs[5], palette.primary, palette.secondary, palette.tertiary, phase + 0.7));
+      entities.push(...createFragileCluster(bandYs[7], palette.secondary, palette.tertiary));
+      entities.push(...createMazeWalls(bandYs[8] - 2.4, palette.rail));
+      entities.push(...createCenterSpinner(bandYs[9], palette.primary, 3.8, 5.4));
       break;
     case 3:
-      entities.push(...createDenseTiltStack(bandYs[0], palette.primary, palette.secondary));
-      entities.push(...createFragileStair(bandYs[1], palette.tertiary, palette.primary));
-      entities.push(...createSplitMergeWalls(bandYs[2] - 3.8, palette.rail));
-      entities.push(...createCenterSpinner(bandYs[3], palette.secondary, 5.2, 5));
-      entities.push(...createMazeWalls(bandYs[4] - 1.8, palette.tertiary));
-      entities.push(...createSwingGatePair(bandYs[5], palette.primary, palette.tertiary, phase + 0.2));
-      entities.push(...createBridgeRails(bandYs[6] - 3.1, palette.rail));
-      entities.push(...createSpinnerPair(bandYs[7], palette.secondary, palette.primary));
-      entities.push(...createFragileCluster(bandYs[8], palette.primary, palette.secondary));
-      entities.push(...createFragileRing(bandYs[9], palette.tertiary, palette.secondary));
+      entities.push(...createHourglassSplitter(bandYs[0] - 2.4, palette.rail, palette.primary, palette.secondary));
+      entities.push(...createMovingCurtains(bandYs[1], palette.secondary, palette.tertiary, palette.primary, phase + 0.2));
+      entities.push(...createSpinnerCorridor(bandYs[3], palette.primary, palette.secondary, palette.tertiary));
+      entities.push(...createNeedleForest(bandYs[4], palette.tertiary, palette.primary));
+      entities.push(...createSplitMergeWalls(bandYs[5] - 3.4, palette.secondary));
+      entities.push(...createCrossLaneBurst(bandYs[7] - 1.2, palette.primary, palette.rail));
+      entities.push(...createFragileRing(bandYs[8], palette.secondary, palette.tertiary));
+      entities.push(...createTiltPair(bandYs[9], palette.primary, palette.secondary, true));
       break;
     case 4:
+      entities.push(...createMazeWalls(bandYs[0] - 2.8, palette.rail));
+      entities.push(...createBounceCascade(bandYs[1], palette.primary, palette.secondary, palette.tertiary));
+      entities.push(...createSwitchbackRamps(bandYs[2], palette.secondary, palette.primary));
+      entities.push(...createVortexFunnel(bandYs[4] - 2.6, palette.tertiary, palette.primary, palette.secondary));
+      entities.push(...createMovingCurtains(bandYs[5], palette.primary, palette.tertiary, palette.secondary, phase + 0.65));
+      entities.push(...createBridgeRails(bandYs[7] - 3, palette.rail));
+      entities.push(...createPinballOrchard(bandYs[8] - 1.4, palette.tertiary, palette.secondary, palette.primary));
+      entities.push(...createCenterSpinner(bandYs[9], palette.secondary, 4.5, -5.1));
+      break;
+    case 5:
+      entities.push(...createCrissCrossGates(bandYs[0], palette.primary, palette.secondary, palette.tertiary, phase + 0.15));
+      entities.push(...createCrossLaneBurst(bandYs[1], palette.rail, palette.primary));
+      entities.push(...createPinballOrchard(bandYs[3] - 1.2, palette.secondary, palette.primary, palette.tertiary));
+      entities.push(...createMovingCurtains(bandYs[5] - 1.6, palette.primary, palette.secondary, palette.tertiary, phase + 0.95));
+      entities.push(...createDenseTiltStack(bandYs[6], palette.secondary, palette.primary));
+      entities.push(...createHourglassSplitter(bandYs[7] - 1.3, palette.rail, palette.tertiary, palette.primary));
+      entities.push(...createFragileRing(bandYs[9] - 1, palette.primary, palette.secondary));
+      break;
+    case 6:
+      entities.push(...createNeedleForest(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createVortexFunnel(bandYs[1] - 1.6, palette.rail, palette.secondary, palette.tertiary));
+      entities.push(...createSpinnerCorridor(bandYs[3], palette.tertiary, palette.primary, palette.secondary));
+      entities.push(...createSwitchbackRamps(bandYs[4], palette.primary, palette.tertiary));
+      entities.push(...createFragileStair(bandYs[5], palette.secondary, palette.primary));
+      entities.push(...createSplitMergeWalls(bandYs[6] - 3.1, palette.rail));
+      entities.push(...createBounceCascade(bandYs[8] - 1.2, palette.secondary, palette.tertiary, palette.primary));
+      entities.push(...createCenterSpinner(bandYs[9], palette.primary, 4.1, 5.35));
+      break;
+    case 7:
     default:
-      entities.push(...createBridgeRails(bandYs[0] - 3.8, palette.rail));
-      entities.push(...createSwingGatePair(bandYs[1], palette.primary, palette.secondary, phase + 0.1));
-      entities.push(...createPocketWalls(bandYs[2] - 3.4, palette.rail));
-      entities.push(...createCrissCrossGates(bandYs[3], palette.primary, palette.secondary, palette.tertiary, phase + 0.55));
-      entities.push(...createFragileCluster(bandYs[4], palette.secondary, palette.tertiary));
-      entities.push(...createCenterSpinner(bandYs[5], palette.primary, 4.9, -4.5));
-      entities.push(...createMazeWalls(bandYs[6] - 2, palette.rail));
-      entities.push(...createSpinnerPair(bandYs[7], palette.primary, palette.secondary));
-      entities.push(...createFragileRing(bandYs[8], palette.secondary, palette.tertiary));
-      entities.push(...createTiltPair(bandYs[9], palette.secondary, palette.primary, index % 2 === 0));
+      entities.push(...createSwitchbackRamps(bandYs[0], palette.primary, palette.secondary));
+      entities.push(...createPinballOrchard(bandYs[1] + 1, palette.tertiary, palette.primary, palette.secondary));
+      entities.push(...createHourglassSplitter(bandYs[3] - 2.4, palette.rail, palette.primary, palette.tertiary));
+      entities.push(...createBounceCascade(bandYs[4], palette.secondary, palette.tertiary, palette.primary));
+      entities.push(...createCrossLaneBurst(bandYs[5], palette.primary, palette.secondary));
+      entities.push(...createMovingCurtains(bandYs[7] - 1.8, palette.tertiary, palette.primary, palette.secondary, phase + 0.45));
+      entities.push(...createNeedleForest(bandYs[8] - 1.2, palette.secondary, palette.primary));
+      entities.push(...createFragileRing(bandYs[9], palette.tertiary, palette.secondary));
       break;
   }
 
