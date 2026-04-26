@@ -59,7 +59,7 @@ export const Themes: Record<string, ColorTheme> = {
     winnerText: '#cccccc',
   },
   dark: {
-    background: '#181423',
+    background: '#0b1d33',
     marbleLightness: 75,
     marbleWinningBorder: 'white',
     skillColor: '#ffe4a3',

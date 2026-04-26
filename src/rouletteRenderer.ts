@@ -163,65 +163,65 @@ export class RouletteRenderer {
       { top: string; mid: string; bottom: string; glowA: string; glowB: string; mood: string }
     > = {
       'sakura-village': {
-        top: '#172033',
-        mid: '#16302d',
-        bottom: '#09120f',
+        top: '#183152',
+        mid: '#16375a',
+        bottom: '#0b2038',
         glowA: 'rgba(255, 187, 220, 0.2)',
         glowB: 'rgba(141, 236, 172, 0.16)',
         mood: 'meadow',
       },
       'sky-sanctum': {
-        top: '#101f3a',
-        mid: '#163b54',
-        bottom: '#071321',
+        top: '#15345a',
+        mid: '#17466d',
+        bottom: '#0a2541',
         glowA: 'rgba(147, 213, 255, 0.22)',
         glowB: 'rgba(255, 255, 255, 0.14)',
         mood: 'lake',
       },
       'mushroom-square': {
-        top: '#29172c',
-        mid: '#442233',
-        bottom: '#120d16',
+        top: '#241f45',
+        mid: '#1e3154',
+        bottom: '#0b1d35',
         glowA: 'rgba(255, 159, 100, 0.22)',
         glowB: 'rgba(255, 229, 149, 0.16)',
         mood: 'sunset',
       },
       'abyss-corridor': {
-        top: '#071827',
-        mid: '#07344a',
-        bottom: '#030914',
+        top: '#0e2747',
+        mid: '#0f3d64',
+        bottom: '#071d35',
         glowA: 'rgba(68, 226, 255, 0.18)',
         glowB: 'rgba(88, 118, 255, 0.14)',
         mood: 'abyss',
       },
       'aurora-village': {
-        top: '#11172b',
-        mid: '#1d2840',
-        bottom: '#080b13',
+        top: '#142846',
+        mid: '#1c355b',
+        bottom: '#0b203a',
         glowA: 'rgba(144, 180, 255, 0.2)',
         glowB: 'rgba(125, 255, 204, 0.14)',
         mood: 'aurora',
       },
       'moon-market': {
-        top: '#0d1528',
-        mid: '#18263b',
-        bottom: '#070a12',
+        top: '#102743',
+        mid: '#183758',
+        bottom: '#0b1d33',
         glowA: 'rgba(255, 191, 112, 0.2)',
         glowB: 'rgba(100, 196, 255, 0.14)',
         mood: 'city',
       },
       'star-palace': {
-        top: '#101635',
-        mid: '#19314d',
-        bottom: '#070b18',
+        top: '#132d55',
+        mid: '#164269',
+        bottom: '#09213c',
         glowA: 'rgba(113, 235, 255, 0.22)',
         glowB: 'rgba(255, 239, 173, 0.12)',
         mood: 'spire',
       },
       'harvest-terrace': {
-        top: '#13251e',
-        mid: '#1f3a24',
-        bottom: '#071109',
+        top: '#17304d',
+        mid: '#1b3a55',
+        bottom: '#0a2038',
         glowA: 'rgba(184, 255, 136, 0.16)',
         glowB: 'rgba(255, 224, 135, 0.14)',
         mood: 'garden',
@@ -286,8 +286,8 @@ export class RouletteRenderer {
       width * 0.74
     );
     vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    vignette.addColorStop(0.52, 'rgba(1, 5, 12, 0.08)');
-    vignette.addColorStop(1, 'rgba(1, 5, 12, 0.58)');
+    vignette.addColorStop(0.52, 'rgba(8, 27, 50, 0.08)');
+    vignette.addColorStop(1, 'rgba(5, 22, 43, 0.5)');
     this.ctx.fillStyle = vignette;
     this.ctx.fillRect(0, 0, width, height);
   }
@@ -568,11 +568,11 @@ export class RouletteRenderer {
     const pulse = 0.5 + Math.sin(performance.now() * 0.0014 + stage.goalY * 0.01) * 0.5;
 
     const lane = this.ctx.createLinearGradient(centerX - laneWidth / 2, 0, centerX + laneWidth / 2, 0);
-    lane.addColorStop(0, 'rgba(4, 9, 18, 0)');
-    lane.addColorStop(0.18, 'rgba(4, 9, 18, 0.24)');
-    lane.addColorStop(0.5, 'rgba(7, 13, 24, 0.42)');
-    lane.addColorStop(0.82, 'rgba(4, 9, 18, 0.24)');
-    lane.addColorStop(1, 'rgba(4, 9, 18, 0)');
+    lane.addColorStop(0, 'rgba(10, 27, 48, 0)');
+    lane.addColorStop(0.18, 'rgba(10, 31, 56, 0.2)');
+    lane.addColorStop(0.5, 'rgba(12, 38, 68, 0.34)');
+    lane.addColorStop(0.82, 'rgba(10, 31, 56, 0.2)');
+    lane.addColorStop(1, 'rgba(10, 27, 48, 0)');
     this.ctx.fillStyle = lane;
     this.ctx.fillRect(centerX - laneWidth / 2, 0, laneWidth, height);
 
