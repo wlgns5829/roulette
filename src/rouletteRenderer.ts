@@ -145,12 +145,141 @@ export class RouletteRenderer {
   }
 
   private renderBackdrop(stage: StageDef) {
-    this.renderSolidStageBackdrop();
+    this.renderCinematicStageBackdrop(stage);
   }
 
   private renderSolidStageBackdrop() {
     this.ctx.fillStyle = '#101827';
     this.ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+  }
+
+  private renderCinematicStageBackdrop(stage: StageDef) {
+    const { width, height } = this._canvas;
+    const now = performance.now() * 0.001;
+    const accent = stage.accent ?? '#f59e0b';
+    const backdrop = stage.backdrop ?? 'sakura-village';
+    const palettes: Record<string, { top: string; mid: string; bottom: string; glowA: string; glowB: string; mood: string }> = {
+      'sakura-village': {
+        top: '#172033',
+        mid: '#16302d',
+        bottom: '#09120f',
+        glowA: 'rgba(255, 187, 220, 0.2)',
+        glowB: 'rgba(141, 236, 172, 0.16)',
+        mood: 'meadow',
+      },
+      'sky-sanctum': {
+        top: '#101f3a',
+        mid: '#163b54',
+        bottom: '#071321',
+        glowA: 'rgba(147, 213, 255, 0.22)',
+        glowB: 'rgba(255, 255, 255, 0.14)',
+        mood: 'lake',
+      },
+      'mushroom-square': {
+        top: '#29172c',
+        mid: '#442233',
+        bottom: '#120d16',
+        glowA: 'rgba(255, 159, 100, 0.22)',
+        glowB: 'rgba(255, 229, 149, 0.16)',
+        mood: 'sunset',
+      },
+      'abyss-corridor': {
+        top: '#071827',
+        mid: '#07344a',
+        bottom: '#030914',
+        glowA: 'rgba(68, 226, 255, 0.18)',
+        glowB: 'rgba(88, 118, 255, 0.14)',
+        mood: 'abyss',
+      },
+      'aurora-village': {
+        top: '#11172b',
+        mid: '#1d2840',
+        bottom: '#080b13',
+        glowA: 'rgba(144, 180, 255, 0.2)',
+        glowB: 'rgba(125, 255, 204, 0.14)',
+        mood: 'aurora',
+      },
+      'moon-market': {
+        top: '#0d1528',
+        mid: '#18263b',
+        bottom: '#070a12',
+        glowA: 'rgba(255, 191, 112, 0.2)',
+        glowB: 'rgba(100, 196, 255, 0.14)',
+        mood: 'city',
+      },
+      'star-palace': {
+        top: '#101635',
+        mid: '#19314d',
+        bottom: '#070b18',
+        glowA: 'rgba(113, 235, 255, 0.22)',
+        glowB: 'rgba(255, 239, 173, 0.12)',
+        mood: 'spire',
+      },
+      'harvest-terrace': {
+        top: '#13251e',
+        mid: '#1f3a24',
+        bottom: '#071109',
+        glowA: 'rgba(184, 255, 136, 0.16)',
+        glowB: 'rgba(255, 224, 135, 0.14)',
+        mood: 'garden',
+      },
+    };
+    const palette = palettes[backdrop] ?? palettes['sakura-village'];
+
+    const base = this.ctx.createLinearGradient(0, 0, 0, height);
+    base.addColorStop(0, palette.top);
+    base.addColorStop(0.48, palette.mid);
+    base.addColorStop(1, palette.bottom);
+    this.ctx.fillStyle = base;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.drawGlowOrb(width * 0.22, height * 0.2, width * 0.32, palette.glowA, 'rgba(0, 0, 0, 0)');
+    this.drawGlowOrb(width * 0.82, height * 0.28, width * 0.28, palette.glowB, 'rgba(0, 0, 0, 0)');
+
+    switch (palette.mood) {
+      case 'lake':
+        this.drawBackdropRidges(height * 0.43, 'rgba(221, 245, 255, 0.16)', 'rgba(4, 11, 21, 0.34)', 0.56, now);
+        this.drawBackdropWater(height * 0.58, 'rgba(160, 226, 255, 0.11)', now);
+        break;
+      case 'sunset':
+        this.drawBackdropSun(width * 0.76, height * 0.22, width * 0.1, 'rgba(255, 222, 150, 0.38)');
+        this.drawBackdropRidges(height * 0.52, 'rgba(255, 180, 112, 0.18)', 'rgba(17, 8, 16, 0.48)', 0.72, now);
+        break;
+      case 'abyss':
+        this.drawBackdropWater(height * 0.2, 'rgba(107, 235, 255, 0.09)', now);
+        this.drawBackdropParticles(42, accent, 0.16, now);
+        break;
+      case 'aurora':
+        this.drawAuroraRibbons(now, accent);
+        this.drawBackdropRidges(height * 0.62, 'rgba(210, 230, 255, 0.16)', 'rgba(7, 9, 17, 0.45)', 0.62, now);
+        break;
+      case 'city':
+        this.drawBackdropSkyline(height * 0.6, accent, now);
+        break;
+      case 'spire':
+        this.drawBackdropSpire(width * 0.74, height * 0.52, height * 0.44, accent);
+        this.drawBackdropParticles(36, '#ffffff', 0.13, now);
+        break;
+      case 'garden':
+        this.drawBackdropRidges(height * 0.7, 'rgba(181, 255, 146, 0.14)', 'rgba(4, 13, 7, 0.48)', 0.48, now);
+        this.drawBackdropLeaves(now, accent);
+        break;
+      case 'meadow':
+      default:
+        this.drawBackdropRidges(height * 0.68, 'rgba(195, 255, 168, 0.13)', 'rgba(5, 13, 8, 0.46)', 0.5, now);
+        this.drawBackdropPetals(now, accent);
+        break;
+    }
+
+    this.drawReadableRaceLane(stage, accent);
+    this.drawBackdropParticles(26, '#ffffff', 0.08, now + 1.7);
+
+    const vignette = this.ctx.createRadialGradient(width * 0.5, height * 0.52, width * 0.08, width * 0.5, height * 0.52, width * 0.74);
+    vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vignette.addColorStop(0.52, 'rgba(1, 5, 12, 0.08)');
+    vignette.addColorStop(1, 'rgba(1, 5, 12, 0.58)');
+    this.ctx.fillStyle = vignette;
+    this.ctx.fillRect(0, 0, width, height);
   }
 
   private renderLagoonBackdrop(stage: StageDef) {
@@ -381,6 +510,210 @@ export class RouletteRenderer {
       const flowerX = width * (0.1 + i * 0.15);
       const flowerY = height * (0.86 + (i % 2) * 0.035);
       this.drawGlowOrb(flowerX, flowerY, Math.min(width, height) * 0.028, 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0)');
+    }
+  }
+
+  private drawReadableRaceLane(stage: StageDef, accent: string) {
+    const { width, height } = this._canvas;
+    const centerX = width * 0.5;
+    const laneWidth = width * 0.5;
+    const pulse = 0.5 + Math.sin(performance.now() * 0.0014 + stage.goalY * 0.01) * 0.5;
+
+    const lane = this.ctx.createLinearGradient(centerX - laneWidth / 2, 0, centerX + laneWidth / 2, 0);
+    lane.addColorStop(0, 'rgba(4, 9, 18, 0)');
+    lane.addColorStop(0.18, 'rgba(4, 9, 18, 0.24)');
+    lane.addColorStop(0.5, 'rgba(7, 13, 24, 0.42)');
+    lane.addColorStop(0.82, 'rgba(4, 9, 18, 0.24)');
+    lane.addColorStop(1, 'rgba(4, 9, 18, 0)');
+    this.ctx.fillStyle = lane;
+    this.ctx.fillRect(centerX - laneWidth / 2, 0, laneWidth, height);
+
+    const stageLight = this.ctx.createRadialGradient(centerX, height * 0.42, width * 0.08, centerX, height * 0.42, width * 0.34);
+    stageLight.addColorStop(0, `rgba(255, 255, 255, ${0.08 + pulse * 0.03})`);
+    stageLight.addColorStop(0.34, `rgba(255, 255, 255, ${0.035 + pulse * 0.02})`);
+    stageLight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = stageLight;
+    this.ctx.fillRect(0, 0, width, height);
+
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.28;
+    this.ctx.strokeStyle = accent;
+    this.ctx.lineWidth = Math.max(1.4, width * 0.002);
+    this.ctx.setLineDash([8, 18]);
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX - laneWidth * 0.42, height * 0.04);
+    this.ctx.lineTo(centerX - laneWidth * 0.28, height * 0.96);
+    this.ctx.moveTo(centerX + laneWidth * 0.42, height * 0.04);
+    this.ctx.lineTo(centerX + laneWidth * 0.28, height * 0.96);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawBackdropRidges(baseY: number, highlight: string, shadow: string, amplitudeScale: number, time: number) {
+    const { width, height } = this._canvas;
+
+    for (let layer = 0; layer < 3; layer++) {
+      const y = baseY + layer * height * 0.08;
+      const amp = height * (0.028 + layer * 0.012) * amplitudeScale;
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, height);
+      this.ctx.lineTo(0, y);
+      for (let i = 0; i <= 9; i++) {
+        const x = (width / 9) * i;
+        const ridgeY = y + Math.sin(i * 0.9 + time * (0.18 + layer * 0.04)) * amp;
+        this.ctx.lineTo(x, ridgeY);
+      }
+      this.ctx.lineTo(width, height);
+      this.ctx.closePath();
+      this.ctx.fillStyle = layer === 0 ? highlight : shadow;
+      this.ctx.fill();
+    }
+  }
+
+  private drawBackdropWater(y: number, color: string, time: number) {
+    const { width, height } = this._canvas;
+
+    this.ctx.save();
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1.4;
+    for (let i = 0; i < 12; i++) {
+      const waveY = y + i * height * 0.035;
+      this.ctx.globalAlpha = 0.7 - i * 0.045;
+      this.ctx.beginPath();
+      for (let step = 0; step <= 18; step++) {
+        const x = (width / 18) * step;
+        const py = waveY + Math.sin(step * 0.8 + time * 0.7 + i * 0.4) * height * 0.004;
+        if (step === 0) this.ctx.moveTo(x, py);
+        else this.ctx.lineTo(x, py);
+      }
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  private drawBackdropSun(x: number, y: number, radius: number, color: string) {
+    const glow = this.ctx.createRadialGradient(x, y, radius * 0.08, x, y, radius);
+    glow.addColorStop(0, 'rgba(255, 255, 255, 0.72)');
+    glow.addColorStop(0.28, color);
+    glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    this.ctx.fillStyle = glow;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.fill();
+  }
+
+  private drawBackdropParticles(count: number, color: string, alpha: number, time: number) {
+    const { width, height } = this._canvas;
+
+    this.ctx.save();
+    for (let i = 0; i < count; i++) {
+      const x = width * ((i * 0.137 + Math.sin(time * 0.12 + i) * 0.018) % 1);
+      const y = height * (0.06 + ((i * 0.091 + time * (0.005 + (i % 4) * 0.002)) % 0.82));
+      const size = Math.max(1.2, Math.min(width, height) * (0.002 + (i % 3) * 0.001));
+      this.ctx.globalAlpha = alpha * (0.42 + Math.sin(time * 1.4 + i) * 0.2 + 0.28);
+      this.ctx.fillStyle = i % 3 === 0 ? color : 'rgba(255, 255, 255, 0.88)';
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, size, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+    this.ctx.restore();
+  }
+
+  private drawAuroraRibbons(time: number, accent: string) {
+    const { width, height } = this._canvas;
+
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = 'lighter';
+    for (let ribbon = 0; ribbon < 3; ribbon++) {
+      const gradient = this.ctx.createLinearGradient(0, 0, width, height * 0.5);
+      gradient.addColorStop(0, 'rgba(112, 255, 208, 0)');
+      gradient.addColorStop(0.5, ribbon % 2 === 0 ? 'rgba(112, 255, 208, 0.14)' : `rgba(160, 190, 255, 0.13)`);
+      gradient.addColorStop(1, 'rgba(112, 255, 208, 0)');
+      this.ctx.strokeStyle = ribbon === 2 ? accent : gradient;
+      this.ctx.globalAlpha = ribbon === 2 ? 0.1 : 1;
+      this.ctx.lineWidth = height * (0.035 + ribbon * 0.012);
+      this.ctx.beginPath();
+      for (let i = 0; i <= 12; i++) {
+        const x = (width / 12) * i;
+        const y = height * (0.18 + ribbon * 0.06) + Math.sin(i * 0.9 + time * (0.32 + ribbon * 0.1)) * height * 0.045;
+        if (i === 0) this.ctx.moveTo(x, y);
+        else this.ctx.lineTo(x, y);
+      }
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  private drawBackdropSkyline(baseY: number, accent: string, time: number) {
+    const { width, height } = this._canvas;
+
+    this.ctx.save();
+    for (let i = 0; i < 16; i++) {
+      const buildingWidth = width * (0.045 + (i % 3) * 0.012);
+      const x = width * 0.02 + i * width * 0.064;
+      const h = height * (0.12 + ((i * 7) % 9) * 0.017);
+      this.ctx.fillStyle = i % 2 === 0 ? 'rgba(3, 7, 18, 0.72)' : 'rgba(7, 12, 24, 0.64)';
+      this.ctx.fillRect(x, baseY - h, buildingWidth, h);
+
+      this.ctx.fillStyle = i % 3 === 0 ? accent : 'rgba(255, 238, 180, 0.52)';
+      for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 2; col++) {
+          if ((row + col + i) % 3 === 0) continue;
+          this.ctx.globalAlpha = 0.18 + Math.sin(time + i + row) * 0.04;
+          this.ctx.fillRect(x + buildingWidth * (0.24 + col * 0.34), baseY - h + 12 + row * 18, buildingWidth * 0.12, 5);
+        }
+      }
+    }
+    this.ctx.restore();
+  }
+
+  private drawBackdropSpire(x: number, baseY: number, height: number, accent: string) {
+    this.ctx.save();
+    this.ctx.fillStyle = 'rgba(8, 13, 28, 0.58)';
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+    this.ctx.lineWidth = 2;
+
+    for (let i = 0; i < 3; i++) {
+      const offset = (i - 1) * height * 0.18;
+      const spireHeight = height * (0.78 + i * 0.12);
+      const width = height * (0.12 + i * 0.02);
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + offset, baseY - spireHeight);
+      this.ctx.lineTo(x + offset - width, baseY);
+      this.ctx.lineTo(x + offset + width, baseY);
+      this.ctx.closePath();
+      this.ctx.fill();
+      this.ctx.stroke();
+    }
+
+    this.drawGlowOrb(x, baseY - height * 0.64, height * 0.16, accent, 'rgba(255, 255, 255, 0)');
+    this.ctx.restore();
+  }
+
+  private drawBackdropLeaves(time: number, accent: string) {
+    const { width, height } = this._canvas;
+    for (let i = 0; i < 12; i++) {
+      const x = width * (0.04 + ((i * 0.17 + time * 0.014) % 0.92));
+      const y = height * (0.12 + ((i * 0.11 + time * 0.01) % 0.76));
+      this.drawLeaf(x, y, Math.max(8, width * 0.012), Math.sin(time + i) * 0.8, i % 2 === 0 ? accent : '#a7f3d0');
+    }
+  }
+
+  private drawBackdropPetals(time: number, accent: string) {
+    const { width, height } = this._canvas;
+    for (let i = 0; i < 16; i++) {
+      const x = width * (0.05 + ((i * 0.13 + time * 0.01) % 0.9));
+      const y = height * (0.08 + ((i * 0.097 + time * 0.018) % 0.78));
+      this.ctx.save();
+      this.ctx.translate(x, y);
+      this.ctx.rotate(Math.sin(time + i) * 0.8);
+      this.ctx.globalAlpha = 0.16;
+      this.ctx.fillStyle = i % 3 === 0 ? accent : '#ffd6e7';
+      this.ctx.beginPath();
+      this.ctx.ellipse(0, 0, width * 0.006, width * 0.012, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
     }
   }
 

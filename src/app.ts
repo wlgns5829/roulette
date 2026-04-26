@@ -11,7 +11,6 @@ type WinnerMode = 'first' | 'last' | 'custom';
 const storageKey = 'lunch_roulette_names_v3';
 const audioStorageKey = 'lunch_roulette_audio';
 const marbleStyleStorageKey = 'lunch_roulette_marble_style_v2';
-const solidStageBackground = '#101827';
 const fixedRoster = ['Dominic', 'Martin'];
 const sampleRoster = ['도미닉', '회의지박령', '커피예산파괴자', '야근예약센터장', '퇴근눈치챔피언'];
 const rosterAliases: Record<string, string> = {
@@ -395,18 +394,18 @@ export function attachApp(roulette: Roulette) {
       stageDescription.textContent = stage.description;
       stageFlavor.textContent = stage.flavor;
       document.documentElement.style.setProperty('--stage-accent', stage.accent);
-      document.documentElement.style.setProperty('--app-bg-top-left', 'transparent');
-      document.documentElement.style.setProperty('--app-bg-top-right', 'transparent');
-      document.documentElement.style.setProperty('--app-bg-bottom', 'transparent');
-      document.documentElement.style.setProperty('--app-bg-start', solidStageBackground);
-      document.documentElement.style.setProperty('--app-bg-mid', solidStageBackground);
-      document.documentElement.style.setProperty('--app-bg-end', solidStageBackground);
+      document.documentElement.style.setProperty('--app-bg-top-left', backdrop.uiTopLeft);
+      document.documentElement.style.setProperty('--app-bg-top-right', backdrop.uiTopRight);
+      document.documentElement.style.setProperty('--app-bg-bottom', backdrop.uiBottom);
+      document.documentElement.style.setProperty('--app-bg-start', backdrop.uiStart);
+      document.documentElement.style.setProperty('--app-bg-mid', backdrop.uiMid);
+      document.documentElement.style.setProperty('--app-bg-end', backdrop.uiEnd);
       document.documentElement.style.setProperty('--app-bg-photo', 'none');
       document.documentElement.style.setProperty('--app-bg-photo-position', `${backdrop.focusX * 100}% ${backdrop.focusY * 100}%`);
       document.documentElement.style.setProperty('--app-bg-photo-scale', String(backdrop.uiPhotoScale));
-      document.documentElement.style.setProperty('--ambient-one-color', 'transparent');
-      document.documentElement.style.setProperty('--ambient-two-color', 'transparent');
-      document.documentElement.style.setProperty('--ambient-three-color', 'transparent');
+      document.documentElement.style.setProperty('--ambient-one-color', backdrop.ambientOne);
+      document.documentElement.style.setProperty('--ambient-two-color', backdrop.ambientTwo);
+      document.documentElement.style.setProperty('--ambient-three-color', backdrop.ambientThree);
 
       eventBadges.innerHTML = '';
       stage.eventTitles.forEach((title) => {
