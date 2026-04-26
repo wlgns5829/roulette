@@ -655,14 +655,6 @@ export function attachApp(roulette: Roulette) {
         audio.stopBgm();
         bgmStopTimer = 0;
       }, bgmStopDelayMs);
-      return;
-
-      setStatus('오늘의 당첨', `${detail.winner}님이 뽑혔습니다. 잠시 후 다음 라운드를 준비합니다.`);
-      appendFeedItem(
-        '골인',
-        `${detail.winner}님이 ${detail.stageTitle}을 통과해 오늘의 커피 당첨자가 됐습니다.`,
-        detail.accent
-      );
     });
 
     roulette.addEventListener('winner-reveal-ready', (event) => {
