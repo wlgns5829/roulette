@@ -27,6 +27,7 @@ export type RenderParameters = {
   goalSpotlight: {
     rank: number;
     name: string;
+    revealName: boolean;
     accent: string;
     elapsed: number;
     duration: number;
@@ -1249,6 +1250,7 @@ export class RouletteRenderer {
     const centerX = width / 2;
     const centerY = height * 0.46;
     const offsetY = (1 - ease) * 34;
+    const mainLabel = spotlight.revealName ? spotlight.name : '당첨자 공개 대기';
     const statusLabel = '골인했습니다';
     const rankLabel = `${spotlight.rank}등 GOAL IN`;
 
@@ -1274,12 +1276,12 @@ export class RouletteRenderer {
     this.ctx.fillText(`${spotlight.rank}등 GOAL IN`, 0, -30);
 
     this.ctx.shadowBlur = 0;
-    this.ctx.font = `800 ${Math.max(38, Math.min(62, width * 0.04))}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
+    this.ctx.font = `800 ${Math.max(spotlight.revealName ? 38 : 32, Math.min(spotlight.revealName ? 62 : 48, width * 0.04))}px 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif`;
     this.ctx.strokeStyle = 'rgba(9, 12, 20, 0.94)';
     this.ctx.lineWidth = 8;
-    this.ctx.strokeText(spotlight.name, 0, 6);
+    this.ctx.strokeText(mainLabel, 0, 6);
     this.ctx.fillStyle = '#fff8ef';
-    this.ctx.fillText(spotlight.name, 0, 6);
+    this.ctx.fillText(mainLabel, 0, 6);
     this.ctx.font = `700 ${Math.max(18, Math.min(26, width * 0.016))}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
     this.ctx.fillStyle = 'rgba(255, 248, 239, 0.92)';
     this.ctx.fillText(statusLabel, 0, panelHeight * 0.24);

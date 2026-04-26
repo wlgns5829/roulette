@@ -53,6 +53,7 @@ type GoalSpotlightState = {
   position: VectorLike;
   rank: number;
   name: string;
+  revealName: boolean;
   accent: string;
   elapsed: number;
   duration: number;
@@ -364,6 +365,7 @@ export class Roulette extends EventTarget {
       if (marble.y > getFinishLine(this._stage)) {
         this._winners.push(marble);
         const finishRank = this._winners.length;
+        const isWinningFinisher = this._isRunning && finishRank === this._winnerRank + 1;
         if (finishRank <= 3) {
           const finishAccent =
             finishRank === 1 ? '#fde68a' : finishRank === 2 ? '#bfdbfe' : '#f9a8d4';
@@ -372,9 +374,9 @@ export class Roulette extends EventTarget {
           );
         }
         if (!this._winner) {
-          this._queueGoalSpotlight(marble, finishRank);
+          this._queueGoalSpotlight(marble, finishRank, !isWinningFinisher);
         }
-        if (this._isRunning && this._winners.length === this._winnerRank + 1) {
+        if (isWinningFinisher) {
           this._finishRound(marble);
         }
         const removeDelay = finishRank <= 3 ? 980 : 500;
@@ -487,7 +489,7 @@ export class Roulette extends EventTarget {
     return 1;
   }
 
-  private _queueGoalSpotlight(marble: Marble, rank: number) {
+  private _queueGoalSpotlight(marble: Marble, rank: number, revealName = true) {
     if (!this._stage) {
       return;
     }
@@ -504,6 +506,7 @@ export class Roulette extends EventTarget {
       },
       rank,
       name: marble.name,
+      revealName,
       accent,
       elapsed: 0,
       duration: compressedDuration,
@@ -676,6 +679,7 @@ export class Roulette extends EventTarget {
         ? {
             rank: this._activeGoalSpotlight.rank,
             name: this._activeGoalSpotlight.name,
+            revealName: this._activeGoalSpotlight.revealName,
             accent: this._activeGoalSpotlight.accent,
             elapsed: this._activeGoalSpotlight.elapsed,
             duration: this._activeGoalSpotlight.duration,
