@@ -401,7 +401,10 @@ export function attachApp(roulette: Roulette) {
       document.documentElement.style.setProperty('--app-bg-mid', backdrop.uiMid);
       document.documentElement.style.setProperty('--app-bg-end', backdrop.uiEnd);
       document.documentElement.style.setProperty('--app-bg-photo', 'none');
-      document.documentElement.style.setProperty('--app-bg-photo-position', `${backdrop.focusX * 100}% ${backdrop.focusY * 100}%`);
+      document.documentElement.style.setProperty(
+        '--app-bg-photo-position',
+        `${backdrop.focusX * 100}% ${backdrop.focusY * 100}%`
+      );
       document.documentElement.style.setProperty('--app-bg-photo-scale', String(backdrop.uiPhotoScale));
       document.documentElement.style.setProperty('--ambient-one-color', backdrop.ambientOne);
       document.documentElement.style.setProperty('--ambient-two-color', backdrop.ambientTwo);
@@ -631,7 +634,8 @@ export function attachApp(roulette: Roulette) {
     });
 
     roulette.addEventListener('goal', (event) => {
-      const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string; podium: string[] }>).detail;
+      const detail = (event as CustomEvent<{ winner: string; stageTitle: string; accent: string; podium: string[] }>)
+        .detail;
       const podiumText = formatPodiumSummary(detail.podium);
       ready = false;
       startButton.disabled = true;

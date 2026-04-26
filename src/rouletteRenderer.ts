@@ -158,7 +158,10 @@ export class RouletteRenderer {
     const now = performance.now() * 0.001;
     const accent = stage.accent ?? '#f59e0b';
     const backdrop = stage.backdrop ?? 'sakura-village';
-    const palettes: Record<string, { top: string; mid: string; bottom: string; glowA: string; glowB: string; mood: string }> = {
+    const palettes: Record<
+      string,
+      { top: string; mid: string; bottom: string; glowA: string; glowB: string; mood: string }
+    > = {
       'sakura-village': {
         top: '#172033',
         mid: '#16302d',
@@ -274,7 +277,14 @@ export class RouletteRenderer {
     this.drawReadableRaceLane(stage, accent);
     this.drawBackdropParticles(26, '#ffffff', 0.08, now + 1.7);
 
-    const vignette = this.ctx.createRadialGradient(width * 0.5, height * 0.52, width * 0.08, width * 0.5, height * 0.52, width * 0.74);
+    const vignette = this.ctx.createRadialGradient(
+      width * 0.5,
+      height * 0.52,
+      width * 0.08,
+      width * 0.5,
+      height * 0.52,
+      width * 0.74
+    );
     vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
     vignette.addColorStop(0.52, 'rgba(1, 5, 12, 0.08)');
     vignette.addColorStop(1, 'rgba(1, 5, 12, 0.58)');
@@ -365,7 +375,13 @@ export class RouletteRenderer {
     this.ctx.fillStyle = backdrop;
     this.ctx.fillRect(0, 0, width, height);
 
-    this.drawGlowOrb(width * 0.78, height * 0.22, Math.min(width, height) * 0.16, 'rgba(255, 245, 223, 0.96)', 'rgba(255, 193, 118, 0)');
+    this.drawGlowOrb(
+      width * 0.78,
+      height * 0.22,
+      Math.min(width, height) * 0.16,
+      'rgba(255, 245, 223, 0.96)',
+      'rgba(255, 193, 118, 0)'
+    );
     this.drawWaveBand(height * 0.16, height * 0.018, 'rgba(255, 244, 232, 0.14)', now * 0.2 + 0.4, true);
     this.drawWaveBand(height * 0.24, height * 0.022, 'rgba(255, 228, 219, 0.1)', now * 0.28 + 1.3, true);
 
@@ -378,7 +394,8 @@ export class RouletteRenderer {
       this.ctx.save();
       this.ctx.translate(x, y);
       this.ctx.rotate(Math.sin(now * 0.7 + i) * 0.35);
-      this.ctx.fillStyle = i % 3 === 0 ? accent : i % 2 === 0 ? 'rgba(255, 237, 213, 0.78)' : 'rgba(255, 191, 157, 0.72)';
+      this.ctx.fillStyle =
+        i % 3 === 0 ? accent : i % 2 === 0 ? 'rgba(255, 237, 213, 0.78)' : 'rgba(255, 191, 157, 0.72)';
       this.ctx.fillRect(-w / 2, -h / 2, w, h);
       this.ctx.restore();
     }
@@ -425,15 +442,28 @@ export class RouletteRenderer {
     this.ctx.fillStyle = backdrop;
     this.ctx.fillRect(0, 0, width, height);
 
-    this.drawGlowOrb(width * 0.5, height * 0.18, Math.min(width, height) * 0.2, 'rgba(46, 214, 255, 0.16)', 'rgba(46, 214, 255, 0)');
-    this.drawGlowOrb(width * 0.18, height * 0.16, Math.min(width, height) * 0.1, 'rgba(244, 114, 182, 0.12)', 'rgba(244, 114, 182, 0)');
+    this.drawGlowOrb(
+      width * 0.5,
+      height * 0.18,
+      Math.min(width, height) * 0.2,
+      'rgba(46, 214, 255, 0.16)',
+      'rgba(46, 214, 255, 0)'
+    );
+    this.drawGlowOrb(
+      width * 0.18,
+      height * 0.16,
+      Math.min(width, height) * 0.1,
+      'rgba(244, 114, 182, 0.12)',
+      'rgba(244, 114, 182, 0)'
+    );
 
     for (let i = 0; i < 42; i++) {
       const x = width * ((i * 0.137) % 1);
       const y = height * (0.06 + ((i * 0.097) % 0.42));
       const size = 1.1 + (i % 3) * 0.9;
       const pulse = 0.48 + 0.42 * Math.sin(now * (0.8 + (i % 5) * 0.12) + i);
-      this.ctx.fillStyle = i % 4 === 0 ? `rgba(244, 114, 182, ${0.24 + pulse * 0.28})` : `rgba(216, 244, 255, ${0.2 + pulse * 0.24})`;
+      this.ctx.fillStyle =
+        i % 4 === 0 ? `rgba(244, 114, 182, ${0.24 + pulse * 0.28})` : `rgba(216, 244, 255, ${0.2 + pulse * 0.24})`;
       this.ctx.beginPath();
       this.ctx.arc(x, y, size, 0, Math.PI * 2);
       this.ctx.fill();
@@ -490,7 +520,13 @@ export class RouletteRenderer {
     this.ctx.fillStyle = backdrop;
     this.ctx.fillRect(0, 0, width, height);
 
-    this.drawGlowOrb(width * 0.16, height * 0.16, Math.min(width, height) * 0.15, 'rgba(255, 251, 208, 0.92)', 'rgba(255, 251, 208, 0)');
+    this.drawGlowOrb(
+      width * 0.16,
+      height * 0.16,
+      Math.min(width, height) * 0.15,
+      'rgba(255, 251, 208, 0.92)',
+      'rgba(255, 251, 208, 0)'
+    );
     this.drawWaveBand(height * 0.18, height * 0.022, 'rgba(255, 255, 255, 0.16)', now * 0.22 + 0.8, true);
     this.drawWaveBand(height * 0.28, height * 0.026, 'rgba(236, 255, 236, 0.1)', now * 0.3 + 1.5, true);
 
@@ -503,13 +539,25 @@ export class RouletteRenderer {
       const x = width * (0.06 + ((i * 0.19) % 0.88)) + Math.sin(now * 0.7 + i * 0.6) * width * 0.015;
       const y = -20 + travel * (height + 40);
       const size = Math.max(10, Math.min(width, height) * (0.012 + (i % 3) * 0.003));
-      this.drawLeaf(x, y, size, Math.sin(now * 0.9 + i) * 0.8, i % 3 === 0 ? accent : i % 2 === 0 ? '#fef3c7' : '#86efac');
+      this.drawLeaf(
+        x,
+        y,
+        size,
+        Math.sin(now * 0.9 + i) * 0.8,
+        i % 3 === 0 ? accent : i % 2 === 0 ? '#fef3c7' : '#86efac'
+      );
     }
 
     for (let i = 0; i < 6; i++) {
       const flowerX = width * (0.1 + i * 0.15);
       const flowerY = height * (0.86 + (i % 2) * 0.035);
-      this.drawGlowOrb(flowerX, flowerY, Math.min(width, height) * 0.028, 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0)');
+      this.drawGlowOrb(
+        flowerX,
+        flowerY,
+        Math.min(width, height) * 0.028,
+        'rgba(255, 255, 255, 0.2)',
+        'rgba(255, 255, 255, 0)'
+      );
     }
   }
 
@@ -528,7 +576,14 @@ export class RouletteRenderer {
     this.ctx.fillStyle = lane;
     this.ctx.fillRect(centerX - laneWidth / 2, 0, laneWidth, height);
 
-    const stageLight = this.ctx.createRadialGradient(centerX, height * 0.42, width * 0.08, centerX, height * 0.42, width * 0.34);
+    const stageLight = this.ctx.createRadialGradient(
+      centerX,
+      height * 0.42,
+      width * 0.08,
+      centerX,
+      height * 0.42,
+      width * 0.34
+    );
     stageLight.addColorStop(0, `rgba(255, 255, 255, ${0.08 + pulse * 0.03})`);
     stageLight.addColorStop(0.34, `rgba(255, 255, 255, ${0.035 + pulse * 0.02})`);
     stageLight.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -661,7 +716,12 @@ export class RouletteRenderer {
         for (let col = 0; col < 2; col++) {
           if ((row + col + i) % 3 === 0) continue;
           this.ctx.globalAlpha = 0.18 + Math.sin(time + i + row) * 0.04;
-          this.ctx.fillRect(x + buildingWidth * (0.24 + col * 0.34), baseY - h + 12 + row * 18, buildingWidth * 0.12, 5);
+          this.ctx.fillRect(
+            x + buildingWidth * (0.24 + col * 0.34),
+            baseY - h + 12 + row * 18,
+            buildingWidth * 0.12,
+            5
+          );
         }
       }
     }
@@ -891,14 +951,19 @@ export class RouletteRenderer {
     this.ctx.textBaseline = 'top';
     this.ctx.font = '0.4pt sans-serif';
     this.ctx.lineWidth = 3 / (renderParameters.camera.zoom + initialZoom);
-    renderParameters.camera.renderScene(this.ctx, () => {
-      this.onBeforeEntities();
-      this.renderEntities(renderParameters.entities);
-      this.renderEffects(renderParameters);
-      if (!renderParameters.winner) {
-        this.renderMarbles(renderParameters);
-      }
-    }, renderParameters.stage.presentation);
+    renderParameters.camera.renderScene(
+      this.ctx,
+      () => {
+        this.onBeforeEntities();
+        this.renderEntities(renderParameters.entities);
+        this.renderFinishGate(renderParameters.stage, renderParameters.camera.zoom * initialZoom);
+        this.renderEffects(renderParameters);
+        if (!renderParameters.winner) {
+          this.renderMarbles(renderParameters);
+        }
+      },
+      renderParameters.stage.presentation
+    );
     this.ctx.restore();
     this.onAfterScene();
 
@@ -914,6 +979,9 @@ export class RouletteRenderer {
     this.ctx.save();
     entities.forEach((entity) => {
       const transform = this.ctx.getTransform();
+      const shapeColor = entity.shape.color;
+      const isInvisible =
+        shapeColor === 'transparent' || shapeColor === 'rgba(0, 0, 0, 0)' || shapeColor === 'rgba(0,0,0,0)';
       this.ctx.translate(entity.x, entity.y);
       this.ctx.rotate(entity.angle);
       this.ctx.fillStyle = entity.shape.color ?? this._theme.entity[entity.shape.type].fill;
@@ -931,6 +999,9 @@ export class RouletteRenderer {
               this.ctx.lineTo(entity.shape.points[i][0], entity.shape.points[i][1]);
             }
             this.ctx.stroke();
+            if (!isInvisible) {
+              this.drawRailNodes(entity.shape.points);
+            }
           }
           break;
         case 'box': {
@@ -939,17 +1010,158 @@ export class RouletteRenderer {
           this.ctx.rotate(entity.shape.rotation);
           this.ctx.fillRect(-w / 2, -h / 2, w, h);
           this.ctx.strokeRect(-w / 2, -h / 2, w, h);
+          if (!isInvisible) {
+            this.drawBlockObstacleDetail(w, h);
+          }
           break;
         }
         case 'circle':
+          if (!isInvisible) {
+            this.ctx.save();
+            this.ctx.globalAlpha *= 0.22;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, entity.shape.radius, 0, Math.PI * 2, false);
+            this.ctx.fill();
+            this.ctx.restore();
+          }
           this.ctx.beginPath();
           this.ctx.arc(0, 0, entity.shape.radius, 0, Math.PI * 2, false);
           this.ctx.stroke();
+          if (!isInvisible) {
+            this.drawRoundObstacleDetail(entity.shape.radius);
+          }
           break;
       }
 
       this.ctx.setTransform(transform);
     });
+    this.ctx.restore();
+  }
+
+  private drawRailNodes(points: [number, number][]) {
+    this.ctx.save();
+    this.ctx.shadowBlur *= 0.72;
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+    this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.25)';
+    this.ctx.lineWidth = 0.045;
+    points.forEach(([x, y], index) => {
+      if (index % 2 !== 0 && index !== points.length - 1) return;
+
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, 0.12, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.stroke();
+    });
+    this.ctx.restore();
+  }
+
+  private drawBlockObstacleDetail(width: number, height: number) {
+    const stripeInset = Math.min(width, height) * 0.34;
+
+    this.ctx.save();
+    this.ctx.shadowBlur *= 0.45;
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.42)';
+    this.ctx.lineWidth = Math.max(0.025, Math.min(width, height) * 0.16);
+    this.ctx.beginPath();
+    this.ctx.moveTo(-width / 2 + stripeInset, height / 2 - stripeInset);
+    this.ctx.lineTo(width / 2 - stripeInset, -height / 2 + stripeInset);
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+    this.ctx.beginPath();
+    this.ctx.arc(-width / 2 + stripeInset * 0.8, -height / 2 + stripeInset * 0.8, stripeInset * 0.26, 0, Math.PI * 2);
+    this.ctx.arc(width / 2 - stripeInset * 0.8, height / 2 - stripeInset * 0.8, stripeInset * 0.26, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private drawRoundObstacleDetail(radius: number) {
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = 'screen';
+    this.ctx.shadowBlur *= 0.55;
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
+    this.ctx.lineWidth = Math.max(0.025, radius * 0.12);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * 0.72, -Math.PI * 0.15, Math.PI * 1.15);
+    this.ctx.stroke();
+
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.62)';
+    this.ctx.beginPath();
+    this.ctx.arc(-radius * 0.22, -radius * 0.24, radius * 0.16, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private renderFinishGate(stage: StageDef, zoom: number) {
+    const finishLine = stage.goalY - (stage.finishMargin ?? 0);
+    const accent = stage.accent ?? this._theme.marbleWinningBorder;
+    const now = performance.now() / 1000;
+    const pulse = (Math.sin(now * 4.4) + 1) / 2;
+    const centerX = 13;
+    const gateLeft = centerX - 3.35;
+    const gateRight = centerX + 3.35;
+    const lineWidth = Math.max(0.026, 0.11 / zoom);
+
+    this.ctx.save();
+    this.ctx.globalCompositeOperation = 'screen';
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+    this.ctx.shadowColor = accent;
+    this.ctx.shadowBlur = (14 + pulse * 16) / zoom;
+
+    for (let i = 0; i < 4; i++) {
+      const y = finishLine - 7.4 + i * 1.85;
+      const alpha = 0.12 + i * 0.055 + pulse * 0.04;
+      this.ctx.globalAlpha = alpha;
+      this.ctx.strokeStyle = accent;
+      this.ctx.lineWidth = lineWidth * (1.1 + i * 0.25);
+      this.ctx.beginPath();
+      this.ctx.moveTo(centerX - 1.35 - i * 0.46, y);
+      this.ctx.lineTo(centerX, y + 0.82);
+      this.ctx.lineTo(centerX + 1.35 + i * 0.46, y);
+      this.ctx.stroke();
+    }
+
+    this.ctx.globalAlpha = 0.78;
+    this.ctx.strokeStyle = accent;
+    this.ctx.lineWidth = lineWidth * 1.7;
+    this.ctx.beginPath();
+    this.ctx.moveTo(gateLeft, finishLine);
+    this.ctx.lineTo(gateRight, finishLine);
+    this.ctx.stroke();
+
+    const tileCount = 14;
+    const tileWidth = (gateRight - gateLeft) / tileCount;
+    for (let i = 0; i < tileCount; i++) {
+      this.ctx.globalAlpha = 0.75;
+      this.ctx.fillStyle = i % 2 === 0 ? this._theme.winnerText : 'rgba(15, 23, 42, 0.78)';
+      this.ctx.fillRect(gateLeft + i * tileWidth, finishLine - 0.18, tileWidth * 0.92, 0.36);
+    }
+
+    this.ctx.globalAlpha = 0.58 + pulse * 0.22;
+    this.ctx.strokeStyle = this._theme.winnerText;
+    this.ctx.lineWidth = lineWidth;
+    [gateLeft, gateRight].forEach((x, index) => {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, finishLine - 2.65);
+      this.ctx.lineTo(x, finishLine + 1.85);
+      this.ctx.stroke();
+      this.ctx.fillStyle = index === 0 ? accent : this._theme.winnerText;
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, finishLine - 2.65);
+      this.ctx.lineTo(x + (index === 0 ? 0.95 : -0.95), finishLine - 2.18);
+      this.ctx.lineTo(x, finishLine - 1.72);
+      this.ctx.closePath();
+      this.ctx.fill();
+    });
+
+    this.ctx.globalAlpha = 0.18 + pulse * 0.14;
+    this.ctx.strokeStyle = accent;
+    this.ctx.lineWidth = lineWidth * 0.72;
+    this.ctx.beginPath();
+    this.ctx.ellipse(centerX, finishLine, 2.05 + pulse * 0.22, 0.52 + pulse * 0.1, 0, 0, Math.PI * 2);
+    this.ctx.stroke();
+
     this.ctx.restore();
   }
 
@@ -972,6 +1184,9 @@ export class RouletteRenderer {
     };
 
     marbles.forEach((marble, i) => {
+      if (i < 3) {
+        this.renderRankAura(marble, i + 1, camera.zoom * initialZoom, stage.presentation);
+      }
       marble.render(
         this.ctx,
         camera.zoom * initialZoom,
@@ -983,6 +1198,65 @@ export class RouletteRenderer {
         sceneRotation
       );
     });
+  }
+
+  private renderRankAura(
+    marble: Marble,
+    rank: number,
+    zoom: number,
+    presentation: StageDef['presentation'] = 'default'
+  ) {
+    const rankColors = ['#facc15', '#93c5fd', '#fb923c'];
+    const color = rankColors[rank - 1] ?? this._theme.marbleWinningBorder;
+    const now = performance.now() / 1000;
+    const pulse = (Math.sin(now * (5.2 - rank * 0.45)) + 1) / 2;
+    const radius = marble.size * (0.98 + pulse * 0.08);
+    const trailDirection = presentation === 'side-scroll' ? { x: -1, y: 0 } : { x: 0, y: -1 };
+
+    this.ctx.save();
+    this.ctx.translate(marble.x, marble.y);
+    this.ctx.globalCompositeOperation = 'screen';
+    this.ctx.lineCap = 'round';
+    this.ctx.shadowColor = color;
+    this.ctx.shadowBlur = (16 - rank * 2 + pulse * 8) / zoom;
+
+    for (let i = 0; i < 5; i++) {
+      const distance = marble.size * (0.98 + i * 0.46 + rank * 0.06);
+      const width = marble.size * (0.28 - i * 0.032);
+      this.ctx.globalAlpha = (0.32 - i * 0.044) * (rank === 1 ? 1.12 : 0.92);
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.ellipse(
+        trailDirection.x * distance,
+        trailDirection.y * distance,
+        Math.max(0.08, width),
+        Math.max(0.035, width * 0.42),
+        presentation === 'side-scroll' ? 0 : Math.PI / 2,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.fill();
+    }
+
+    this.ctx.globalAlpha = 0.9;
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = Math.max(0.024, 0.12 / zoom);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    this.ctx.stroke();
+
+    this.ctx.rotate(now * (rank % 2 === 0 ? -1.25 : 1.35));
+    this.ctx.globalAlpha = 0.74;
+    this.ctx.strokeStyle = rank === 1 ? this._theme.winnerText : color;
+    this.ctx.lineWidth = Math.max(0.025, 0.16 / zoom);
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius + 0.14, -0.72, 0.86);
+    this.ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius + 0.14, Math.PI - 0.72, Math.PI + 0.86);
+    this.ctx.stroke();
+
+    this.ctx.restore();
   }
 
   private fitTextSize(text: string, maxWidth: number, maxSize: number, minSize: number, weight = 900) {
@@ -1092,7 +1366,7 @@ export class RouletteRenderer {
 
     this.ctx.fillStyle = 'rgba(163, 170, 183, 0.92)';
     for (let i = 0; i < 8; i++) {
-      const stoneX = centerX - width * 0.42 + (width * 0.12) * i;
+      const stoneX = centerX - width * 0.42 + width * 0.12 * i;
       const stoneY = baseY - height * (0.18 + (i % 2) * 0.08);
       this.ctx.beginPath();
       this.ctx.roundRect(stoneX, stoneY, width * 0.11, height * 0.18, 8);
@@ -1134,7 +1408,10 @@ export class RouletteRenderer {
       const angle = (Math.PI * 2 * i) / 11;
       this.ctx.beginPath();
       this.ctx.moveTo(0, 0);
-      this.ctx.lineTo(Math.cos(angle) * radius * (0.72 + (i % 3) * 0.16), Math.sin(angle) * radius * (0.68 + (i % 4) * 0.1));
+      this.ctx.lineTo(
+        Math.cos(angle) * radius * (0.72 + (i % 3) * 0.16),
+        Math.sin(angle) * radius * (0.68 + (i % 4) * 0.1)
+      );
       this.ctx.stroke();
     }
     this.ctx.restore();
@@ -1153,14 +1430,7 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
-  private drawSolarImpactSeal(
-    x: number,
-    y: number,
-    radius: number,
-    accent: string,
-    alpha = 1,
-    progress = 1
-  ) {
+  private drawSolarImpactSeal(x: number, y: number, radius: number, accent: string, alpha = 1, progress = 1) {
     if (alpha <= 0 || radius <= 0) {
       return;
     }
@@ -1280,14 +1550,7 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
-  private drawSupportMarble(
-    marble: Marble,
-    x: number,
-    y: number,
-    size: number,
-    alpha: number,
-    glow: string
-  ) {
+  private drawSupportMarble(marble: Marble, x: number, y: number, size: number, alpha: number, glow: string) {
     if (alpha <= 0.01) {
       return;
     }
@@ -1572,8 +1835,20 @@ export class RouletteRenderer {
     this.ctx.strokeStyle = 'rgba(63, 35, 22, 0.78)';
     this.ctx.lineWidth = Math.max(3, size * 0.035);
     this.ctx.beginPath();
-    this.ctx.arc(-size * 0.17, -size * 0.03, size * 0.07, Math.PI * (0.14 + blink * 0.04), Math.PI * (0.88 - blink * 0.05));
-    this.ctx.arc(size * 0.17, -size * 0.03, size * 0.07, Math.PI * (0.14 + blink * 0.04), Math.PI * (0.88 - blink * 0.05));
+    this.ctx.arc(
+      -size * 0.17,
+      -size * 0.03,
+      size * 0.07,
+      Math.PI * (0.14 + blink * 0.04),
+      Math.PI * (0.88 - blink * 0.05)
+    );
+    this.ctx.arc(
+      size * 0.17,
+      -size * 0.03,
+      size * 0.07,
+      Math.PI * (0.14 + blink * 0.04),
+      Math.PI * (0.88 - blink * 0.05)
+    );
     this.ctx.stroke();
 
     this.ctx.save();
@@ -1641,7 +1916,8 @@ export class RouletteRenderer {
     podium.slice(0, 3).forEach((entry, index) => {
       const y = baseY + index * 34 + (1 - eased) * (18 + index * 4);
       const fillColor = index === 0 ? '#fde68a' : `hsl(${entry.hue} 100% ${index === 1 ? 88 : 84}%)`;
-      const fontSize = index === 0 ? Math.max(24, Math.min(34, width * 0.026)) : Math.max(20, Math.min(28, width * 0.021));
+      const fontSize =
+        index === 0 ? Math.max(24, Math.min(34, width * 0.026)) : Math.max(20, Math.min(28, width * 0.021));
 
       this.ctx.font = `${index === 0 ? 800 : 700} ${fontSize}px 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif`;
       this.ctx.lineWidth = index === 0 ? 6 : 5;
@@ -1808,13 +2084,15 @@ export class RouletteRenderer {
     const textOffsetY = (1 - textEase) * 42;
     const showText = textProgress > 0.01;
     const supportIds = new Set<number>();
-    const supportMarbles = [...podium, ...winners, ...marbles].filter((entry) => {
-      if (entry.id === winner.id || supportIds.has(entry.id)) {
-        return false;
-      }
-      supportIds.add(entry.id);
-      return true;
-    }).slice(0, 5);
+    const supportMarbles = [...podium, ...winners, ...marbles]
+      .filter((entry) => {
+        if (entry.id === winner.id || supportIds.has(entry.id)) {
+          return false;
+        }
+        supportIds.add(entry.id);
+        return true;
+      })
+      .slice(0, 5);
 
     this.ctx.save();
 
@@ -1826,7 +2104,14 @@ export class RouletteRenderer {
     this.ctx.fillStyle = oceanBackdrop;
     this.ctx.fillRect(0, 0, width, height);
 
-    const cinematicDepth = this.ctx.createRadialGradient(centerX, height * 0.42, width * 0.08, centerX, height * 0.42, width * 0.78);
+    const cinematicDepth = this.ctx.createRadialGradient(
+      centerX,
+      height * 0.42,
+      width * 0.08,
+      centerX,
+      height * 0.42,
+      width * 0.78
+    );
     cinematicDepth.addColorStop(0, 'rgba(255, 244, 205, 0.16)');
     cinematicDepth.addColorStop(0.34, 'rgba(14, 165, 233, 0.08)');
     cinematicDepth.addColorStop(1, 'rgba(2, 6, 23, 0.74)');
@@ -1877,21 +2162,38 @@ export class RouletteRenderer {
     this.ctx.fillRect(0, 0, width, height);
     this.ctx.restore();
 
-    const landTransitionGlow = this.ctx.createLinearGradient(0, landRevealY - height * 0.08, 0, landRevealY + height * 0.08);
+    const landTransitionGlow = this.ctx.createLinearGradient(
+      0,
+      landRevealY - height * 0.08,
+      0,
+      landRevealY + height * 0.08
+    );
     landTransitionGlow.addColorStop(0, 'rgba(255, 255, 255, 0)');
     landTransitionGlow.addColorStop(0.5, `rgba(255, 229, 181, ${0.12 + seaToLandEase * 0.22})`);
     landTransitionGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.fillStyle = landTransitionGlow;
     this.ctx.fillRect(0, landRevealY - height * 0.08, width, height * 0.16);
 
-    const skyTransitionGlow = this.ctx.createLinearGradient(0, skyRevealHeight - height * 0.06, 0, skyRevealHeight + height * 0.08);
+    const skyTransitionGlow = this.ctx.createLinearGradient(
+      0,
+      skyRevealHeight - height * 0.06,
+      0,
+      skyRevealHeight + height * 0.08
+    );
     skyTransitionGlow.addColorStop(0, 'rgba(255, 255, 255, 0)');
     skyTransitionGlow.addColorStop(0.5, `rgba(226, 248, 255, ${0.08 + landToSkyEase * 0.24})`);
     skyTransitionGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
     this.ctx.fillStyle = skyTransitionGlow;
     this.ctx.fillRect(0, skyRevealHeight - height * 0.06, width, height * 0.14);
 
-    const sunGlow = this.ctx.createRadialGradient(centerX, height * 0.16, width * 0.02, centerX, height * 0.16, width * 0.22);
+    const sunGlow = this.ctx.createRadialGradient(
+      centerX,
+      height * 0.16,
+      width * 0.02,
+      centerX,
+      height * 0.16,
+      width * 0.22
+    );
     sunGlow.addColorStop(0, 'rgba(255, 251, 229, 0.76)');
     sunGlow.addColorStop(0.28, 'rgba(255, 214, 165, 0.38)');
     sunGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -1920,7 +2222,14 @@ export class RouletteRenderer {
     this.ctx.fillStyle = stageSpotlight;
     this.ctx.fillRect(0, 0, width, height);
 
-    const cleanVignette = this.ctx.createRadialGradient(centerX, height * 0.48, width * 0.12, centerX, height * 0.48, width * 0.78);
+    const cleanVignette = this.ctx.createRadialGradient(
+      centerX,
+      height * 0.48,
+      width * 0.12,
+      centerX,
+      height * 0.48,
+      width * 0.78
+    );
     cleanVignette.addColorStop(0, 'rgba(2, 6, 23, 0)');
     cleanVignette.addColorStop(0.58, 'rgba(2, 6, 23, 0.1)');
     cleanVignette.addColorStop(1, 'rgba(2, 6, 23, 0.5)');
@@ -1981,7 +2290,12 @@ export class RouletteRenderer {
     this.ctx.lineWidth = 4.2;
     this.ctx.beginPath();
     this.ctx.moveTo(centerX - width * 0.13, islandY + marbleVisualSize * 0.28);
-    this.ctx.quadraticCurveTo(centerX, islandY + marbleVisualSize * 0.19, centerX + width * 0.13, islandY + marbleVisualSize * 0.28);
+    this.ctx.quadraticCurveTo(
+      centerX,
+      islandY + marbleVisualSize * 0.19,
+      centerX + width * 0.13,
+      islandY + marbleVisualSize * 0.28
+    );
     this.ctx.stroke();
     this.ctx.restore();
 
@@ -1998,17 +2312,39 @@ export class RouletteRenderer {
     this.ctx.fillStyle = islandGlow;
     this.ctx.fillRect(0, islandY - marbleVisualSize, width, height - islandY + marbleVisualSize);
 
-    this.drawStoneShoreline(centerX, islandY + marbleVisualSize * 0.62, width * 0.42, marbleVisualSize * 1.24, islandAlpha);
+    this.drawStoneShoreline(
+      centerX,
+      islandY + marbleVisualSize * 0.62,
+      width * 0.42,
+      marbleVisualSize * 1.24,
+      islandAlpha
+    );
 
     this.ctx.save();
     this.ctx.globalAlpha = islandAlpha;
     this.ctx.fillStyle = '#6c5137';
     this.ctx.beginPath();
-    this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.46, width * 0.16, marbleVisualSize * 0.46, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(
+      centerX,
+      islandY + marbleVisualSize * 0.46,
+      width * 0.16,
+      marbleVisualSize * 0.46,
+      0,
+      0,
+      Math.PI * 2
+    );
     this.ctx.fill();
     this.ctx.fillStyle = '#9ac55a';
     this.ctx.beginPath();
-    this.ctx.ellipse(centerX, islandY + marbleVisualSize * 0.22, width * 0.145, marbleVisualSize * 0.2, 0, 0, Math.PI * 2);
+    this.ctx.ellipse(
+      centerX,
+      islandY + marbleVisualSize * 0.22,
+      width * 0.145,
+      marbleVisualSize * 0.2,
+      0,
+      0,
+      Math.PI * 2
+    );
     this.ctx.fill();
     this.ctx.restore();
 
@@ -2066,8 +2402,15 @@ export class RouletteRenderer {
         for (let spark = 0; spark < 3; spark++) {
           const sparkProgress = (supportChargeEase * 0.84 + spark / 3 + index * 0.07) % 1;
           const sparkX = this.lerp(supportX, targetX, sparkProgress);
-          const sparkY = this.lerp(supportY, targetY, sparkProgress) - Math.sin(sparkProgress * Math.PI) * marbleVisualSize * 0.08;
-          this.drawSpark(sparkX, sparkY, 3 + sparkProgress * 5, spark % 2 === 0 ? '#fff8e1' : supportGlow, beamAlpha * 0.7);
+          const sparkY =
+            this.lerp(supportY, targetY, sparkProgress) - Math.sin(sparkProgress * Math.PI) * marbleVisualSize * 0.08;
+          this.drawSpark(
+            sparkX,
+            sparkY,
+            3 + sparkProgress * 5,
+            spark % 2 === 0 ? '#fff8e1' : supportGlow,
+            beamAlpha * 0.7
+          );
         }
       });
     }
@@ -2136,7 +2479,8 @@ export class RouletteRenderer {
     for (let i = 0; i < 10; i++) {
       const bubbleProgress = (oceanRiseEase * 1.1 + i / 10) % 1;
       const bubbleX = centerX + Math.sin(time * 3 + i * 1.7) * marbleVisualSize * 0.42;
-      const bubbleY = seaSurfaceY + marbleVisualSize * 0.7 + (1 - bubbleProgress) * (height - seaSurfaceY + marbleVisualSize * 0.9);
+      const bubbleY =
+        seaSurfaceY + marbleVisualSize * 0.7 + (1 - bubbleProgress) * (height - seaSurfaceY + marbleVisualSize * 0.9);
       this.ctx.save();
       this.ctx.globalAlpha = (1 - skyLaunchProgress) * (0.08 + bubbleProgress * 0.18);
       this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
@@ -2184,10 +2528,7 @@ export class RouletteRenderer {
           this.ctx.lineWidth = 1.4 + (i % 2) * 0.3;
           this.ctx.beginPath();
           this.ctx.moveTo(px, py);
-          this.ctx.lineTo(
-            marbleCenterX + (px - marbleCenterX) * 0.26,
-            marbleCenterY + (py - marbleCenterY) * 0.26
-          );
+          this.ctx.lineTo(marbleCenterX + (px - marbleCenterX) * 0.26, marbleCenterY + (py - marbleCenterY) * 0.26);
           this.ctx.stroke();
           this.ctx.restore();
         }
@@ -2439,7 +2780,8 @@ export class RouletteRenderer {
       for (let i = 0; i < 10; i++) {
         const trailProgress = (skyLaunchEase * 1.08 + i / 10) % 1;
         const trailY = marbleCenterY + marbleVisualSize * (0.24 + trailProgress * 1.42);
-        const trailX = marbleCenterX + Math.sin(time * 4.1 + i * 0.92) * marbleVisualSize * (0.14 + trailProgress * 0.08);
+        const trailX =
+          marbleCenterX + Math.sin(time * 4.1 + i * 0.92) * marbleVisualSize * (0.14 + trailProgress * 0.08);
         this.drawCloudPuff(
           trailX,
           trailY,
@@ -2470,13 +2812,7 @@ export class RouletteRenderer {
     this.ctx.save();
     this.ctx.translate(marbleCenterX, marbleCenterY);
     if (marbleImage) {
-        this.ctx.drawImage(
-          marbleImage,
-          -marbleVisualSize / 2,
-          -marbleVisualSize / 2,
-          marbleVisualSize,
-          marbleVisualSize
-        );
+      this.ctx.drawImage(marbleImage, -marbleVisualSize / 2, -marbleVisualSize / 2, marbleVisualSize, marbleVisualSize);
     } else {
       drawMarbleLook(
         this.ctx,
@@ -2560,7 +2896,11 @@ export class RouletteRenderer {
       this.ctx.fillStyle = '#77491d';
       this.ctx.fillText(`${stage.title} 돌파`, centerX, nameY + nameSize * 0.64 + textOffsetY * 0.18);
       this.ctx.fillStyle = accent;
-      this.ctx.fillText('바다를 뚫고 지상을 지나 구름 하늘에서 승리 폭발!', centerX, nameY + nameSize * 0.94 + textOffsetY * 0.16);
+      this.ctx.fillText(
+        '바다를 뚫고 지상을 지나 구름 하늘에서 승리 폭발!',
+        centerX,
+        nameY + nameSize * 0.94 + textOffsetY * 0.16
+      );
     }
     this.ctx.restore();
   }

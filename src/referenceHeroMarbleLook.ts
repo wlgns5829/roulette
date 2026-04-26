@@ -133,7 +133,14 @@ function drawEyes(ctx: CanvasRenderingContext2D, size: number, outline: string) 
   ctx.fill();
 }
 
-function drawBody(ctx: CanvasRenderingContext2D, size: number, fill: string, outline: string, width = 0.22, height = 0.34) {
+function drawBody(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  fill: string,
+  outline: string,
+  width = 0.22,
+  height = 0.34
+) {
   ctx.fillStyle = fill;
   ctx.strokeStyle = outline;
   ctx.lineWidth = size * 0.038;
@@ -185,7 +192,16 @@ function drawArms(ctx: CanvasRenderingContext2D, size: number, color: string, ou
   ctx.stroke();
 }
 
-function drawBlade(ctx: CanvasRenderingContext2D, size: number, x: number, y: number, length: number, angle: number, shaft: string, blade: string) {
+function drawBlade(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  x: number,
+  y: number,
+  length: number,
+  angle: number,
+  shaft: string,
+  blade: string
+) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
@@ -207,7 +223,15 @@ function drawBlade(ctx: CanvasRenderingContext2D, size: number, x: number, y: nu
   ctx.restore();
 }
 
-function drawStaff(ctx: CanvasRenderingContext2D, size: number, x: number, y: number, length: number, shaft: string, gem: string) {
+function drawStaff(
+  ctx: CanvasRenderingContext2D,
+  size: number,
+  x: number,
+  y: number,
+  length: number,
+  shaft: string,
+  gem: string
+) {
   ctx.save();
   ctx.translate(x, y);
   ctx.strokeStyle = shaft;

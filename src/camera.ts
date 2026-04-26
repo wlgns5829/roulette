@@ -184,13 +184,15 @@ export class Camera {
     if (targetMarble) {
       if (goalSpotlight) {
         const spotlightKey = `${stage.presentation}:${goalSpotlight.x.toFixed(2)}:${goalSpotlight.y.toFixed(2)}`;
-        const shouldSnapToSpotlight =
-          this._activeGoalSpotlightKey !== spotlightKey || goalSpotlightElapsed <= 26;
+        const shouldSnapToSpotlight = this._activeGoalSpotlightKey !== spotlightKey || goalSpotlightElapsed <= 26;
         const zoomInProgress = Math.max(0, Math.min(1, goalSpotlightElapsed / 180));
         const holdStart = Math.max(0, goalSpotlightDuration - 220);
         const zoomOutProgress = Math.max(
           0,
-          Math.min(1, holdStart > 0 ? (goalSpotlightElapsed - holdStart) / Math.max(120, goalSpotlightDuration - holdStart) : 0)
+          Math.min(
+            1,
+            holdStart > 0 ? (goalSpotlightElapsed - holdStart) / Math.max(120, goalSpotlightDuration - holdStart) : 0
+          )
         );
         const spotlightZoom = cruisingZoom + 0.42 + zoomInProgress * 0.54 - zoomOutProgress * 0.18;
         if (stage.presentation === 'side-scroll') {
@@ -233,8 +235,7 @@ export class Camera {
       if (winnerSpotlight) {
         const zoomInProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 1820) / 620));
         const zoomOutProgress = Math.max(0, Math.min(1, (winnerSpotlightElapsed - 2940) / 840));
-        const spotlightZoom =
-          cruisingZoom + 0.82 + zoomInProgress * 1.08 - zoomOutProgress * 0.94;
+        const spotlightZoom = cruisingZoom + 0.82 + zoomInProgress * 1.08 - zoomOutProgress * 0.94;
         if (stage.presentation === 'side-scroll') {
           const laneFocus = 13 + (winnerSpotlight.position.x - 13) * 0.34;
           const targetX = Math.min(stage.goalY + 0.5, winnerSpotlight.position.y + 1.4);
@@ -292,8 +293,7 @@ export class Camera {
         targetMarble.position.x * (0.58 - chaseBias * 0.16) +
         chaseMarble.position.x * (0.27 + chaseBias * 0.08) +
         thirdMarble.position.x * (0.15 + packTightness * 0.08);
-      const targetY =
-        leaderVisualY * (1 - finishBias * 0.34) + Math.min(6.8, packSpan * (0.22 + packTightness * 0.2));
+      const targetY = leaderVisualY * (1 - finishBias * 0.34) + Math.min(6.8, packSpan * (0.22 + packTightness * 0.2));
 
       this.setPosition({ x: targetX, y: targetY });
       if (needToZoom) {

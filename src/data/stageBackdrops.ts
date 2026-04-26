@@ -215,5 +215,7 @@ const stageBackdropOrder: StageBackdropId[] = [
 ];
 
 export function getStageBackdrop(index: number): StageBackdropId {
-  return stageBackdropOrder[((index % stageBackdropOrder.length) + stageBackdropOrder.length) % stageBackdropOrder.length];
+  return stageBackdropOrder[
+    ((index % stageBackdropOrder.length) + stageBackdropOrder.length) % stageBackdropOrder.length
+  ];
 }

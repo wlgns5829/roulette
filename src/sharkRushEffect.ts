@@ -3,6 +3,8 @@ import type { ColorTheme } from './types/ColorTheme';
 import type { VectorLike } from './types/VectorLike';
 
 const lifetime = 1550;
+const warningDuration = 340;
+const warningAfterglow = 260;
 
 export type SeaCreatureKind = 'shark' | 'starfish' | 'octopus' | 'nakji' | 'jjukkumi' | 'mackerel' | 'beltfish';
 export type SeaCreatureSweepAxis = 'horizontal' | 'vertical';
@@ -40,7 +42,12 @@ export class SharkRushEffect implements GameObject {
     _eighth = 0
   ) {
     void _eighth;
-    if (typeof start === 'number' && typeof end === 'number' && typeof third === 'number' && (fourth === -1 || fourth === 1)) {
+    if (
+      typeof start === 'number' &&
+      typeof end === 'number' &&
+      typeof third === 'number' &&
+      (fourth === -1 || fourth === 1)
+    ) {
       const fixed = third;
       this._start = seventh === 'horizontal' ? { x: start, y: fixed } : { x: fixed, y: start };
       this._end = seventh === 'horizontal' ? { x: end, y: fixed } : { x: fixed, y: end };
@@ -68,7 +75,7 @@ export class SharkRushEffect implements GameObject {
   }
 
   getPosition(): VectorLike {
-    const rate = this.getRate();
+    const rate = this.getTravelRate();
     const eased = 1 - (1 - rate) ** 3;
     const bob = Math.sin(rate * Math.PI * 3.2) * this.getBobAmplitude();
     return {
@@ -90,7 +97,7 @@ export class SharkRushEffect implements GameObject {
   }
 
   getContactStrength(point: VectorLike, marbleRadius = 0.25) {
-    if (this._elapsed < 120) {
+    if (this._elapsed < warningDuration + 70) {
       return 0;
     }
 
@@ -105,24 +112,20 @@ export class SharkRushEffect implements GameObject {
       y: currentPosition.y + this._direction.y * profile.bodyOffset,
     };
 
-    const headStrength = this.getCircleContactStrength(
-      point,
-      marbleRadius,
-      headCenter,
-      profile.headRadius
-    );
-    const bodyStrength = this.getCircleContactStrength(
-      point,
-      marbleRadius,
-      bodyCenter,
-      profile.bodyRadius
-    );
+    const headStrength = this.getCircleContactStrength(point, marbleRadius, headCenter, profile.headRadius);
+    const bodyStrength = this.getCircleContactStrength(point, marbleRadius, bodyCenter, profile.bodyRadius);
 
     return Math.max(headStrength, bodyStrength * 0.84);
   }
 
   render(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
-    const rate = this.getRate();
+    this.drawWarningTelegraph(ctx, zoom, theme);
+
+    const rate = this.getTravelRate();
+    if (rate <= 0.001) {
+      return;
+    }
+
     const position = this.getPosition();
     const alpha = Math.sin(Math.PI * Math.min(1, rate * 1.05));
     const bodyColor = this._accent;
@@ -168,8 +171,66 @@ export class SharkRushEffect implements GameObject {
     ctx.restore();
   }
 
-  private getRate() {
-    return Math.min(1, this._elapsed / lifetime);
+  private getTravelRate() {
+    return Math.min(1, Math.max(0, (this._elapsed - warningDuration) / Math.max(1, lifetime - warningDuration)));
+  }
+
+  private drawWarningTelegraph(ctx: CanvasRenderingContext2D, zoom: number, theme: ColorTheme) {
+    const warningRate = Math.min(1, this._elapsed / warningDuration);
+    const afterglowRate = Math.min(1, Math.max(0, (this._elapsed - warningDuration) / warningAfterglow));
+    const alpha =
+      this._elapsed <= warningDuration
+        ? 0.22 + Math.sin(warningRate * Math.PI) * 0.32
+        : Math.max(0, (1 - afterglowRate) * 0.3);
+
+    if (alpha <= 0) {
+      return;
+    }
+
+    const angle = Math.atan2(this._direction.y, this._direction.x);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = this._accent;
+    ctx.lineWidth = Math.max(0.025, 0.12 / zoom);
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 18 / zoom;
+    ctx.shadowColor = this._accent;
+    ctx.setLineDash([0.48, 0.36]);
+    ctx.lineDashOffset = -warningRate * 2.4;
+    ctx.beginPath();
+    ctx.moveTo(this._start.x, this._start.y);
+    ctx.lineTo(this._end.x, this._end.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = theme.winnerText;
+    ctx.lineWidth = Math.max(0.018, 0.055 / zoom);
+    for (let i = 0; i < 4; i++) {
+      const step = (warningRate + i * 0.18) % 1;
+      const x = this._start.x + (this._end.x - this._start.x) * step;
+      const y = this._start.y + (this._end.y - this._start.y) * step;
+      const spread = 0.36 + i * 0.05 + Math.sin(warningRate * Math.PI * 2 + i) * 0.05;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.globalAlpha = alpha * (0.78 - i * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(-spread, -spread * 0.54);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(-spread, spread * 0.54);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.fillStyle = this._accent;
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.beginPath();
+    ctx.arc(this._start.x, this._start.y, 0.38 + warningRate * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   private getBobAmplitude() {
@@ -203,12 +264,7 @@ export class SharkRushEffect implements GameObject {
     }
   }
 
-  private getCircleContactStrength(
-    point: VectorLike,
-    marbleRadius: number,
-    center: VectorLike,
-    bodyRadius: number
-  ) {
+  private getCircleContactStrength(point: VectorLike, marbleRadius: number, center: VectorLike, bodyRadius: number) {
     const offsetX = point.x - center.x;
     const offsetY = point.y - center.y;
     const distance = Math.hypot(offsetX, offsetY);

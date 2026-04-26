@@ -38,7 +38,9 @@ export class RankRenderer implements UIObject {
     }
 
     const rows = [...this.winners, ...this.marbles];
-    const tsv = rows.map((marble, index) => [String(index + 1), marble.name, index === this.winnerRank ? '*' : ''].join('\t'));
+    const tsv = rows.map((marble, index) =>
+      [String(index + 1), marble.name, index === this.winnerRank ? '*' : ''].join('\t')
+    );
     tsv.unshift(['Rank', 'Name', 'Winner'].join('\t'));
 
     navigator.clipboard.writeText(tsv.join('\n')).then(() => {

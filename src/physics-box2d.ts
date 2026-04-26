@@ -19,6 +19,7 @@ export class Box2dPhysics implements IPhysics {
 
   private marbleMap: { [id: number]: Box2D.b2Body } = {};
   private entities: PhysicsEntityState[] = [];
+  private destroyedEntities: MapEntityState[] = [];
 
   private deleteCandidates: Box2D.b2Body[] = [];
   private _trackBounds = {
@@ -170,6 +171,7 @@ export class Box2dPhysics implements IPhysics {
       this.world.DestroyBody(entity.body);
     });
     this.entities = [];
+    this.destroyedEntities = [];
   }
 
   createMarble(id: number, x: number, y: number): void {
@@ -192,11 +194,17 @@ export class Box2dPhysics implements IPhysics {
     const body = this.marbleMap[id];
     if (body) {
       const position = body.GetPosition();
-      const rescueX = Math.min(this._trackBounds.maxX, Math.max(this._trackBounds.minX, position.x + (Math.random() - 0.5) * 0.42));
+      const rescueX = Math.min(
+        this._trackBounds.maxX,
+        Math.max(this._trackBounds.minX, position.x + (Math.random() - 0.5) * 0.42)
+      );
       const rescueY = Math.max(this._trackBounds.minY, position.y + 0.34 + Math.random() * 0.24);
       body.SetTransform(new this.Box2D.b2Vec2(rescueX, rescueY), body.GetAngle() + (Math.random() - 0.5) * 0.12);
       body.SetLinearVelocity(new this.Box2D.b2Vec2((Math.random() - 0.5) * 2.8, 2.8 + Math.random() * 1.6));
-      body.ApplyLinearImpulseToCenter(new this.Box2D.b2Vec2((Math.random() - 0.5) * 4.2, 3.8 + Math.random() * 1.7), true);
+      body.ApplyLinearImpulseToCenter(
+        new this.Box2D.b2Vec2((Math.random() - 0.5) * 4.2, 3.8 + Math.random() * 1.7),
+        true
+      );
       body.SetAwake(true);
     }
   }
@@ -237,6 +245,44 @@ export class Box2dPhysics implements IPhysics {
         life: entity.life,
       };
     });
+  }
+
+  consumeDestroyedEntities(): MapEntityState[] {
+    const destroyedEntities = this.destroyedEntities;
+    this.destroyedEntities = [];
+    return destroyedEntities;
+  }
+
+  private getEntityBreakCenter(entity: PhysicsEntityState, position: Box2D.b2Vec2): VectorLike {
+    if (entity.shape.type !== 'polyline' || entity.shape.points.length === 0) {
+      return { x: position.x, y: position.y };
+    }
+
+    const center = entity.shape.points.reduce(
+      (sum, [x, y]) => ({
+        x: sum.x + x,
+        y: sum.y + y,
+      }),
+      { x: 0, y: 0 }
+    );
+
+    return {
+      x: position.x + center.x / entity.shape.points.length,
+      y: position.y + center.y / entity.shape.points.length,
+    };
+  }
+
+  private createDestroyedEntityState(entity: PhysicsEntityState): MapEntityState {
+    const position = entity.body.GetPosition();
+    const center = this.getEntityBreakCenter(entity, position);
+
+    return {
+      x: center.x,
+      y: center.y,
+      angle: entity.body.GetAngle(),
+      shape: entity.shape,
+      life: 0,
+    };
   }
 
   impact(id: number): void {
@@ -323,6 +369,7 @@ export class Box2dPhysics implements IPhysics {
       if (entity.life > 0) {
         const edge = entity.body.GetContactList();
         if (edge.contact?.IsTouching()) {
+          this.destroyedEntities.push(this.createDestroyedEntityState(entity));
           this.deleteCandidates.push(entity.body);
           this.entities.splice(i, 1);
         }

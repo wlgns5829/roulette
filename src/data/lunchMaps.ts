@@ -202,7 +202,9 @@ function slalomBars(startY: number, rows: number, gapY: number, colorA: string, 
     const y = startY + index * gapY;
     const fromLeft = index % 2 === 0;
     entities.push(box(fromLeft ? 8.1 : 17.9, y, 1.8, 0.1, fromLeft ? 0.62 : -0.62, fromLeft ? colorA : colorB));
-    entities.push(box(fromLeft ? 15.8 : 10.2, y + gapY * 0.34, 1.45, 0.1, fromLeft ? -0.52 : 0.52, fromLeft ? colorB : colorA));
+    entities.push(
+      box(fromLeft ? 15.8 : 10.2, y + gapY * 0.34, 1.45, 0.1, fromLeft ? -0.52 : 0.52, fromLeft ? colorB : colorA)
+    );
   }
 
   return entities;
@@ -919,15 +921,11 @@ const curatedLunchVariants: StageDef[] = [
     flavor: '앞선 구슬도 계속 무리 속으로 다시 끌려 들어가는 추격형 맵입니다.',
     accent: '#38bdf8',
     eventPool: pool('ac-draft', 'coffee-spill', 'meeting-call', 'bomb-burst', 'shark-rush'),
-    entities: combineEntities(
-      coffeeRunEntities,
-      gatePairs(72, 4, 14.5, '#dbeafe', '#bfdbfe'),
-      [
-        movingBox(8.4, 111.8, 1.9, 0.11, 0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.42, phase: 0.2 }),
-        movingBox(17.6, 111.8, 1.9, 0.11, -0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.5, phase: 1.1 }),
-        ...pegField(9.1, 123.4, 4, 2, 2.25, 2.35, '#ffffff'),
-      ]
-    ),
+    entities: combineEntities(coffeeRunEntities, gatePairs(72, 4, 14.5, '#dbeafe', '#bfdbfe'), [
+      movingBox(8.4, 111.8, 1.9, 0.11, 0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.42, phase: 0.2 }),
+      movingBox(17.6, 111.8, 1.9, 0.11, -0.08, '#dbeafe', { axis: 'y', amplitude: 1.35, speed: 1.5, phase: 1.1 }),
+      ...pegField(9.1, 123.4, 4, 2, 2.25, 2.35, '#ffffff'),
+    ]),
   }),
   buildVariantStage(curatedCoffeeRushStage, {
     title: '커피 핀볼 홀',
@@ -935,16 +933,12 @@ const curatedLunchVariants: StageDef[] = [
     flavor: '1등이 안전해 보여도 한 번의 이상한 튕김으로 끝이 바뀔 수 있습니다.',
     accent: '#fbbf24',
     eventPool: pool('bean-burst', 'meeting-call', 'bomb-burst', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(
-      coffeeRunEntities,
-      bumperGarden(74, 3, 13.5, '#fde68a', '#fff7ed'),
-      [
-        bumper(9.2, 70.4, 0.33, '#fde68a', 1.35),
-        bumper(16.8, 73.6, 0.33, '#fde68a', 1.35),
-        bumper(13, 101.4, 0.34, '#fff7ed', 1.4),
-        spinner(13, 116.2, 2.4, -4.8, '#fcd34d'),
-      ]
-    ),
+    entities: combineEntities(coffeeRunEntities, bumperGarden(74, 3, 13.5, '#fde68a', '#fff7ed'), [
+      bumper(9.2, 70.4, 0.33, '#fde68a', 1.35),
+      bumper(16.8, 73.6, 0.33, '#fde68a', 1.35),
+      bumper(13, 101.4, 0.34, '#fff7ed', 1.4),
+      spinner(13, 116.2, 2.4, -4.8, '#fcd34d'),
+    ]),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: '거울 물결 수로 · 좌우 질주',
@@ -980,15 +974,11 @@ const curatedLunchVariants: StageDef[] = [
     flavor: '선두가 보여도 계속 길을 다시 찾아야 해서 긴장이 끊기지 않습니다.',
     accent: '#22c55e',
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(
-      summerSplashEntities,
-      gatePairs(67.5, 4, 15.5, '#dcfce7', '#bbf7d0'),
-      [
-        movingBox(13, 66.8, 2.25, 0.11, 0.05, '#dcfce7', { axis: 'x', amplitude: 1.65, speed: 1.38, phase: 0.2 }),
-        movingBox(13, 118.4, 2.15, 0.11, -0.05, '#bbf7d0', { axis: 'x', amplitude: 1.45, speed: 1.6, phase: 1.8 }),
-        movingBox(13, 128.8, 1.8, 0.11, 0, '#f0fdf4', { axis: 'y', amplitude: 1.1, speed: 1.55, phase: 0.7 }),
-      ]
-    ),
+    entities: combineEntities(summerSplashEntities, gatePairs(67.5, 4, 15.5, '#dcfce7', '#bbf7d0'), [
+      movingBox(13, 66.8, 2.25, 0.11, 0.05, '#dcfce7', { axis: 'x', amplitude: 1.65, speed: 1.38, phase: 0.2 }),
+      movingBox(13, 118.4, 2.15, 0.11, -0.05, '#bbf7d0', { axis: 'x', amplitude: 1.45, speed: 1.6, phase: 1.8 }),
+      movingBox(13, 128.8, 1.8, 0.11, 0, '#f0fdf4', { axis: 'y', amplitude: 1.1, speed: 1.55, phase: 0.7 }),
+    ]),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: '노을 물결 질주',
@@ -1005,7 +995,17 @@ const curatedLunchVariants: StageDef[] = [
         '#ff6791': '#ec4899',
       }),
       bumperGarden(82, 2, 18, '#fdba74', '#fff7ed'),
-      [bumper(13.2, 121.8, 0.34, '#fff1c2', 1.35), ...sugarBits([[10.2, 129.6], [13, 131.1], [15.8, 129.8]], '#fff7ed')]
+      [
+        bumper(13.2, 121.8, 0.34, '#fff1c2', 1.35),
+        ...sugarBits(
+          [
+            [10.2, 129.6],
+            [13, 131.1],
+            [15.8, 129.8],
+          ],
+          '#fff7ed'
+        ),
+      ]
     ),
   }),
   buildVariantStage(curatedSummerSplashStage, {
@@ -1065,15 +1065,11 @@ const curatedLunchVariants: StageDef[] = [
     flavor: '결승 직전에 긴장을 길게 끌고 가기 좋은 함정형 맵입니다.',
     accent: '#f59e0b',
     eventPool: pool('coffee-spill', 'meeting-call', 'sugar-crash', 'shark-rush'),
-    entities: combineEntities(
-      snackAttackVisibleEntities,
-      bumperGarden(102, 3, 14, '#fff8ec', '#ffe7ba'),
-      [
-        ...pegField(7.5, 134.2, 5, 2, 2.15, 2.4, '#fff8ec'),
-        bumper(10.8, 143.4, 0.29, '#ffe7ba', 1.32),
-        bumper(15.2, 143.4, 0.29, '#ffe7ba', 1.32),
-      ]
-    ),
+    entities: combineEntities(snackAttackVisibleEntities, bumperGarden(102, 3, 14, '#fff8ec', '#ffe7ba'), [
+      ...pegField(7.5, 134.2, 5, 2, 2.15, 2.4, '#fff8ec'),
+      bumper(10.8, 143.4, 0.29, '#ffe7ba', 1.32),
+      bumper(15.2, 143.4, 0.29, '#ffe7ba', 1.32),
+    ]),
   }),
   buildVariantStage(curatedSnackAttackStage, {
     title: '간식 폭주 회랑',
@@ -1123,14 +1119,10 @@ const curatedLunchVariants: StageDef[] = [
     flavor: '안전해 보이는 1등을 한 박자 늦게 무너뜨리도록 만든 맵입니다.',
     accent: '#06b6d4',
     eventPool: pool('coffee-spill', 'ac-draft', 'meeting-call', 'bean-burst', 'shark-rush'),
-    entities: combineEntities(
-      coffeeRunEntities,
-      slalomBars(131.5, 2, 9.2, '#67e8f9', '#fef3c7'),
-      [
-        movingBox(13, 149.6, 2.25, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.75, speed: 1.88, phase: 0.7 }),
-        bumper(13, 153.2, 0.34, '#fde68a', 1.38),
-      ]
-    ),
+    entities: combineEntities(coffeeRunEntities, slalomBars(131.5, 2, 9.2, '#67e8f9', '#fef3c7'), [
+      movingBox(13, 149.6, 2.25, 0.11, 0, '#ecfeff', { axis: 'x', amplitude: 1.75, speed: 1.88, phase: 0.7 }),
+      bumper(13, 153.2, 0.34, '#fde68a', 1.38),
+    ]),
   }),
   buildVariantStage(curatedSummerSplashStage, {
     title: '폭풍 물결 레인 · 좌우 질주',

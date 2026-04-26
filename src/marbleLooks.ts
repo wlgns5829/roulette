@@ -404,7 +404,13 @@ function drawGalaxyCore(
     const starRadius = radius * (0.24 + ((i + seed) % 5) * 0.12);
     ctx.fillStyle = i % 2 === 0 ? '#ffffff' : `hsl(${Math.round(hue + 120)} 100% 82%)`;
     ctx.beginPath();
-    ctx.arc(Math.cos(angle) * starRadius, Math.sin(angle) * starRadius, size * (0.018 + (i % 3) * 0.004), 0, Math.PI * 2);
+    ctx.arc(
+      Math.cos(angle) * starRadius,
+      Math.sin(angle) * starRadius,
+      size * (0.018 + (i % 3) * 0.004),
+      0,
+      Math.PI * 2
+    );
     ctx.fill();
   }
 
@@ -466,7 +472,11 @@ function drawCrystalDrone(
 
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
   ctx.lineWidth = size * 0.022;
-  [[0, -radius], [radius * 0.42, radius * 0.72], [-radius * 0.42, radius * 0.72]].forEach(([px, py]) => {
+  [
+    [0, -radius],
+    [radius * 0.42, radius * 0.72],
+    [-radius * 0.42, radius * 0.72],
+  ].forEach(([px, py]) => {
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(px, py);

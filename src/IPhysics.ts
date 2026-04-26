@@ -23,6 +23,8 @@ export interface IPhysics {
 
   getEntities(): MapEntityState[];
 
+  consumeDestroyedEntities(): MapEntityState[];
+
   impact(id: number): void;
 
   setGravity(gravity: VectorLike): void;
