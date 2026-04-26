@@ -11,6 +11,12 @@ export class Minimap implements UIObject {
   private ctx!: CanvasRenderingContext2D;
   private lastParams: RenderParameters | null = null;
   private readonly _trackWidth = 26;
+  private readonly _baseScale = 2.25;
+  private readonly _maxWidthRatio = 0.14;
+  private readonly _maxHeightRatio = 0.27;
+  private readonly _maxWidth = 220;
+  private readonly _maxHeight = 240;
+  private _scale = this._baseScale;
 
   private _onViewportChangeHandler: ((pos?: VectorLike) => void) | null = null;
   private boundingBox: Rect;
@@ -52,7 +58,7 @@ export class Minimap implements UIObject {
       y: e.y,
     };
     if (this._onViewportChangeHandler) {
-      const scale = 4;
+      const scale = this._scale;
       const isSideScroll = this.lastParams.stage.presentation === 'side-scroll';
       this._onViewportChangeHandler(
         isSideScroll
@@ -73,8 +79,11 @@ export class Minimap implements UIObject {
     const { stage } = params;
     if (!stage) return;
     const isSideScroll = stage.presentation === 'side-scroll';
-    this.boundingBox.w = (isSideScroll ? stage.goalY : this._trackWidth) * 4;
-    this.boundingBox.h = (isSideScroll ? this._trackWidth : stage.goalY) * 4;
+    const mapWidth = isSideScroll ? stage.goalY : this._trackWidth;
+    const mapHeight = isSideScroll ? this._trackWidth : stage.goalY;
+    this._scale = this.getScale(mapWidth, mapHeight, ctx.canvas.width, ctx.canvas.height);
+    this.boundingBox.w = mapWidth * this._scale;
+    this.boundingBox.h = mapHeight * this._scale;
 
     this.lastParams = params;
 
@@ -82,7 +91,7 @@ export class Minimap implements UIObject {
     ctx.save();
     ctx.fillStyle = params.theme.minimapBackground;
     ctx.translate(10, 10);
-    ctx.scale(4, 4);
+    ctx.scale(this._scale, this._scale);
     if (isSideScroll) {
       ctx.transform(0, -1, 1, 0, 0, this._trackWidth);
     } else if (Math.abs(params.camera.toVisualY(0)) > 0.001) {
@@ -98,10 +107,16 @@ export class Minimap implements UIObject {
 
     ctx.restore();
     ctx.save();
-    ctx.strokeStyle = 'green';
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.46)';
     ctx.lineWidth = 1;
     ctx.strokeRect(this.boundingBox.x, this.boundingBox.y, this.boundingBox.w, this.boundingBox.h);
     ctx.restore();
+  }
+
+  private getScale(mapWidth: number, mapHeight: number, canvasWidth: number, canvasHeight: number) {
+    const maxWidth = Math.min(this._maxWidth, canvasWidth * this._maxWidthRatio);
+    const maxHeight = Math.min(this._maxHeight, canvasHeight * this._maxHeightRatio);
+    return Math.max(1.05, Math.min(this._baseScale, maxWidth / mapWidth, maxHeight / mapHeight));
   }
 
   private drawViewport(params: RenderParameters) {
