@@ -1128,6 +1128,97 @@ export class RouletteRenderer {
     this.ctx.restore();
   }
 
+  private drawFinalePrismBurst(x: number, y: number, radius: number, accent: string, alpha: number, progress: number) {
+    if (alpha <= 0.01) {
+      return;
+    }
+
+    const eased = this.easeOutCubic(progress);
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.globalCompositeOperation = 'lighter';
+    this.ctx.globalAlpha = alpha;
+
+    const bloom = this.ctx.createRadialGradient(0, 0, radius * 0.02, 0, 0, radius * (1.1 + eased * 0.52));
+    bloom.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    bloom.addColorStop(0.14, 'rgba(255, 248, 216, 0.92)');
+    bloom.addColorStop(0.36, 'rgba(255, 206, 93, 0.5)');
+    bloom.addColorStop(0.66, `rgba(255, 137, 50, ${0.18 + eased * 0.22})`);
+    bloom.addColorStop(1, 'rgba(255, 137, 50, 0)');
+    this.ctx.fillStyle = bloom;
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * (1.1 + eased * 0.52), 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.lineCap = 'round';
+    for (let ray = 0; ray < 44; ray++) {
+      const angle = (Math.PI * 2 * ray) / 44 + eased * 0.22;
+      const inner = radius * (0.1 + (ray % 4) * 0.018);
+      const outer = radius * (0.68 + (ray % 7) * 0.08 + eased * 0.48);
+      const width = Math.max(2.2, radius * (0.016 + (ray % 3) * 0.004));
+
+      this.ctx.save();
+      this.ctx.rotate(angle);
+      this.ctx.strokeStyle = ray % 3 === 0 ? '#ffffff' : ray % 3 === 1 ? '#fff2b8' : accent;
+      this.ctx.globalAlpha = alpha * (0.42 + eased * 0.38 - (ray % 5) * 0.024);
+      this.ctx.lineWidth = width;
+      this.ctx.beginPath();
+      this.ctx.moveTo(inner, 0);
+      this.ctx.lineTo(outer, 0);
+      this.ctx.stroke();
+
+      if (ray % 4 === 0) {
+        this.ctx.fillStyle = ray % 2 === 0 ? '#ffffff' : accent;
+        this.ctx.beginPath();
+        this.ctx.moveTo(outer + radius * 0.08, 0);
+        this.ctx.lineTo(outer, -radius * 0.035);
+        this.ctx.lineTo(outer - radius * 0.09, 0);
+        this.ctx.lineTo(outer, radius * 0.035);
+        this.ctx.closePath();
+        this.ctx.fill();
+      }
+      this.ctx.restore();
+    }
+
+    for (let ring = 0; ring < 4; ring++) {
+      const ringProgress = this.clamp(eased - ring * 0.12);
+      if (ringProgress <= 0) continue;
+      this.drawShockwaveRing(
+        0,
+        0,
+        radius * (0.62 + ringProgress * (1.35 + ring * 0.26)),
+        Math.max(3.2, radius * (0.044 - ring * 0.006)),
+        ring % 2 === 0 ? '#fff8dc' : accent,
+        alpha * (0.54 - ring * 0.09) * (1 - ringProgress * 0.66)
+      );
+    }
+
+    this.ctx.save();
+    this.ctx.rotate(-eased * 0.3);
+    this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * (0.38 + eased * 0.24)})`;
+    this.ctx.lineWidth = Math.max(3, radius * 0.018);
+    for (let shard = 0; shard < 9; shard++) {
+      const angle = (Math.PI * 2 * shard) / 9;
+      const shardRadius = radius * (0.38 + eased * (0.5 + (shard % 3) * 0.09));
+      const shardSize = radius * (0.075 + (shard % 3) * 0.018);
+      this.ctx.save();
+      this.ctx.translate(Math.cos(angle) * shardRadius, Math.sin(angle) * shardRadius * 0.82);
+      this.ctx.rotate(angle + eased * 0.7);
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, -shardSize);
+      this.ctx.lineTo(shardSize * 0.62, 0);
+      this.ctx.lineTo(0, shardSize);
+      this.ctx.lineTo(-shardSize * 0.62, 0);
+      this.ctx.closePath();
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+    this.ctx.restore();
+
+    this.ctx.restore();
+  }
+
   private drawWinnerSmileFace(x: number, y: number, size: number, time: number, joy: number, accent: string) {
     const blink = 0.45 + Math.sin(time * 6.2) * 0.08;
     const cheekAlpha = 0.14 + joy * 0.22;
@@ -1313,6 +1404,8 @@ export class RouletteRenderer {
     const gatherProgress = this.clamp((elapsed - 2860) / 980);
     const coreBurstProgress = this.clamp((elapsed - 3440) / 640);
     const burstProgress = this.clamp((elapsed - 3880) / 1600);
+    const finaleFlashProgress = this.clamp((elapsed - 3400) / 460);
+    const finaleBarrageProgress = this.clamp((elapsed - 3600) / 2100);
     const infernoProgress = this.clamp((elapsed - 3040) / 1740);
     const meteorStormProgress = this.clamp((elapsed - 3360) / 1880);
     const shockwaveProgress = this.clamp((elapsed - 3500) / 1160);
@@ -1330,6 +1423,8 @@ export class RouletteRenderer {
     const gatherEase = this.easeInOutCubic(gatherProgress);
     const coreBurstEase = this.easeOutCubic(coreBurstProgress);
     const burstEase = this.easeOutCubic(burstProgress);
+    const finaleFlashEase = this.easeOutCubic(finaleFlashProgress);
+    const finaleBarrageEase = this.easeOutCubic(finaleBarrageProgress);
     const infernoEase = this.easeOutCubic(infernoProgress);
     const meteorStormEase = this.easeOutCubic(meteorStormProgress);
     const shockwaveEase = this.easeOutCubic(shockwaveProgress);
@@ -1790,6 +1885,14 @@ export class RouletteRenderer {
         accent,
         0.28 + coreBurstEase * 0.56
       );
+      this.drawFinalePrismBurst(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * (1.52 + coreBurstEase * 1.58),
+        accent,
+        0.28 + coreBurstEase * 0.7,
+        coreBurstProgress
+      );
       const coreRadius = marbleVisualSize * (0.24 + coreBurstEase * 0.5);
       const coreOuterRadius = marbleVisualSize * (0.46 + coreBurstEase * 0.98);
       const coreGlow = this.ctx.createRadialGradient(
@@ -1847,6 +1950,39 @@ export class RouletteRenderer {
       this.ctx.restore();
     }
 
+    if (finaleFlashProgress > 0) {
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = 'lighter';
+      this.ctx.globalAlpha = Math.max(0, 0.34 * (1 - finaleFlashProgress) + finaleBarrageEase * 0.06);
+      this.ctx.fillStyle = '#fffdf2';
+      this.ctx.fillRect(0, 0, width, height);
+
+      const lensGlow = this.ctx.createRadialGradient(
+        marbleCenterX,
+        marbleCenterY,
+        marbleVisualSize * 0.24,
+        marbleCenterX,
+        marbleCenterY,
+        width * (0.42 + finaleFlashEase * 0.22)
+      );
+      lensGlow.addColorStop(0, 'rgba(255, 255, 255, 0.58)');
+      lensGlow.addColorStop(0.18, `rgba(255, 237, 168, ${0.32 + finaleFlashEase * 0.2})`);
+      lensGlow.addColorStop(0.55, `rgba(255, 162, 63, ${0.14 + finaleFlashEase * 0.12})`);
+      lensGlow.addColorStop(1, 'rgba(255, 162, 63, 0)');
+      this.ctx.fillStyle = lensGlow;
+      this.ctx.beginPath();
+      this.ctx.arc(marbleCenterX, marbleCenterY, width * (0.42 + finaleFlashEase * 0.22), 0, Math.PI * 2);
+      this.ctx.fill();
+
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 + (1 - finaleFlashProgress) * 0.42})`;
+      this.ctx.lineWidth = Math.max(6, marbleVisualSize * 0.06);
+      this.ctx.beginPath();
+      this.ctx.moveTo(width * 0.08, marbleCenterY);
+      this.ctx.lineTo(width * 0.92, marbleCenterY);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
     if (meteorStormProgress > 0) {
       for (let i = 0; i < 7; i++) {
         const localMeteor = this.clamp((elapsed - 3480 - i * 118) / 1180);
@@ -1899,24 +2035,29 @@ export class RouletteRenderer {
       { x: width * 0.14, y: height * 0.2 },
       { x: width * 0.86, y: height * 0.18 },
       { x: centerX, y: height * 0.16 },
+      { x: width * 0.32, y: height * 0.36 },
+      { x: width * 0.68, y: height * 0.34 },
+      { x: width * 0.18, y: height * 0.42 },
+      { x: width * 0.82, y: height * 0.4 },
+      { x: centerX, y: height * 0.08 },
     ];
 
     for (let i = 0; i < burstAnchors.length; i++) {
-      const localBurst = this.clamp((elapsed - 3880 - i * 165) / 1120);
+      const localBurst = this.clamp((elapsed - 3740 - i * 118) / 1240);
       if (localBurst <= 0) continue;
-      const burstAlpha = (1 - localBurst) * (0.48 + burstEase * 0.36);
+      const burstAlpha = (1 - localBurst) * (0.52 + finaleBarrageEase * 0.38);
       const burstX = burstAnchors[i].x;
       const burstY = burstAnchors[i].y;
-      const burstRadius = width * (0.042 + (i % 4) * 0.01) * (0.6 + localBurst * 1.34);
+      const burstRadius = width * (0.046 + (i % 4) * 0.012) * (0.54 + localBurst * 1.54);
 
       this.ctx.save();
       this.ctx.translate(burstX, burstY);
       this.ctx.rotate(i * 0.34 + localBurst * 0.55);
       this.ctx.strokeStyle = i % 2 === 0 ? accent : '#fff7d6';
-      this.ctx.lineWidth = 3.8;
+      this.ctx.lineWidth = 4.4;
       this.ctx.globalAlpha = burstAlpha;
-      for (let ray = 0; ray < 20; ray++) {
-        const angle = (Math.PI * 2 * ray) / 20;
+      for (let ray = 0; ray < 28; ray++) {
+        const angle = (Math.PI * 2 * ray) / 28;
         this.ctx.beginPath();
         this.ctx.moveTo(Math.cos(angle) * burstRadius * 0.18, Math.sin(angle) * burstRadius * 0.18);
         this.ctx.lineTo(Math.cos(angle) * burstRadius, Math.sin(angle) * burstRadius);
@@ -1928,12 +2069,12 @@ export class RouletteRenderer {
       this.ctx.stroke();
       this.ctx.restore();
 
-      for (let spark = 0; spark < 7; spark++) {
-        const sparkAngle = (Math.PI * 2 * spark) / 7 + i * 0.38;
+      for (let spark = 0; spark < 11; spark++) {
+        const sparkAngle = (Math.PI * 2 * spark) / 11 + i * 0.38;
         this.drawSpark(
           burstX + Math.cos(sparkAngle) * burstRadius * 0.84,
           burstY + Math.sin(sparkAngle) * burstRadius * 0.84,
-          6 + localBurst * 8,
+          6 + localBurst * 10,
           spark % 2 === 0 ? '#ffffff' : accent,
           burstAlpha * 0.95
         );

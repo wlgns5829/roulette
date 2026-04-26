@@ -872,15 +872,18 @@ export class Roulette extends EventTarget {
     const width = this._renderer.width;
     const height = this._renderer.height;
     const bursts = [
-      { delay: 2860, x: centerX, y: height * 0.21, count: 286, sizeRange: [7, 20] as [number, number], speedRange: [138, 348] as [number, number] },
-      { delay: 3010, x: centerX, y: height * 0.19, count: 196, sizeRange: [6, 18] as [number, number], speedRange: [112, 294] as [number, number] },
-      { delay: 3180, x: centerX - width * 0.18, y: height * 0.27, count: 176, sizeRange: [5, 16] as [number, number], speedRange: [92, 246] as [number, number] },
-      { delay: 3300, x: centerX + width * 0.2, y: height * 0.25, count: 176, sizeRange: [5, 16] as [number, number], speedRange: [92, 246] as [number, number] },
-      { delay: 3460, x: centerX - width * 0.1, y: height * 0.14, count: 152, sizeRange: [4, 14] as [number, number], speedRange: [86, 232] as [number, number] },
-      { delay: 3600, x: centerX + width * 0.12, y: height * 0.12, count: 152, sizeRange: [4, 14] as [number, number], speedRange: [86, 232] as [number, number] },
-      { delay: 3740, x: centerX - width * 0.26, y: height * 0.2, count: 144, sizeRange: [4, 13] as [number, number], speedRange: [84, 220] as [number, number] },
-      { delay: 3880, x: centerX + width * 0.28, y: height * 0.18, count: 144, sizeRange: [4, 13] as [number, number], speedRange: [84, 220] as [number, number] },
-      { delay: 4040, x: centerX, y: height * 0.16, count: 214, sizeRange: [5, 17] as [number, number], speedRange: [100, 270] as [number, number] },
+      { delay: 2820, x: centerX, y: height * 0.23, count: 340, sizeRange: [8, 23] as [number, number], speedRange: [150, 390] as [number, number] },
+      { delay: 2980, x: centerX, y: height * 0.18, count: 260, sizeRange: [7, 21] as [number, number], speedRange: [126, 336] as [number, number] },
+      { delay: 3140, x: centerX - width * 0.18, y: height * 0.28, count: 220, sizeRange: [6, 18] as [number, number], speedRange: [106, 286] as [number, number] },
+      { delay: 3260, x: centerX + width * 0.2, y: height * 0.25, count: 220, sizeRange: [6, 18] as [number, number], speedRange: [106, 286] as [number, number] },
+      { delay: 3380, x: centerX, y: height * 0.3, count: 300, sizeRange: [7, 20] as [number, number], speedRange: [135, 370] as [number, number] },
+      { delay: 3480, x: centerX - width * 0.1, y: height * 0.14, count: 190, sizeRange: [5, 16] as [number, number], speedRange: [92, 260] as [number, number] },
+      { delay: 3600, x: centerX + width * 0.12, y: height * 0.12, count: 190, sizeRange: [5, 16] as [number, number], speedRange: [92, 260] as [number, number] },
+      { delay: 3720, x: centerX - width * 0.26, y: height * 0.22, count: 172, sizeRange: [5, 15] as [number, number], speedRange: [88, 246] as [number, number] },
+      { delay: 3840, x: centerX + width * 0.28, y: height * 0.2, count: 172, sizeRange: [5, 15] as [number, number], speedRange: [88, 246] as [number, number] },
+      { delay: 3960, x: centerX - width * 0.36, y: height * 0.33, count: 132, sizeRange: [4, 13] as [number, number], speedRange: [76, 212] as [number, number] },
+      { delay: 4080, x: centerX + width * 0.36, y: height * 0.31, count: 132, sizeRange: [4, 13] as [number, number], speedRange: [76, 212] as [number, number] },
+      { delay: 4210, x: centerX, y: height * 0.12, count: 286, sizeRange: [6, 20] as [number, number], speedRange: [118, 320] as [number, number] },
     ];
 
     this._scheduleCelebration(1860, () => {
@@ -917,6 +920,23 @@ export class Roulette extends EventTarget {
         sizeRange: [3, 9],
         speedRange: [72, 165],
         lifeRange: [980, 1480],
+      });
+    });
+
+    this._scheduleCelebration(3380, () => {
+      this._particleManager.shot(centerX, height * 0.3, {
+        count: 420,
+        palette: ['#ffffff', '#fff7d6', '#fde68a', accent],
+        sizeRange: [8, 25],
+        speedRange: [190, 460],
+        lifeRange: [1300, 2600],
+      });
+      this._particleManager.shot(centerX, height * 0.3, {
+        count: 180,
+        palette: [`hsl(${marble.hue} 100% 68%)`, '#ffffff', accent],
+        sizeRange: [4, 12],
+        speedRange: [90, 220],
+        lifeRange: [1000, 1900],
       });
     });
 
