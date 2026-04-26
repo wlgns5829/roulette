@@ -271,6 +271,293 @@ function drawMushroomRunner(
   ctx.restore();
 }
 
+function drawMeteorCore(
+  ctx: CanvasRenderingContext2D,
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
+) {
+  const radius = size * 0.42;
+  const impact = Math.min(1, bounce);
+  const flameHue = Math.round(18 + (seed % 3) * 12);
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (flipY) ctx.scale(1, -1);
+  ctx.rotate(rotation * 0.18);
+  ctx.scale(1 + impact * 0.08, 1 - impact * 0.04);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 0.28;
+  }
+
+  const tailLength = size * (0.72 + impact * 0.18);
+  const tail = ctx.createLinearGradient(-tailLength, 0, radius * 0.4, 0);
+  tail.addColorStop(0, 'rgba(255, 70, 12, 0)');
+  tail.addColorStop(0.3, `hsla(${flameHue} 100% 55% / 0.38)`);
+  tail.addColorStop(0.68, 'rgba(255, 219, 96, 0.82)');
+  tail.addColorStop(1, 'rgba(255, 255, 238, 0.96)');
+  ctx.fillStyle = tail;
+  ctx.beginPath();
+  ctx.moveTo(-tailLength, 0);
+  ctx.quadraticCurveTo(-size * 0.54, -size * 0.34, radius * 0.36, -radius * 0.42);
+  ctx.quadraticCurveTo(-size * 0.08, 0, radius * 0.36, radius * 0.42);
+  ctx.quadraticCurveTo(-size * 0.54, size * 0.34, -tailLength, 0);
+  ctx.fill();
+
+  const glowGradient = ctx.createRadialGradient(0, 0, radius * 0.18, 0, 0, radius * 1.9);
+  glowGradient.addColorStop(0, 'rgba(255, 255, 245, 0.84)');
+  glowGradient.addColorStop(0.28, 'rgba(255, 180, 57, 0.58)');
+  glowGradient.addColorStop(1, 'rgba(255, 91, 23, 0)');
+  ctx.fillStyle = glowGradient;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius * 1.9, 0, Math.PI * 2);
+  ctx.fill();
+
+  const rock = ctx.createRadialGradient(-radius * 0.2, -radius * 0.28, radius * 0.16, 0, 0, radius);
+  rock.addColorStop(0, '#fff1c6');
+  rock.addColorStop(0.28, `hsl(${Math.round(hue + 28)} 82% 50%)`);
+  rock.addColorStop(0.66, '#6a2b16');
+  rock.addColorStop(1, '#28110c');
+  ctx.fillStyle = rock;
+  ctx.beginPath();
+  for (let i = 0; i < 12; i++) {
+    const angle = (Math.PI * 2 * i) / 12;
+    const jag = radius * (0.82 + ((i + seed) % 4) * 0.06);
+    const px = Math.cos(angle) * jag;
+    const py = Math.sin(angle) * jag;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255, 220, 137, 0.82)';
+  ctx.lineWidth = size * 0.045;
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255, 120, 42, 0.72)';
+  ctx.lineWidth = size * 0.028;
+  for (let i = 0; i < 4; i++) {
+    const angle = i * 1.55 + seed * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * radius * 0.12, Math.sin(angle) * radius * 0.12);
+    ctx.lineTo(Math.cos(angle) * radius * 0.56, Math.sin(angle) * radius * 0.48);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawGalaxyCore(
+  ctx: CanvasRenderingContext2D,
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
+) {
+  const radius = size * 0.46;
+  const impact = Math.min(1, bounce);
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (flipY) ctx.scale(1, -1);
+  ctx.rotate(rotation * 0.12);
+  ctx.scale(1 + impact * 0.04, 1 - impact * 0.03);
+
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 0.3;
+  }
+
+  const aura = ctx.createRadialGradient(0, 0, radius * 0.15, 0, 0, radius * 1.78);
+  aura.addColorStop(0, 'rgba(255, 255, 255, 0.86)');
+  aura.addColorStop(0.18, `hsla(${Math.round(hue + 55)} 100% 78% / 0.82)`);
+  aura.addColorStop(0.54, `hsla(${Math.round(hue + 190)} 94% 58% / 0.45)`);
+  aura.addColorStop(1, 'rgba(20, 8, 60, 0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius * 1.78, 0, Math.PI * 2);
+  ctx.fill();
+
+  const core = ctx.createRadialGradient(-radius * 0.22, -radius * 0.24, radius * 0.12, 0, 0, radius);
+  core.addColorStop(0, '#ffffff');
+  core.addColorStop(0.2, `hsl(${Math.round(hue + 84)} 100% 76%)`);
+  core.addColorStop(0.58, `hsl(${Math.round(hue + 190)} 88% 40%)`);
+  core.addColorStop(1, '#07081f');
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.58)';
+  ctx.lineWidth = size * 0.035;
+  for (let ring = 0; ring < 3; ring++) {
+    ctx.save();
+    ctx.rotate(rotation * (0.16 + ring * 0.04) + ring * 0.72);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radius * (1.22 + ring * 0.18), radius * (0.32 + ring * 0.04), 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (let i = 0; i < 8; i++) {
+    const angle = seed * 0.4 + i * 1.7;
+    const starRadius = radius * (0.24 + ((i + seed) % 5) * 0.12);
+    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : `hsl(${Math.round(hue + 120)} 100% 82%)`;
+    ctx.beginPath();
+    ctx.arc(Math.cos(angle) * starRadius, Math.sin(angle) * starRadius, size * (0.018 + (i % 3) * 0.004), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawCrystalDrone(
+  ctx: CanvasRenderingContext2D,
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
+) {
+  const radius = size * 0.5;
+  const impact = Math.min(1, bounce);
+  const baseHue = Math.round(hue + 160 + (seed % 3) * 18);
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (flipY) ctx.scale(1, -1);
+  ctx.rotate(rotation * 0.08);
+  ctx.scale(1 + impact * 0.03, 1 - impact * 0.05);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 0.24;
+  }
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+  ctx.beginPath();
+  ctx.ellipse(0, radius * 0.76, radius * 0.68, radius * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const points: Array<[number, number]> = [
+    [0, -radius],
+    [radius * 0.68, -radius * 0.2],
+    [radius * 0.42, radius * 0.72],
+    [0, radius * 1.02],
+    [-radius * 0.42, radius * 0.72],
+    [-radius * 0.68, -radius * 0.2],
+  ];
+
+  const crystal = ctx.createLinearGradient(-radius, -radius, radius, radius);
+  crystal.addColorStop(0, '#ffffff');
+  crystal.addColorStop(0.26, `hsl(${baseHue} 100% 82%)`);
+  crystal.addColorStop(0.62, `hsl(${baseHue + 36} 92% 55%)`);
+  crystal.addColorStop(1, '#172554');
+  ctx.fillStyle = crystal;
+  ctx.beginPath();
+  points.forEach(([px, py], index) => {
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(232, 248, 255, 0.92)';
+  ctx.lineWidth = size * 0.045;
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
+  ctx.lineWidth = size * 0.022;
+  [[0, -radius], [radius * 0.42, radius * 0.72], [-radius * 0.42, radius * 0.72]].forEach(([px, py]) => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+  });
+
+  ctx.strokeStyle = `hsla(${baseHue + 20} 100% 78% / 0.72)`;
+  ctx.lineWidth = size * 0.03;
+  ctx.beginPath();
+  ctx.arc(-radius * 0.92, -radius * 0.05, radius * 0.26, -0.8, 0.82);
+  ctx.arc(radius * 0.92, -radius * 0.05, radius * 0.26, Math.PI - 0.82, Math.PI + 0.8);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawRuneSpirit(
+  ctx: CanvasRenderingContext2D,
+  { x, y, size, hue, seed, rotation = 0, bounce = 0, glow, flipY = false }: MarbleLookOptions
+) {
+  const radius = size * 0.46;
+  const impact = Math.min(1, bounce);
+  const baseHue = Math.round(hue + 34);
+
+  ctx.save();
+  ctx.translate(x, y);
+  if (flipY) ctx.scale(1, -1);
+  ctx.rotate(rotation * 0.05);
+  ctx.scale(1 + impact * 0.04, 1 - impact * 0.04);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  if (glow) {
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = size * 0.3;
+  }
+
+  ctx.strokeStyle = `hsla(${baseHue} 100% 76% / 0.76)`;
+  ctx.lineWidth = size * 0.032;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius * 1.08, 0, Math.PI * 2);
+  ctx.stroke();
+
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI * 2 * i) / 6 + rotation * 0.1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * radius * 0.78, Math.sin(angle) * radius * 0.78);
+    ctx.lineTo(Math.cos(angle) * radius * 1.28, Math.sin(angle) * radius * 1.28);
+    ctx.stroke();
+  }
+
+  const spirit = ctx.createRadialGradient(0, -radius * 0.12, radius * 0.08, 0, 0, radius * 1.05);
+  spirit.addColorStop(0, '#ffffff');
+  spirit.addColorStop(0.24, `hsl(${baseHue} 100% 78%)`);
+  spirit.addColorStop(0.7, `hsl(${baseHue + 54} 86% 52%)`);
+  spirit.addColorStop(1, 'rgba(31, 41, 55, 0.9)');
+  ctx.fillStyle = spirit;
+  ctx.beginPath();
+  ctx.moveTo(0, -radius * 0.96);
+  ctx.bezierCurveTo(radius * 0.64, -radius * 0.62, radius * 0.56, radius * 0.24, radius * 0.14, radius * 0.76);
+  ctx.quadraticCurveTo(0, radius * 1.02, -radius * 0.14, radius * 0.76);
+  ctx.bezierCurveTo(-radius * 0.56, radius * 0.24, -radius * 0.64, -radius * 0.62, 0, -radius * 0.96);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.74)';
+  ctx.lineWidth = size * 0.035;
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(18, 24, 38, 0.92)';
+  ctx.beginPath();
+  ctx.ellipse(-radius * 0.18, -radius * 0.14, radius * 0.06, radius * 0.09, 0, 0, Math.PI * 2);
+  ctx.ellipse(radius * 0.18, -radius * 0.14, radius * 0.06, radius * 0.09, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(18, 24, 38, 0.82)';
+  ctx.lineWidth = size * 0.025;
+  ctx.beginPath();
+  ctx.arc(0, radius * 0.05, radius * 0.14, 0.18, Math.PI - 0.18);
+  ctx.stroke();
+
+  for (let i = 0; i < 5; i++) {
+    const angle = seed * 0.27 + i * 1.42;
+    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : `hsl(${baseHue + 42} 100% 78%)`;
+    ctx.beginPath();
+    ctx.arc(Math.cos(angle) * radius * 1.35, Math.sin(angle) * radius * 0.9, size * 0.025, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 export function drawMarbleLook(ctx: CanvasRenderingContext2D, options: MarbleLookOptions, style: MarbleStyle) {
   switch (style) {
     case 'classic':
@@ -284,6 +571,18 @@ export function drawMarbleLook(ctx: CanvasRenderingContext2D, options: MarbleLoo
       break;
     case 'retro':
       drawRetroParody(ctx, options);
+      break;
+    case 'meteor':
+      drawMeteorCore(ctx, options);
+      break;
+    case 'galaxy':
+      drawGalaxyCore(ctx, options);
+      break;
+    case 'crystal':
+      drawCrystalDrone(ctx, options);
+      break;
+    case 'rune':
+      drawRuneSpirit(ctx, options);
       break;
     case 'sprite':
       drawClassicMarble(ctx, options);

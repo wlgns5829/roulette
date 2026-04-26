@@ -461,7 +461,11 @@ export function attachApp(roulette: Roulette) {
       savedMarbleStyle === 'cute' ||
       savedMarbleStyle === 'mushroom' ||
       savedMarbleStyle === 'retro' ||
-      savedMarbleStyle === 'sprite'
+      savedMarbleStyle === 'sprite' ||
+      savedMarbleStyle === 'meteor' ||
+      savedMarbleStyle === 'galaxy' ||
+      savedMarbleStyle === 'crystal' ||
+      savedMarbleStyle === 'rune'
     ) {
       options.marbleStyle = savedMarbleStyle === 'mushroom' ? 'boss' : savedMarbleStyle;
     }
@@ -556,6 +560,10 @@ export function attachApp(roulette: Roulette) {
         mushroom: '버섯 러너',
         retro: '레트로 패러디',
         sprite: '스프라이트',
+        meteor: '운석 코어',
+        galaxy: '은하 코어',
+        crystal: '크리스탈 드론',
+        rune: '룬 정령',
       };
       showToast(`${styleLabels[options.marbleStyle]} 모드로 바꿨어요.`, '#f59e0b');
     });
